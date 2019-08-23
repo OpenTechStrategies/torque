@@ -1,0 +1,212 @@
+---
+
+- name: Add php key - Debian
+  become: true
+  apt_key:
+    url: https://packages.sury.org/php/apt.gpg
+    state: present
+  when: ansible_distribution == "Debian"
+
+- name: Add php reposotory - Debian
+  become: true
+  apt_repository:
+    # We hardcode the distrobution here because for some reason
+    # ansible's ansible_distribution_release wasn't working
+    repo: "deb https://packages.sury.org/php/ buster main"
+    state: present
+  register: php_ondrej_debian_repo
+  when: ansible_distribution == "Debian"
+
+- name: Add php repository - Ubuntu
+  become: true
+  apt_repository:
+    repo: ppa:ondrej/php
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install prerequisites
+  become: true
+  # See https://www.mediawiki.org/wiki/Manual:Installation_requirements
+  apt:
+    name: "{{ item }}"
+    #update_cache: yes # commented out for dev purposes
+    state: present
+  loop:
+    - apache2
+    - curl
+    - git
+    - php
+    - php-apcu
+    - php-cli
+    - php-intl
+    - php7.2-mbstring
+    - php7.3-mbstring
+    - php-mysql
+    - php7.3-mysqli
+    - php7.3-pgsql
+    - php7.2-xml
+    - php7.3-xml
+    - unzip
+
+- name: Setup installation directory
+  file:
+    path: "{{ mediawiki_install_directory }}"
+    state: directory
+
+- name: Download MediaWiki
+  get_url:
+    url: https://releases.wikimedia.org/mediawiki/1.33/mediawiki-1.33.0.tar.gz
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0.tar.gz"
+    checksum: sha256:8335a2d8740c5dd5919a480b74c3d8e19f23a68b396df48c2d77646272fdcd67
+
+- name: Extract MediaWiki tarball
+  unarchive:
+    src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/"
+    remote_src: yes
+
+- name: Enable PHP modules
+  become: true
+  shell: phpenmod {{ item }}
+  loop:
+    - mbstring
+    - mysqli
+    - xml
+
+- name: Get Composer
+  get_url:
+    url: https://getcomposer.org/installer
+    dest: "{{ mediawiki_install_directory }}/composer-setup.php"
+    checksum: "sha384:a5c698ffe4b8e849a443b120cd5ba38043260d5c4023dbf93e1558871f1f07f58274fc6f4c93bcfd858c6bd0775cd8d1"
+
+- name: Make wiki bin directory
+  file:
+    path: "{{ mediawiki_install_directory }}/bin"
+    state: directory
+
+- name: Install Composer locally
+  shell: php {{ mediawiki_install_directory }}/composer-setup.php --install-dir={{ mediawiki_install_directory }}/bin --filename=composer
+
+- name: Remove Composer setup script
+  file:
+    path: "{{ mediawiki_install_directory }}/composer-setup.php"
+    state: absent
+
+- name: Install Composer globally
+  become: true
+  shell: mv {{ mediawiki_install_directory }}/bin/composer /usr/local/bin/composer
+
+- name: Install MW with Composer
+  command: composer install --no-dev
+  args:
+    chdir: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
+
+- name: Install EmbedVideo
+  unarchive:
+    src: thirdparty/extensions/EmbedVideo-v2.8.0.zip
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Install Collection
+  unarchive:
+    src: thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Create Wiki
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=wikiuser --dbpass=\"{{ db_password }}\" --dbname=lfc --scriptpath=\"/lfc\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"lfc\" \"admin\""
+  args:
+    creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+
+- name: Enable EmbedVideo
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: "wfLoadExtension('EmbedVideo-v2.8.0');"
+
+- name: Enable Collection
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE COLLECTION CONFIG"
+    block: |
+      require_once "$IP/extensions/Collection/Collection.php";
+      $wgCollectionMWServeCredentials = "{{ mediawiki_mwlib_username }}:{{ mediawiki_mwlib_password }}";
+      $wgCollectionMWServeURL = "http://127.0.0.1:8899";
+      $wgCollectionMaxArticles = 250;
+      $wgEnableApi = true;
+      $wgCollectionFormats = array( 'rl' => 'PDF',);
+      $wgCollectionDisableDownloadSection = false;
+
+- name: Create Upload Directory
+  become: true
+  file:
+    path: "/var/www/html/images/"
+    owner: www-data
+    group: www-data
+    state: directory
+
+- name: Enable Uploading
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} UPLOAD CONFIG"
+    block: |
+      $wgEnableUploads = true;
+      $wgFileExtensions = array_merge($wgFileExtensions, array('doc', 'docx', 'html', 'pdf', 'xlsx'));
+      $wgFileBlacklist = array();
+      $wgMimeTypeBlacklist = array();
+      $wgStrictFileExtensions = false;
+      $wgTrustedMediaFormats = array('application/zip', 'text/html');
+      $wgVerifyMimeType = false;
+      $wgAllowJavaUploads = true;
+      $wgUploadDirectory = "/var/www/html/images/";
+      $wgCheckFileExtensions = false;
+      $wgGroupPermissions['bot']['edit'] = true;
+      $wgGroupPermissions['bot']['upload'] = true;
+      $wgGroupPermissions['autoconfirmed']['reupload'] = true;
+
+- name: Set TOC depth
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: $wgMaxTocLevel = 2;
+
+- name: Disable Collection Warning 1
+  replace:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/Collection/Collection.body.php"
+    regexp: '^(\t.*MessageBoxHelper::renderWarningBoxes.*)$'
+    replace: '#\1'
+
+- name: Disable Collection Warning 2
+  replace:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/Collection/templates/CollectionPageTemplate.php"
+    regexp: '^(\t.*MessageBoxHelper::renderWarningBoxes.*)$'
+    replace: '#\1'
+
+- name: Remove Collection Book Text
+  replace:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/Collection/i18n/en.json"
+    regexp: '\t"coll-book_creator_intro": "<big>With the ''''book creator'''' you can create a book containing wiki pages of your choice. You can export the book in different formats \(for example PDF or ODF\) or order a printed copy.</big>",'
+    replace: '\t"coll-book_creator_intro": "<big>With the ''''book creator'''' you can create a book containing wiki pages of your choice. You can export the book in different formats (for example PDF or ODF).</big>",'
+
+- name: Disable MediaWiki Cache
+  # When the cache is enabled, on AWS, with the default setting,
+  # the following createAndPromote.php command fails due to cache timeout.
+  # The reason isn't clear, but for now, this will fix it.
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: $wgMainCacheType = CACHE_NONE;
+
+- name: Create csv2wiki user
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --force --dbuser=wikiuser --dbpass=\"{{ db_password }}\" \"{{ mediawiki_mwlib_username }}\" \"{{ mediawiki_mwlib_password }}\""
+
+# Handle Apache changes
+- name: Symlink to webserver directory
+  become: true
+  file:
+    state: link
+    owner: www-data
+    group: www-data
+    src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
+    path: /var/www/html/lfc
+
+- name: Restart Apache
+  become: true
+  service:
+    name: apache2
+    state: restarted
+

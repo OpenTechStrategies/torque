@@ -1,0 +1,13 @@
+---
+
+- hosts: mysql
+  roles:
+  - mysql
+
+- hosts: mediawiki
+  roles:
+  - mediawiki
+
+- hosts: mwlib
+  roles:
+  - mwlib

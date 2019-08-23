@@ -12,3 +12,6 @@ us by filing a ticket in the
 See the
 [development wiki](https://github.com/opentechstrategies/torque/wiki)
 for evaluation notes on various plugins we're considering using.
+
+See the [ansible install guide](ansible/INSTALL.md) for installation
+instructions.

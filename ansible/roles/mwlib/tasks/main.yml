@@ -1,0 +1,54 @@
+---
+
+- name: Add php repository - Ubuntu
+  become: true
+  apt_repository:
+    repo: ppa:malteworld/ppa
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install prerequisites
+  become: true
+  apt:
+    name: "{{ item }}"
+    update_cache: no
+    state: present
+  loop:
+    - pdftk
+    - python-pip
+    - supervisor
+
+- name: Setup installation directory
+  file:
+    path: "{{ mwlib_install_directory }}"
+    state: directory
+
+- name: Install virtualenv
+  become: true
+  pip:
+    name: virtualenv
+
+- name: Install mwlib via pip
+  pip:
+    virtualenv: "{{ mwlib_install_directory }}"
+    name:
+      - mwlib
+      - mwlib.rl
+      - pyfribidi
+    chdir: "{{ mwlib_install_directory }}"
+
+- name: Create Cache Directory
+  file:
+    path: "{{ mwlib_install_directory }}/cache/"
+    state: directory
+
+- name: Install mwlib supervisor
+  become: true
+  template:
+    src: supervisor-mwlib.conf.j2
+    dest: /etc/supervisor/conf.d/mwlib.conf
+
+- name: Restart supervisor for mwlib
+  become: true
+  supervisorctl:
+    name: 'mwlib:'
+    state: restarted
