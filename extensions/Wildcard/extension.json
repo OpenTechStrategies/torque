@@ -1,0 +1,42 @@
+{
+	"name": "Wildcard",
+	"version": "0.0.1",
+	"author": [
+		"Open Tech Strategies"
+	],
+	"license-name": "GPL-2.0-or-later",
+	"url": "https://github.com/OpenTechStrategies/torque",
+	"descriptionmsg": "Specialized Extension to choose Wildcard pages for purposes of voting",
+	"type": "specialpages",
+	"requires": {
+		"MediaWiki": ">= 1.31.0"
+	},
+	"SpecialPages": {
+		"Wildcard": "Wildcard"
+	},
+	"AutoloadClasses": {
+		"Wildcard": "includes/specials/Wildcard.php",
+    "WildcardHooks": "includes/WildcardHooks.php",
+    "WildcardGlobalTemplate": "includes/templates/WildcardGlobalTemplate.php",
+    "WildcardSession": "includes/WildcardSession.php"
+	},
+	"ResourceModules": {
+		"ext.comments.css": {
+			"styles": "resources/css/Wildcard.css"
+		},
+		"ext.comments.js": {
+			"scripts": "resources/js/Wildcard.js",
+			"dependencies": [ "mediawiki.api" ]
+		}
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "",
+		"remoteExtPath": "Comments"
+	},
+	"Hooks": {
+		"LoadExtensionSchemaUpdates": "WildcardHooks::onLoadExtensionSchemaUpdates",
+    "SiteNoticeAfter": "WildcardHooks::siteNoticeAfter",
+    "SidebarBeforeOutput": "WildcardHooks::onSidebarBeforeOutput"
+	},
+	"manifest_version": 1
+}
