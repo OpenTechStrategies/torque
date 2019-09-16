@@ -194,6 +194,28 @@
 - name: Create csv2wiki user
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --bot --force --dbuser=wikiuser --dbpass=\"{{ db_password }}\" \"{{ mediawiki_mwlib_username }}\" \"{{ mediawiki_mwlib_password }}\""
 
+- name: Create board group
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: $wgGroupPermissions['board']['read'] = true;
+
+# This is a little hairy, but figuring out how to get stdin from a file rather than
+# from the yaml here proved challenging.  So for now, we keep it in the yaml.
+# Another option is to put it in a file, transfer that file over, do a command
+# that does something like "< miscfile" and then remove that file as cleanup.
+- name: Add board group css
+  tags: testing
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-board.css"
+  args:
+    stdin: |
+      #p-views { display:none!important; }
+      #p-cactions { display:none!important; }
+      #p-namespaces { display:none!important; }
+      #pt-mytalk { display:none!important; }
+      #pt-watchlist { display:none!important; }
+      #pt-mycontris { display:none!important; }
+      .mw-editsection { display:none!important; }
+
 # Handle Apache changes
 - name: Symlink to webserver directory
   become: true
