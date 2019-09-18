@@ -94,11 +94,6 @@
 		return 'view';
 	}
 
-	// Expose public methods
-	mw.page.favorite = {
-		updateFavoriteLink: updateFavoriteLink
-	};
-
 	$( function () {
 		var $links = $( '.mw-favoritelink a, a.mw-favoritelink, ' +
 			'#ca-favorite a, #ca-unfavorite a, #mw-unfavorite-link1, ' +
