@@ -23,7 +23,7 @@ class Favorites {
 		$mode = $this->inFavorites ( $ns, $titleKey ) ? 'unfavorite' : 'favorite';
 		if ($wgUseIconFavorite) {
 			
-			$class = 'icon ';
+			$class = 'favorite-icon icon ';
 			$place = 'views';
 			$text = '';
 		} else {
