@@ -38,7 +38,6 @@ class ViewFavorites {
 	private $request;
 	private $lang;
 
-
 	function __construct($context) {
 		$this->context = $context;
 		$this->out = $this->context->getOutput();
@@ -90,30 +89,13 @@ class ViewFavorites {
 
 		$this->out->setPageTitle ( wfMessage ( 'favoritelist' ) );
 
-		$sub = wfMessage ( 'favoritelistfor', $this->user->getName () )->parse ();
-		$sub .= '<br />' . FavoritelistEditor::buildTools ();
-		$this->out->setSubtitle ( $sub );
-
-		if (($mode = FavoritelistEditor::getMode ( $this->request, $par )) !== false) {
-			$editor = new FavoritelistEditor ();
-			$editor->execute ( $this->user, $this->out, $this->request, $mode );
-			return;
-		}
-
-		$this->viewFavList ( $this->user, $this->out, $this->request, $mode );
+		$this->viewFavList ( $this->user, $this->out, $this->request );
 	}
-	private function viewFavList($user, $output, $request, $mode) {
+	private function viewFavList($user, $output, $request) {
 
 		$uid = $this->user->getId ();
 		$output->setPageTitle ( wfMessage ( 'favoritelist' ) );
 
-		if ($request->wasPosted () && $this->checkToken ( $request, $this->user )) {
-			$titles = $this->extractTitles ( $request->getArray ( 'titles' ) );
-			$this->unfavoriteTitles ( $titles, $user );
-			$user->invalidateCache ();
-			$output->addHTML ( wfMessage ( 'favoritelistedit-normal-done', $GLOBALS ['wgLang']->formatNum ( count ( $titles ) ) )->parse () );
-			$this->showTitles ( $titles, $output );
-		}
 		$this->showNormalForm ( $output, $user );
 
 		$dbr = wfGetDB ( DB_REPLICA, 'favoritelist' );
@@ -302,104 +284,30 @@ class ViewFavorites {
 
 		if (($count = $this->countFavoritelist ( $user )) > 0) {
 			$self = SpecialPage::getTitleFor ( 'Favoritelist' );
-			$form = Xml::openElement ( 'form', array (
-					'method' => 'post',
-					'action' => $self->getLocalUrl ( array (
-							'action' => 'edit'
-					) )
-			) );
-			$form .= Html::hidden ( 'token', $this->user->getEditToken ( 'favorite' ) );
-			$form .= $this->buildRemoveList ( $user );
-			$form .= '</fieldset></form>';
-			$output->addHTML ( $form );
+			$output->addHTML ( $this->buildRemoveList ( $user ) );
 		}
 	}
 
-	/**
-	 * Build the part of the standard favoritelist editing form with the actual
-	 * title selection checkboxes and stuff.
-	 * Also generates a table of
-	 * contents if there's more than one heading.
-	 *
-	 * @param $user User
-	 */
 	private function buildRemoveList($user) {
 		$list = "";
-		$toc = Linker::tocIndent ();
 		$tocLength = 0;
 		foreach ( $this->getFavoritelistInfo ( $user ) as $namespace => $pages ) {
 			$tocLength ++;
-			$heading = htmlspecialchars ( $this->getNamespaceHeading ( $namespace ) );
 			$anchor = "editfavoritelist-ns" . $namespace;
-
-			$list .= Linker::makeHeadLine ( 2, ">", $anchor, $heading, "" );
-			$toc .= Linker::tocLine ( $anchor, $heading, $tocLength, 1 ) . Linker::tocLineEnd ();
 
 			$list .= "<ul>\n";
 			foreach ( $pages as $dbkey => $redirect ) {
 				$title = Title::makeTitleSafe ( $namespace, $dbkey );
-				$list .= $this->buildRemoveLine ( $title, $redirect );
+				$list .= $this->buildRemoveLine ( $title );
 			}
 			$list .= "</ul>\n";
-		}
-		// ISSUE: omit the TOC if the total number of titles is low?
-		if ($tocLength > 10) {
-			$list = Linker::tocList ( $toc ) . $list;
 		}
 
 		return $list;
 	}
 
-	/**
-	 * Get the correct "heading" for a namespace
-	 *
-	 * @param $namespace int
-	 * @return string
-	 */
-	private function getNamespaceHeading($namespace) {
-		return $namespace == NS_MAIN ? wfMessage ( 'blanknamespace' )->text () : htmlspecialchars ( $GLOBALS ['wgContLang']->getFormattedNsText ( $namespace ) );
-	}
-
-	/**
-	 * Build a single list item containing a check box selecting a title
-	 * and a link to that title, with various additional bits
-	 *
-	 * @param $title Title
-	 * @param $redirect bool
-	 * @return string
-	 */
-	private function buildRemoveLine($title, $redirect) {
-
-		// In case the user adds something unusual to their list using the raw editor
-		// We moved the Tools array completely into the "if( $title->exists() )" section.
-		$showlinks = false;
+	private function buildRemoveLine($title) {
 		$link = Linker::link ( $title );
-		if ($redirect)
-			$link = '<span class="favoritelistredir">' . $link . '</span>';
-
-		if ($title->exists ()) {
-			$showlinks = true;
-			if ( $title->canHaveTalkPage() ) {
-				$tools [] = Linker::link ( $title->getTalkPage (), wfMessage ( 'talkpagelinktext' )->text () );
-			}
-			$tools [] = Linker::link ( $title, wfMessage ( 'history_short' )->text (), array (), array (
-					'action' => 'history'
-			), array (
-					'known',
-					'noclasses'
-			) );
-		}
-		if ($title->getNamespace () == NS_USER && ! $title->isSubpage ()) {
-			$tools [] = Linker::link ( SpecialPage::getTitleFor ( 'Contributions', $title->getText () ), wfMessage ( 'contributions' )->text (), array (), array (), array (
-					'known',
-					'noclasses'
-			) );
-		}
-
-		if ($showlinks) {
-			return "<li>" . $link . " (" . $this->lang->pipeList ( $tools ) . ")" . "</li>\n";
-		} else {
-			return "<li>" . $link . "</li>\n";
-		}
+		return "<li>" . $link . "</li>\n";
 	}
 }
