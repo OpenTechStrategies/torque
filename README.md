@@ -16,5 +16,22 @@ for evaluation notes on various plugins we're considering using.
 See the [ansible install guide](ansible/INSTALL.md) for installation
 instructions.
 
+# Extensions
+
+## Wildcard
+
 Look in [the wildcard extension](extensions/Wildcard/) for
-information about the custom mediawiki extension.
+information.
+
+## Favorites
+
+This extension was forked from
+[the main mediawiki extension](https://www.mediawiki.org/wiki/Extension:Favorites)
+and then updated to have uses more specific to the needs of torque.  Those include,
+but aren't limited to:
+
+* Changing some looking and feel
+* Removing a lot of the uneeded functionality, especially in the Special pages
+* Updating how the extension is loaded
+* Removing some of the configuration because it's unneeded
+* Removing the parser tag
