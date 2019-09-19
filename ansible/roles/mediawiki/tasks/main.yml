@@ -110,6 +110,11 @@
     src: thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
+- name: Install Wildcard
+  copy:
+    src: "{{ playbook_dir }}/../extensions/Wildcard"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
 - name: Create Wiki
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=wikiuser --dbpass=\"{{ db_password }}\" --dbname=lfc --scriptpath=\"/lfc\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"lfc\" \"admin\""
   args:
@@ -132,6 +137,11 @@
       $wgEnableApi = true;
       $wgCollectionFormats = array( 'rl' => 'PDF',);
       $wgCollectionDisableDownloadSection = false;
+
+- name: Enable Wildcard
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: "wfLoadExtension('Wildcard');"
 
 - name: Create Upload Directory
   become: true
