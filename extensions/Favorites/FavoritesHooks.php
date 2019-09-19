@@ -26,25 +26,6 @@ class FavoritesHooks {
 		$out->addModules( 'ext.favorites.style' );
 	}
 	
-	public static function onParserFirstCallInit(Parser &$parser) {
-	
-		$parser->setHook( 'favorites', array( __CLASS__, 'renderFavorites' ) );
-	
-		return true;
-	}
-
-	public static function renderFavorites( $input, $argv, $parser ) {
-		# The parser function itself
-		# The input parameters are wikitext with templates expanded
-		# The output should be wikitext too
-		//$output = "Parser Output goes here.";
-	
-		$favParse = new FavParser();
-		$output = $favParse->wfSpecialFavoritelist( $argv, $parser );
-		$parser->disableCache();
-		return $output;
-	}
-	
 	public static function onLoadExtensionSchemaUpdates( $updater = null ) {
 		if ( $updater === null ) { // <= 1.16 support
 			global $wgExtNewTables, $wgExtModifiedFields;

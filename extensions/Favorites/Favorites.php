@@ -83,7 +83,6 @@ $wgAutoloadClasses['Favorites'] = $dir . 'Favorites_body.php';
 $wgAutoloadClasses['FavoriteAction'] = $dir . 'FavoritesActions.php';
 $wgAutoloadClasses['SpecialFavoritelist'] = $dir . 'SpecialFavoritelist.php';
 $wgAutoloadClasses['ViewFavorites'] = $dir . 'SpecialFavoritelist.php';
-$wgAutoloadClasses['FavParser'] =  $dir . 'FavParser.php';
 $wgAutoloadClasses['FavoritesHooks'] = $dir . 'FavoritesHooks.php';
 
 // API
@@ -97,7 +96,6 @@ $wgHooks['UnknownAction'][] = 'FavoritesHooks::onUnknownAction';
 //$wgHooks['UnknownAction'][] = 'favActions';
 $wgHooks['BeforePageDisplay'][] = 'FavoritesHooks::onBeforePageDisplay';
 //$wgHooks['BeforePageDisplay'][] = 'onBeforePageDisplay';
-$wgHooks['ParserFirstCallInit'][] = 'FavoritesHooks::onParserFirstCallInit';
 //$wgHooks['ParserFirstCallInit'][] = 'ParseFavorites';
 $wgHooks['TitleMoveComplete'][] = 'FavoritesHooks::onTitleMoveComplete';
 $wgHooks['ArticleDeleteComplete'][] = 'FavoritesHooks::onArticleDeleteComplete';
