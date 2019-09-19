@@ -2,9 +2,6 @@
 class Favorites {
 	var $user;
 	function favoritesLinks(&$sktemplate, &$links) {
-		global $wgUseIconFavorite;
-		// $context = $sktemplate->getContext();
-		// $wgUseIconFavorite = true;
 		$this->user = $user = $sktemplate->getUser ();
 		if ($user->isAnon ()) {
 			// do nothing
@@ -21,16 +18,10 @@ class Favorites {
 			return false;
 		}
 		$mode = $this->inFavorites ( $ns, $titleKey ) ? 'unfavorite' : 'favorite';
-		if ($wgUseIconFavorite) {
-			
-			$class = 'favorite-icon icon ';
-			$place = 'views';
-			$text = '';
-		} else {
-			$class = '';
-			$text = $sktemplate->msg ( $mode )->text ();
-			$place = 'actions';
-		}
+
+		$class = 'favorite-icon icon ';
+		$place = 'views';
+		$text = '';
 		
 		$token = $this->getFavoriteToken ( $title, $user, $mode );
 		
