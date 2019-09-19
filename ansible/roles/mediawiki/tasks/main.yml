@@ -115,6 +115,11 @@
     src: "{{ playbook_dir }}/../extensions/Wildcard"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
+- name: Install Favorites
+  copy:
+    src: "{{ playbook_dir }}/../extensions/Favorites"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
 - name: Create Wiki
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=wikiuser --dbpass=\"{{ db_password }}\" --dbname=lfc --scriptpath=\"/lfc\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"lfc\" \"admin\""
   args:
@@ -142,6 +147,11 @@
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     line: "wfLoadExtension('Wildcard');"
+
+- name: Enable Favorites
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: "require_once \"$IP/extensions/Favorites/Favorites.php\"; "
 
 - name: Create Upload Directory
   become: true
@@ -218,13 +228,18 @@
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-board.css"
   args:
     stdin: |
-      #p-views { display:none!important; }
+      #p-views ul li:not(.favorite-icon) { display:none!important; }
       #p-cactions { display:none!important; }
       #p-namespaces { display:none!important; }
       #pt-mytalk { display:none!important; }
       #pt-watchlist { display:none!important; }
       #pt-mycontris { display:none!important; }
       .mw-editsection { display:none!important; }
+
+# This should come near the end to make sure that all the database updates
+# for the extensions get run after the rest of the system is set up.
+- name: Run mediawiki updates
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-board.css"
 
 # Handle Apache changes
 - name: Symlink to webserver directory
