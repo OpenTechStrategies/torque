@@ -2,15 +2,8 @@
 
 class FavoritesHooks {
 	public static function onSkinTemplateNavigation(&$sktemplate, &$links) {
-	
-	
 		$favClass = new Favorites;
 		$favClass->favoritesLinks($sktemplate, $links);
-		//if ( $wgUseAjax && $wgEnableAPI && $wgEnableWriteAPI && $user->isAllowed( 'writeapi' )) {
-		//$sktemplate->getOutput()->addModules( 'ext.favorites' );
-	
-		//}
-	
 	}
 	
 	
