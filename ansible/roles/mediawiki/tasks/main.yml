@@ -224,7 +224,6 @@
 # Another option is to put it in a file, transfer that file over, do a command
 # that does something like "< miscfile" and then remove that file as cleanup.
 - name: Add board group css
-  tags: testing
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-board.css"
   args:
     stdin: |
