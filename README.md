@@ -27,6 +27,19 @@ particular use case can be seen in the
 Look in [the wildcard extension](extensions/Wildcard/) for
 information.
 
+## TeamComments
+
+This extension was forked from
+[the mediawiki Comments extension](https://www.mediawiki.org/wiki/Extension:Comments)
+and then updated to have uses more specific to the needs of torque.  Those include,
+but aren't limited to:
+
+* UI Updates
+* Global on/off switch
+* Viewing authorization
+* Removal of scoring, profile picture, voting, ignoring
+* Adding more nesting
+
 ## Favorites
 
 This extension was forked from
