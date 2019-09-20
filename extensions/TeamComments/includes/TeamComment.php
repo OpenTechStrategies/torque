@@ -470,17 +470,7 @@ class TeamComment extends ContextSource {
 			$teamcomment_class = 'r-message';
 		}
 
-		// Default avatar image, if SocialProfile extension isn't enabled
-		global $wgTeamCommentsDefaultAvatar;
-		$avatarImg = '<img src="' . $wgTeamCommentsDefaultAvatar . '" alt="" border="0" />';
-		// If SocialProfile *is* enabled, then use its wAvatar class to get the avatars for each teamcommenter
-		if ( class_exists( 'wAvatar' ) ) {
-			$avatar = new wAvatar( $this->userID, 'ml' );
-			$avatarImg = $avatar->getAvatarURL() . "\n";
-		}
-
 		$output = "<div id='teamcomment-{$this->id}' class='c-item {$containerClass}'{$style}>" . "\n";
-		$output .= "<div class=\"c-avatar\">{$avatarImg}</div>" . "\n";
 		$output .= '<div class="c-container">' . "\n";
 		$output .= '<div class="c-user">' . "\n";
 		$output .= "{$teamcommentPoster}";

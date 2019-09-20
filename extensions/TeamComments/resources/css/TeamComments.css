@@ -18,18 +18,6 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
 	margin: 0px 0px 15px 0px;
 }
 
-.c-avatar {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-}
-
-.c-avatar img {
-	padding: 3px;
-	border: 1px solid #dcdcdc;
-	background-color: #fff;
-}
-
 .c-container {
 	position: relative;
 	top: 0px;

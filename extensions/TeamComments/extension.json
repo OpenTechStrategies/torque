@@ -107,7 +107,6 @@
 		"ParserGetVariableValueSwitch": "NumberOfTeamComments::onParserGetVariableValueSwitch"
 	},
 	"config": {
-		"TeamCommentsDefaultAvatar": "http://www.shoutwiki.com/w/extensions/SocialProfile/avatars/default_ml.gif",
 		"TeamCommentsSortDescending": false,
 		"TeamCommentsInRecentChanges": false
 	},
