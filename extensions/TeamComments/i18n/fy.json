@@ -1,16 +1,16 @@
 {
-	"@metadata": {
-		"authors": [
-			"Kening Aldgilles",
-			"Robin0van0der0vliet",
-			"Robin van der Vliet"
-		]
-	},
-	"teamcomments-cancel-reply": "Annulearje",
-	"teamcomments-you": "Jo",
-	"teamcomments-time-ago": "$1 lyn",
-	"teamcomments-time-days": "{{PLURAL:$1|ien dei|$1 dagen}}",
-	"teamcomments-time-hours": "{{PLURAL:$1|ien oere|$1 oere}}",
-	"teamcomments-time-minutes": "{{PLURAL:$1|ien minút|$1 minuten}}",
-	"teamcomments-time-seconds": "{{PLURAL:$1|ien sekonde|$1 sekonden}}"
+  "@metadata": {
+    "authors": [
+      "Kening Aldgilles",
+      "Robin0van0der0vliet",
+      "Robin van der Vliet"
+    ]
+  },
+  "teamcomments-cancel-reply": "Annulearje",
+  "teamcomments-you": "Jo",
+  "teamcomments-time-ago": "$1 lyn",
+  "teamcomments-time-days": "{{PLURAL:$1|ien dei|$1 dagen}}",
+  "teamcomments-time-hours": "{{PLURAL:$1|ien oere|$1 oere}}",
+  "teamcomments-time-minutes": "{{PLURAL:$1|ien minút|$1 minuten}}",
+  "teamcomments-time-seconds": "{{PLURAL:$1|ien sekonde|$1 sekonden}}"
 }

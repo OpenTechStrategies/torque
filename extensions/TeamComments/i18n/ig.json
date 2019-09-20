@@ -1,12 +1,12 @@
 {
-	"@metadata": {
-		"authors": [
-			"Ukabia",
-			"Oby Ezeilo"
-		]
-	},
-	"teamcomments-cancel-reply": "Hapụ̀",
-	"action-teamcomment": "tinye ihe ị chere",
-	"action-teamcommentadmin": "onye nlekọta ebe a etinyela ihe ndi o kwuru",
-	"action-teamcomment-delete-own": "hichapu ihe ị kwuru/dere"
+  "@metadata": {
+    "authors": [
+      "Ukabia",
+      "Oby Ezeilo"
+    ]
+  },
+  "teamcomments-cancel-reply": "Hapụ̀",
+  "action-teamcomment": "tinye ihe ị chere",
+  "action-teamcommentadmin": "onye nlekọta ebe a etinyela ihe ndi o kwuru",
+  "action-teamcomment-delete-own": "hichapu ihe ị kwuru/dere"
 }

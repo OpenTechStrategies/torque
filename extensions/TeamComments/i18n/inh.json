@@ -1,8 +1,8 @@
 {
-	"@metadata": {
-		"authors": [
-			"Adam-Yourist"
-		]
-	},
-	"teamcomments-time-days": "{{PLURAL:$1|ди}}"
+  "@metadata": {
+    "authors": [
+      "Adam-Yourist"
+    ]
+  },
+  "teamcomments-time-days": "{{PLURAL:$1|ди}}"
 }

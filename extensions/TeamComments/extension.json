@@ -1,114 +1,114 @@
 {
-	"name": "TeamComments",
-	"version": "4.5.1",
-	"author": [
-		"David Pean",
-		"Misza",
-		"Jack Phoenix",
-		"Adam Carter/UltrasonicNXT",
-		"Samantha Nguyen"
-	],
-	"license-name": "GPL-2.0-or-later",
-	"url": "https://www.mediawiki.org/wiki/Extension:TeamComments",
-	"descriptionmsg": "teamcomments-desc",
-	"type": "parserhook",
-	"requires": {
-		"MediaWiki": ">= 1.31.0"
-	},
-	"GroupPermissions": {
-		"*": {
-			"teamcomment": true
-		},
-		"teamcommentadmin": {
-			"teamcommentadmin": true
-		},
-		"autoconfirmed": {
-			"teamcommentlinks": true
-		}
-	},
-	"AvailableRights": [
-		"teamcomment",
-		"teamcommentadmin",
-		"teamcommentlinks",
-		"teamcomment-delete-own"
-	],
-	"LogTypes": [
-		"teamcomments"
-	],
-	"FilterLogTypes": {
-		"teamcomments": true
-	},
-	"LogActionsHandlers": {
-		"teamcomments/add": "TeamCommentsLogFormatter",
-		"teamcomments/delete": "LogFormatter"
-	},
-	"APIModules": {
-		"teamcommentdelete": "TeamCommentDeleteAPI",
-		"teamcommentlatestid": "TeamCommentLatestIdAPI",
-		"teamcommentlist": "TeamCommentListAPI",
-		"teamcommentsubmit": "TeamCommentSubmitAPI"
-	},
-	"MessagesDirs": {
-		"TeamComments": [
-			"i18n"
-		]
-	},
-	"ExtensionMessagesFiles": {
-		"TeamCommentsMagic": "TeamComments.i18n.magic.php",
-		"NumberOfTeamCommentsMagic": "TeamComments.i18n.magic.php"
-	},
-	"AutoloadClasses": {
-		"TeamComment": "includes/TeamComment.php",
-		"TeamCommentsPage": "includes/TeamCommentsPage.php",
-		"NumberOfTeamComments": "includes/parser/NumberOfTeamComments.php",
-		"DisplayTeamComments": "includes/parser/DisplayTeamComments.php",
-		"TeamCommentFunctions": "includes/TeamCommentFunctions.php",
-		"TeamCommentsLogFormatter": "includes/TeamCommentsLogFormatter.php",
-		"TeamCommentsHooks": "includes/TeamCommentsHooks.php",
-		"TeamCommentDeleteAPI": "includes/api/TeamCommentDeleteAPI.php",
-		"TeamCommentLatestIdAPI": "includes/api/TeamCommentLatestIdAPI.php",
-		"TeamCommentListAPI": "includes/api/TeamCommentListAPI.php",
-		"TeamCommentSubmitAPI": "includes/api/TeamCommentSubmitAPI.php"
-	},
-	"ResourceModules": {
-		"ext.teamcomments.css": {
-			"styles": "resources/css/TeamComments.css",
-			"targets": [
-				"desktop",
-				"mobile"
-			]
-		},
-		"ext.teamcomments.js": {
-			"scripts": "resources/js/TeamComment.js",
-			"dependencies": [ "mediawiki.api" ],
-			"messages": [
-				"teamcomments-loading",
-				"teamcomments-auto-refresher-pause",
-				"teamcomments-auto-refresher-enable",
-				"teamcomments-cancel-reply",
-				"teamcomments-reply-to",
-				"teamcomments-delete-warning"
-			],
-			"targets": [
-				"desktop",
-				"mobile"
-			]
-		}
-	},
-	"ResourceFileModulePaths": {
-		"localBasePath": "",
-		"remoteExtPath": "TeamComments"
-	},
-	"Hooks": {
-		"ParserFirstCallInit": "TeamCommentsHooks::onParserFirstCallInit",
-		"LoadExtensionSchemaUpdates": "TeamCommentsHooks::onLoadExtensionSchemaUpdates",
-		"RenameUserSQL": "TeamCommentsHooks::onRenameUserSQL",
-		"MagicWordwgVariableIDs": "NumberOfTeamComments::onMagicWordwgVariableIDs",
-		"ParserGetVariableValueSwitch": "NumberOfTeamComments::onParserGetVariableValueSwitch"
-	},
-	"config": {
-		"TeamCommentsSortDescending": false,
-		"TeamCommentsInRecentChanges": false
-	},
-	"manifest_version": 1
+  "name": "TeamComments",
+  "version": "4.5.1",
+  "author": [
+    "David Pean",
+    "Misza",
+    "Jack Phoenix",
+    "Adam Carter/UltrasonicNXT",
+    "Samantha Nguyen"
+  ],
+  "license-name": "GPL-2.0-or-later",
+  "url": "https://www.mediawiki.org/wiki/Extension:TeamComments",
+  "descriptionmsg": "teamcomments-desc",
+  "type": "parserhook",
+  "requires": {
+    "MediaWiki": ">= 1.31.0"
+  },
+  "GroupPermissions": {
+    "*": {
+      "teamcomment": true
+    },
+    "teamcommentadmin": {
+      "teamcommentadmin": true
+    },
+    "autoconfirmed": {
+      "teamcommentlinks": true
+    }
+  },
+  "AvailableRights": [
+    "teamcomment",
+    "teamcommentadmin",
+    "teamcommentlinks",
+    "teamcomment-delete-own"
+  ],
+  "LogTypes": [
+    "teamcomments"
+  ],
+  "FilterLogTypes": {
+    "teamcomments": true
+  },
+  "LogActionsHandlers": {
+    "teamcomments/add": "TeamCommentsLogFormatter",
+    "teamcomments/delete": "LogFormatter"
+  },
+  "APIModules": {
+    "teamcommentdelete": "TeamCommentDeleteAPI",
+    "teamcommentlatestid": "TeamCommentLatestIdAPI",
+    "teamcommentlist": "TeamCommentListAPI",
+    "teamcommentsubmit": "TeamCommentSubmitAPI"
+  },
+  "MessagesDirs": {
+    "TeamComments": [
+      "i18n"
+    ]
+  },
+  "ExtensionMessagesFiles": {
+    "TeamCommentsMagic": "TeamComments.i18n.magic.php",
+    "NumberOfTeamCommentsMagic": "TeamComments.i18n.magic.php"
+  },
+  "AutoloadClasses": {
+    "TeamComment": "includes/TeamComment.php",
+    "TeamCommentsPage": "includes/TeamCommentsPage.php",
+    "NumberOfTeamComments": "includes/parser/NumberOfTeamComments.php",
+    "DisplayTeamComments": "includes/parser/DisplayTeamComments.php",
+    "TeamCommentFunctions": "includes/TeamCommentFunctions.php",
+    "TeamCommentsLogFormatter": "includes/TeamCommentsLogFormatter.php",
+    "TeamCommentsHooks": "includes/TeamCommentsHooks.php",
+    "TeamCommentDeleteAPI": "includes/api/TeamCommentDeleteAPI.php",
+    "TeamCommentLatestIdAPI": "includes/api/TeamCommentLatestIdAPI.php",
+    "TeamCommentListAPI": "includes/api/TeamCommentListAPI.php",
+    "TeamCommentSubmitAPI": "includes/api/TeamCommentSubmitAPI.php"
+  },
+  "ResourceModules": {
+    "ext.teamcomments.css": {
+      "styles": "resources/css/TeamComments.css",
+      "targets": [
+        "desktop",
+        "mobile"
+      ]
+    },
+    "ext.teamcomments.js": {
+      "scripts": "resources/js/TeamComment.js",
+      "dependencies": [ "mediawiki.api" ],
+      "messages": [
+        "teamcomments-loading",
+        "teamcomments-auto-refresher-pause",
+        "teamcomments-auto-refresher-enable",
+        "teamcomments-cancel-reply",
+        "teamcomments-reply-to",
+        "teamcomments-delete-warning"
+      ],
+      "targets": [
+        "desktop",
+        "mobile"
+      ]
+    }
+  },
+  "ResourceFileModulePaths": {
+    "localBasePath": "",
+    "remoteExtPath": "TeamComments"
+  },
+  "Hooks": {
+    "ParserFirstCallInit": "TeamCommentsHooks::onParserFirstCallInit",
+    "LoadExtensionSchemaUpdates": "TeamCommentsHooks::onLoadExtensionSchemaUpdates",
+    "RenameUserSQL": "TeamCommentsHooks::onRenameUserSQL",
+    "MagicWordwgVariableIDs": "NumberOfTeamComments::onMagicWordwgVariableIDs",
+    "ParserGetVariableValueSwitch": "NumberOfTeamComments::onParserGetVariableValueSwitch"
+  },
+  "config": {
+    "TeamCommentsSortDescending": false,
+    "TeamCommentsInRecentChanges": false
+  },
+  "manifest_version": 1
 }

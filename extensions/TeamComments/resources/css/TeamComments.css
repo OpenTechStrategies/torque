@@ -1,138 +1,138 @@
 /* CSS styles for TeamComments extension */
 .full {
-	width: 530px;
+  width: 530px;
 }
 
 .reply {
-	margin-left: 70px !important;
-	width: 460px;
+  margin-left: 70px !important;
+  width: 460px;
 }
 
 .c-item {
-	position: relative;
-	border-bottom: 1px solid #dcdcdc;
+  position: relative;
+  border-bottom: 1px solid #dcdcdc;
 /* this works for Monaco, but not for Monobook.
 Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
-	padding: 0px 0px 10px 0px;*/
-	padding: 0px 0px 35px 0px;
-	margin: 0px 0px 15px 0px;
+  padding: 0px 0px 10px 0px;*/
+  padding: 0px 0px 35px 0px;
+  margin: 0px 0px 15px 0px;
 }
 
 .c-container {
-	position: relative;
-	top: 0px;
-	top: 0px;
-	margin: 0px 0px 0px 70px;
+  position: relative;
+  top: 0px;
+  top: 0px;
+  margin: 0px 0px 0px 70px;
 }
 
 .c-user {
-	font-weight: bold;
-	position: relative;
-	margin: 0px 0px 6px 0px;
+  font-weight: bold;
+  position: relative;
+  margin: 0px 0px 6px 0px;
 }
 
 .c-user a {
-	font-size: 14px;
-	text-decoration: none;
+  font-size: 14px;
+  text-decoration: none;
 }
 
 .c-time {
-	font-size: 10px;
-	color: #888;
-	line-height: 11px !important;
-	font-weight: normal !important;
+  font-size: 10px;
+  color: #888;
+  line-height: 11px !important;
+  font-weight: normal !important;
 }
 
 .c-user-level {
-	color: #666;
-	font-size: 11px;
-	margin: 0px 5px 0px 5px;
+  color: #666;
+  font-size: 11px;
+  margin: 0px 5px 0px 5px;
 }
 
 .c-teamcomment {
-	overflow: auto;
+  overflow: auto;
 }
 
 .c-ignored {
-	color: #666;
-	font-size: 11px;
-	padding: 5px 0px 10px 0px;
-	margin: 0px 0px 15px 0px;
-	border-bottom: 1px solid #dcdcdc;
+  color: #666;
+  font-size: 11px;
+  padding: 5px 0px 10px 0px;
+  margin: 0px 0px 15px 0px;
+  border-bottom: 1px solid #dcdcdc;
 }
 
 .c-ignored-links a {
 }
 
 .f-message {
-	width: 460px;
+  width: 460px;
 }
 
 .r-message {
-	width: 360px;
+  width: 360px;
 }
 
 .c-actions {
-	float: right;
-	font-size: 10px;
-	margin: 10px 0px 0px 0px;
+  float: right;
+  font-size: 10px;
+  margin: 10px 0px 0px 0px;
 }
 
 .c-delete a {
-	color: red !important;
+  color: red !important;
 }
 
 .c-form-title {
-	color: #333;
-	font-weight: bold;
-	font-size: 17px;
-	margin: 0px 0px 5px 0px;
+  color: #333;
+  font-weight: bold;
+  font-size: 17px;
+  margin: 0px 0px 5px 0px;
 }
 
 .c-form-message {
-	font-size: 11px;
-	width: 400px;
-	line-height: 13px;
-	color: #666;
-	padding: 5px 0px 10px 0px;
+  font-size: 11px;
+  width: 400px;
+  line-height: 13px;
+  color: #666;
+  padding: 5px 0px 10px 0px;
 }
 
 textarea#teamcomment {
-	width: 530px;
+  width: 530px;
 }
 
 .c-form-button {
-	padding: 10px 0px 0px;
+  padding: 10px 0px 0px;
 }
 
 .c-order {
-	padding: 20px 0px;
+  padding: 20px 0px;
 }
 
 .c-spy {
-	float: left;
-	font-size: 10px;
-	margin: 0px 0px 0px 10px;
+  float: left;
+  font-size: 10px;
+  margin: 0px 0px 0px 10px;
 }
 
 .c-order-select {
-	float: left;
+  float: left;
 }
 
 /* Pager */
 ul.c-pager {
-	clear: both;
-	margin: 0;
+  clear: both;
+  margin: 0;
 }
 
 li.c-pager-item {
-	background-image: none;
-	display: inline;
-	font-size: 14px;
-	list-style-type: none;
-	padding: 0.5em;
+  background-image: none;
+  display: inline;
+  font-size: 14px;
+  list-style-type: none;
+  padding: 0.5em;
 }
 
 .cod img {
-	margin-bottom: 8px;
+  margin-bottom: 8px;
 }

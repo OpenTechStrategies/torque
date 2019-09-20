@@ -1,11 +1,11 @@
 {
-	"@metadata": {
-		"authors": [
-			"Joachim Mos"
-		]
-	},
-	"teamcomments-teamcomment": "Kommentar",
-	"teamcomments-loading": "Läädt…",
-	"teamcomments-cancel-reply": "Afbreken",
-	"teamcomments-you": "Du"
+  "@metadata": {
+    "authors": [
+      "Joachim Mos"
+    ]
+  },
+  "teamcomments-teamcomment": "Kommentar",
+  "teamcomments-loading": "Läädt…",
+  "teamcomments-cancel-reply": "Afbreken",
+  "teamcomments-you": "Du"
 }

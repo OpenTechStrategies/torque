@@ -1,8 +1,8 @@
 {
-	"@metadata": {
-		"authors": [
-			"Arystanbek"
-		]
-	},
-	"teamcomments-reply-to": "{{GENDER:$2|$1}} дегенге жауап беру"
+  "@metadata": {
+    "authors": [
+      "Arystanbek"
+    ]
+  },
+  "teamcomments-reply-to": "{{GENDER:$2|$1}} дегенге жауап беру"
 }

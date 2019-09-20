@@ -1,8 +1,8 @@
 {
-	"@metadata": {
-		"authors": [
-			"Baba Tabita"
-		]
-	},
-	"teamcomments-time-months": "{{PLURAL:$1|mweeri ʉmudu|myeeri $1}}"
+  "@metadata": {
+    "authors": [
+      "Baba Tabita"
+    ]
+  },
+  "teamcomments-time-months": "{{PLURAL:$1|mweeri ʉmudu|myeeri $1}}"
 }

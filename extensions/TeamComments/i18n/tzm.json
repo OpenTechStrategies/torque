@@ -1,12 +1,12 @@
 {
-	"@metadata": {
-		"authors": [
-			"Tifinaghes"
-		]
-	},
-	"teamcomments-teamcomment": "ⵜⴰⵏⵏⴰⵢⵜ",
-	"teamcomments-you": "ⴽⴻⵢⵢ",
-	"teamcomments-reply": "ⵔⴰⵔ",
-	"teamcomments-post": "ⵔⵏⵓ ⵜⴰⵏⵏⴰⵢⵜ",
-	"teamcomments-submit": "ⵔⵏⵓ ⵜⴰⵏⵏⴰⵢⵜ"
+  "@metadata": {
+    "authors": [
+      "Tifinaghes"
+    ]
+  },
+  "teamcomments-teamcomment": "ⵜⴰⵏⵏⴰⵢⵜ",
+  "teamcomments-you": "ⴽⴻⵢⵢ",
+  "teamcomments-reply": "ⵔⴰⵔ",
+  "teamcomments-post": "ⵔⵏⵓ ⵜⴰⵏⵏⴰⵢⵜ",
+  "teamcomments-submit": "ⵔⵏⵓ ⵜⴰⵏⵏⴰⵢⵜ"
 }
