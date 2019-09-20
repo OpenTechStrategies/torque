@@ -4,12 +4,12 @@
 			"Naudefj"
 		]
 	},
-	"comments-comment": "Opmerking",
-	"comments-voted-label": "Gestem",
-	"comments-loading": "Laai...",
-	"comments-cancel-reply": "Kanselleer",
-	"comments-you": "U",
-	"comments-reply": "Antwoord",
-	"comments-ignore-cancel": "Kanselleer",
-	"comments-time-minutes": "{{PLURAL:$1|$1 minuut|$1 minute}}"
+	"teamcomments-teamcomment": "Opmerking",
+	"teamcomments-voted-label": "Gestem",
+	"teamcomments-loading": "Laai...",
+	"teamcomments-cancel-reply": "Kanselleer",
+	"teamcomments-you": "U",
+	"teamcomments-reply": "Antwoord",
+	"teamcomments-ignore-cancel": "Kanselleer",
+	"teamcomments-time-minutes": "{{PLURAL:$1|$1 minuut|$1 minute}}"
 }

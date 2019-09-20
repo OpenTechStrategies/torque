@@ -4,5 +4,5 @@
 			"Cocu"
 		]
 	},
-	"comments-reply-to": "Svar til {{GENDER:$2|$1}}"
+	"teamcomments-reply-to": "Svar til {{GENDER:$2|$1}}"
 }

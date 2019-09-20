@@ -1,5 +1,5 @@
 {
-	"name": "Comments",
+	"name": "TeamComments",
 	"version": "4.5.1",
 	"author": [
 		"David Pean",
@@ -9,97 +9,97 @@
 		"Samantha Nguyen"
 	],
 	"license-name": "GPL-2.0-or-later",
-	"url": "https://www.mediawiki.org/wiki/Extension:Comments",
-	"descriptionmsg": "comments-desc",
+	"url": "https://www.mediawiki.org/wiki/Extension:TeamComments",
+	"descriptionmsg": "teamcomments-desc",
 	"type": "parserhook",
 	"requires": {
 		"MediaWiki": ">= 1.31.0"
 	},
 	"GroupPermissions": {
 		"*": {
-			"comment": true
+			"teamcomment": true
 		},
-		"commentadmin": {
-			"commentadmin": true
+		"teamcommentadmin": {
+			"teamcommentadmin": true
 		},
 		"autoconfirmed": {
-			"commentlinks": true
+			"teamcommentlinks": true
 		}
 	},
 	"AvailableRights": [
-		"comment",
-		"commentadmin",
-		"commentlinks",
-		"comment-delete-own"
+		"teamcomment",
+		"teamcommentadmin",
+		"teamcommentlinks",
+		"teamcomment-delete-own"
 	],
 	"SpecialPages": {
-		"CommentIgnoreList": "CommentIgnoreList"
+		"TeamCommentIgnoreList": "TeamCommentIgnoreList"
 	},
 	"LogTypes": [
-		"comments"
+		"teamcomments"
 	],
 	"FilterLogTypes": {
-		"comments": true
+		"teamcomments": true
 	},
 	"LogActionsHandlers": {
-		"comments/add": "CommentsLogFormatter",
-		"comments/delete": "LogFormatter"
+		"teamcomments/add": "TeamCommentsLogFormatter",
+		"teamcomments/delete": "LogFormatter"
 	},
 	"APIModules": {
-		"commentblock": "CommentBlockAPI",
-		"commentdelete": "CommentDeleteAPI",
-		"commentlatestid": "CommentLatestIdAPI",
-		"commentlist": "CommentListAPI",
-		"commentsubmit": "CommentSubmitAPI",
-		"commentvote": "CommentVoteAPI"
+		"teamcommentblock": "TeamCommentBlockAPI",
+		"teamcommentdelete": "TeamCommentDeleteAPI",
+		"teamcommentlatestid": "TeamCommentLatestIdAPI",
+		"teamcommentlist": "TeamCommentListAPI",
+		"teamcommentsubmit": "TeamCommentSubmitAPI",
+		"teamcommentvote": "TeamCommentVoteAPI"
 	},
 	"MessagesDirs": {
-		"Comments": [
+		"TeamComments": [
 			"i18n"
 		]
 	},
 	"ExtensionMessagesFiles": {
-		"CommentsAliases": "Comments.i18n.alias.php",
-		"CommentsMagic": "Comments.i18n.magic.php",
-		"NumberOfCommentsMagic": "Comments.i18n.magic.php"
+		"TeamCommentsAliases": "TeamComments.i18n.alias.php",
+		"TeamCommentsMagic": "TeamComments.i18n.magic.php",
+		"NumberOfTeamCommentsMagic": "TeamComments.i18n.magic.php"
 	},
 	"AutoloadClasses": {
-		"Comment": "includes/Comment.php",
-		"CommentsPage": "includes/CommentsPage.php",
-		"NumberOfComments": "includes/parser/NumberOfComments.php",
-		"DisplayComments": "includes/parser/DisplayComments.php",
-		"CommentFunctions": "includes/CommentFunctions.php",
-		"CommentIgnoreList": "includes/specials/CommentIgnoreList.php",
-		"CommentsLogFormatter": "includes/CommentsLogFormatter.php",
-		"CommentsHooks": "includes/CommentsHooks.php",
-		"CommentBlockAPI": "includes/api/CommentBlockAPI.php",
-		"CommentDeleteAPI": "includes/api/CommentDeleteAPI.php",
-		"CommentLatestIdAPI": "includes/api/CommentLatestIdAPI.php",
-		"CommentListAPI": "includes/api/CommentListAPI.php",
-		"CommentSubmitAPI": "includes/api/CommentSubmitAPI.php",
-		"CommentVoteAPI": "includes/api/CommentVoteAPI.php"
+		"TeamComment": "includes/TeamComment.php",
+		"TeamCommentsPage": "includes/TeamCommentsPage.php",
+		"NumberOfTeamComments": "includes/parser/NumberOfTeamComments.php",
+		"DisplayTeamComments": "includes/parser/DisplayTeamComments.php",
+		"TeamCommentFunctions": "includes/TeamCommentFunctions.php",
+		"TeamCommentIgnoreList": "includes/specials/TeamCommentIgnoreList.php",
+		"TeamCommentsLogFormatter": "includes/TeamCommentsLogFormatter.php",
+		"TeamCommentsHooks": "includes/TeamCommentsHooks.php",
+		"TeamCommentBlockAPI": "includes/api/TeamCommentBlockAPI.php",
+		"TeamCommentDeleteAPI": "includes/api/TeamCommentDeleteAPI.php",
+		"TeamCommentLatestIdAPI": "includes/api/TeamCommentLatestIdAPI.php",
+		"TeamCommentListAPI": "includes/api/TeamCommentListAPI.php",
+		"TeamCommentSubmitAPI": "includes/api/TeamCommentSubmitAPI.php",
+		"TeamCommentVoteAPI": "includes/api/TeamCommentVoteAPI.php"
 	},
 	"ResourceModules": {
-		"ext.comments.css": {
-			"styles": "resources/css/Comments.css",
+		"ext.teamcomments.css": {
+			"styles": "resources/css/TeamComments.css",
 			"targets": [
 				"desktop",
 				"mobile"
 			]
 		},
-		"ext.comments.js": {
-			"scripts": "resources/js/Comment.js",
+		"ext.teamcomments.js": {
+			"scripts": "resources/js/TeamComment.js",
 			"dependencies": [ "mediawiki.api" ],
 			"messages": [
-				"comments-voted-label",
-				"comments-loading",
-				"comments-auto-refresher-pause",
-				"comments-auto-refresher-enable",
-				"comments-cancel-reply",
-				"comments-reply-to",
-				"comments-block-warning-anon",
-				"comments-block-warning-user",
-				"comments-delete-warning"
+				"teamcomments-voted-label",
+				"teamcomments-loading",
+				"teamcomments-auto-refresher-pause",
+				"teamcomments-auto-refresher-enable",
+				"teamcomments-cancel-reply",
+				"teamcomments-reply-to",
+				"teamcomments-block-warning-anon",
+				"teamcomments-block-warning-user",
+				"teamcomments-delete-warning"
 			],
 			"targets": [
 				"desktop",
@@ -109,19 +109,19 @@
 	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "",
-		"remoteExtPath": "Comments"
+		"remoteExtPath": "TeamComments"
 	},
 	"Hooks": {
-		"ParserFirstCallInit": "CommentsHooks::onParserFirstCallInit",
-		"LoadExtensionSchemaUpdates": "CommentsHooks::onLoadExtensionSchemaUpdates",
-		"RenameUserSQL": "CommentsHooks::onRenameUserSQL",
-		"MagicWordwgVariableIDs": "NumberOfComments::onMagicWordwgVariableIDs",
-		"ParserGetVariableValueSwitch": "NumberOfComments::onParserGetVariableValueSwitch"
+		"ParserFirstCallInit": "TeamCommentsHooks::onParserFirstCallInit",
+		"LoadExtensionSchemaUpdates": "TeamCommentsHooks::onLoadExtensionSchemaUpdates",
+		"RenameUserSQL": "TeamCommentsHooks::onRenameUserSQL",
+		"MagicWordwgVariableIDs": "NumberOfTeamComments::onMagicWordwgVariableIDs",
+		"ParserGetVariableValueSwitch": "NumberOfTeamComments::onParserGetVariableValueSwitch"
 	},
 	"config": {
-		"CommentsDefaultAvatar": "http://www.shoutwiki.com/w/extensions/SocialProfile/avatars/default_ml.gif",
-		"CommentsSortDescending": false,
-		"CommentsInRecentChanges": false
+		"TeamCommentsDefaultAvatar": "http://www.shoutwiki.com/w/extensions/SocialProfile/avatars/default_ml.gif",
+		"TeamCommentsSortDescending": false,
+		"TeamCommentsInRecentChanges": false
 	},
 	"manifest_version": 1
 }

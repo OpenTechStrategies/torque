@@ -6,12 +6,12 @@
 			"Robin van der Vliet"
 		]
 	},
-	"comments-cancel-reply": "Annulearje",
-	"comments-you": "Jo",
-	"comments-ignore-cancel": "Annulearje",
-	"comments-time-ago": "$1 lyn",
-	"comments-time-days": "{{PLURAL:$1|ien dei|$1 dagen}}",
-	"comments-time-hours": "{{PLURAL:$1|ien oere|$1 oere}}",
-	"comments-time-minutes": "{{PLURAL:$1|ien minút|$1 minuten}}",
-	"comments-time-seconds": "{{PLURAL:$1|ien sekonde|$1 sekonden}}"
+	"teamcomments-cancel-reply": "Annulearje",
+	"teamcomments-you": "Jo",
+	"teamcomments-ignore-cancel": "Annulearje",
+	"teamcomments-time-ago": "$1 lyn",
+	"teamcomments-time-days": "{{PLURAL:$1|ien dei|$1 dagen}}",
+	"teamcomments-time-hours": "{{PLURAL:$1|ien oere|$1 oere}}",
+	"teamcomments-time-minutes": "{{PLURAL:$1|ien minút|$1 minuten}}",
+	"teamcomments-time-seconds": "{{PLURAL:$1|ien sekonde|$1 sekonden}}"
 }

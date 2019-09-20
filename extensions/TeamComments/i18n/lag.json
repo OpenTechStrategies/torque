@@ -4,5 +4,5 @@
 			"Baba Tabita"
 		]
 	},
-	"comments-time-months": "{{PLURAL:$1|mweeri ʉmudu|myeeri $1}}"
+	"teamcomments-time-months": "{{PLURAL:$1|mweeri ʉmudu|myeeri $1}}"
 }

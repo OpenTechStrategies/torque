@@ -1,19 +1,19 @@
 <?php
 
-class CommentListAPI extends ApiBase {
+class TeamCommentListAPI extends ApiBase {
 
 	public function execute() {
-		$commentsPage = new CommentsPage( $this->getMain()->getVal( 'pageID' ), RequestContext::getMain() );
-		$commentsPage->orderBy = $this->getMain()->getVal( 'order' );
-		$commentsPage->currentPagerPage = $this->getMain()->getVal( 'pagerPage' );
+		$teamcommentsPage = new TeamCommentsPage( $this->getMain()->getVal( 'pageID' ), RequestContext::getMain() );
+		$teamcommentsPage->orderBy = $this->getMain()->getVal( 'order' );
+		$teamcommentsPage->currentPagerPage = $this->getMain()->getVal( 'pagerPage' );
 
 		$output = '';
 		if ( $this->getMain()->getVal( 'showForm' ) ) {
-			$output .= $commentsPage->displayOrderForm();
+			$output .= $teamcommentsPage->displayOrderForm();
 		}
-		$output .= $commentsPage->display();
+		$output .= $teamcommentsPage->display();
 		if ( $this->getMain()->getVal( 'showForm' ) ) {
-			$output .= $commentsPage->displayForm();
+			$output .= $teamcommentsPage->displayForm();
 		}
 
 		$result = $this->getResult();

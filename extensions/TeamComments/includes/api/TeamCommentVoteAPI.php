@@ -1,25 +1,25 @@
 <?php
 
-class CommentVoteAPI extends ApiBase {
+class TeamCommentVoteAPI extends ApiBase {
 
 	public function execute() {
 		$user = $this->getUser();
 		// Blocked users cannot vote, obviously, and neither can those users without the necessary privileges
 		if (
 			$user->isBlocked() ||
-			!$user->isAllowed( 'comment' ) ||
+			!$user->isAllowed( 'teamcomment' ) ||
 			wfReadOnly()
 		) {
 			return '';
 		}
 
-		$comment = Comment::newFromID( $this->getMain()->getVal( 'commentID' ) );
+		$teamcomment = TeamComment::newFromID( $this->getMain()->getVal( 'teamcommentID' ) );
 		$voteValue = $this->getMain()->getVal( 'voteValue' );
 
-		if ( $comment && is_numeric( $voteValue ) ) {
-			$comment->vote( $voteValue );
+		if ( $teamcomment && is_numeric( $voteValue ) ) {
+			$teamcomment->vote( $voteValue );
 
-			$html = $comment->getScoreHTML();
+			$html = $teamcomment->getScoreHTML();
 			$html = htmlspecialchars( $html );
 
 			if ( class_exists( 'UserStatsTrack' ) ) {
@@ -27,20 +27,20 @@ class CommentVoteAPI extends ApiBase {
 
 				// Must update stats for user doing the voting
 				if ( $voteValue == 1 ) {
-					$stats->incStatField( 'comment_give_plus' );
+					$stats->incStatField( 'teamcomment_give_plus' );
 				}
 				if ( $voteValue == -1 ) {
-					$stats->incStatField( 'comment_give_neg' );
+					$stats->incStatField( 'teamcomment_give_neg' );
 				}
 
 				// Also must update the stats for user receiving the vote
-				$stats_comment_owner = new UserStatsTrack( $comment->userID, $comment->username );
-				$stats_comment_owner->updateCommentScoreRec( $voteValue );
+				$stats_teamcomment_owner = new UserStatsTrack( $teamcomment->userID, $teamcomment->username );
+				$stats_teamcomment_owner->updateTeamCommentScoreRec( $voteValue );
 
-				$stats_comment_owner->updateTotalPoints();
+				$stats_teamcomment_owner->updateTotalPoints();
 				if ( $voteValue === 1 ) {
-					$stats_comment_owner->updateWeeklyPoints( $stats_comment_owner->point_values['comment_plus'] );
-					$stats_comment_owner->updateMonthlyPoints( $stats_comment_owner->point_values['comment_plus'] );
+					$stats_teamcomment_owner->updateWeeklyPoints( $stats_teamcomment_owner->point_values['teamcomment_plus'] );
+					$stats_teamcomment_owner->updateMonthlyPoints( $stats_teamcomment_owner->point_values['teamcomment_plus'] );
 				}
 			}
 
@@ -60,7 +60,7 @@ class CommentVoteAPI extends ApiBase {
 
 	public function getAllowedParams() {
 		return [
-			'commentID' => [
+			'teamcommentID' => [
 				ApiBase::PARAM_REQUIRED => true,
 				ApiBase::PARAM_TYPE => 'integer'
 			],

@@ -1,4 +1,4 @@
-/* CSS styles for Comments extension */
+/* CSS styles for TeamComments extension */
 .full {
 	width: 530px;
 }
@@ -61,7 +61,7 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
 	margin: 0px 5px 0px 5px;
 }
 
-.c-comment {
+.c-teamcomment {
 	overflow: auto;
 }
 
@@ -128,7 +128,7 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
 	padding: 5px 0px 10px 0px;
 }
 
-textarea#comment {
+textarea#teamcomment {
 	width: 530px;
 }
 

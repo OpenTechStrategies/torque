@@ -1,17 +1,17 @@
 <?php
 /**
- * A special page for displaying the list of users whose comments you're
+ * A special page for displaying the list of users whose teamcomments you're
  * ignoring.
  * @file
  * @ingroup Extensions
  */
-class CommentIgnoreList extends SpecialPage {
+class TeamCommentIgnoreList extends SpecialPage {
 
 	/**
 	 * Constructor -- set up the new special page
 	 */
 	public function __construct() {
-		parent::__construct( 'CommentIgnoreList' );
+		parent::__construct( 'TeamCommentIgnoreList' );
 	}
 
 	public function doesWrites() {
@@ -41,20 +41,20 @@ class CommentIgnoreList extends SpecialPage {
 
 		/**
 		 * Redirect anonymous users to Login Page
-		 * It will automatically return them to the CommentIgnoreList page
+		 * It will automatically return them to the TeamCommentIgnoreList page
 		 */
 		if ( $user->getId() == 0 && $user_name == '' ) {
 			$loginPage = SpecialPage::getTitleFor( 'Userlogin' );
-			$out->redirect( $loginPage->getLocalURL( 'returnto=Special:CommentIgnoreList' ) );
+			$out->redirect( $loginPage->getLocalURL( 'returnto=Special:TeamCommentIgnoreList' ) );
 			return;
 		}
 
-		$out->setPageTitle( $this->msg( 'comments-ignore-title' )->text() );
+		$out->setPageTitle( $this->msg( 'teamcomments-ignore-title' )->text() );
 
 		$output = ''; // Prevent E_NOTICE
 
 		if ( $user_name == '' ) {
-			$output .= $this->displayCommentBlockList();
+			$output .= $this->displayTeamCommentBlockList();
 		} else {
 			if ( $request->wasPosted() ) {
 				// Check for cross-site request forgeries (CSRF)
@@ -64,20 +64,20 @@ class CommentIgnoreList extends SpecialPage {
 				}
 				$user_name = htmlspecialchars_decode( $user_name );
 				$user_id = User::idFromName( $user_name );
-				// Anons can be comment-blocked, but idFromName returns nothing
+				// Anons can be teamcomment-blocked, but idFromName returns nothing
 				// for an anon, so...
 				if ( !$user_id ) {
 					$user_id = 0;
 				}
 
-				CommentFunctions::deleteBlock( $user->getId(), $user_id );
+				TeamCommentFunctions::deleteBlock( $user->getId(), $user_id );
 				if ( $user_id && class_exists( 'UserStatsTrack' ) ) {
 					$stats = new UserStatsTrack( $user_id, $user_name );
-					$stats->decStatField( 'comment_ignored' );
+					$stats->decStatField( 'teamcomment_ignored' );
 				}
-				$output .= $this->displayCommentBlockList();
+				$output .= $this->displayTeamCommentBlockList();
 			} else {
-				$output .= $this->confirmCommentBlockDelete();
+				$output .= $this->confirmTeamCommentBlockDelete();
 			}
 		}
 
@@ -85,17 +85,17 @@ class CommentIgnoreList extends SpecialPage {
 	}
 
 	/**
-	 * Displays the list of users whose comments you're ignoring.
+	 * Displays the list of users whose teamcomments you're ignoring.
 	 *
 	 * @return string HTML
 	 */
-	function displayCommentBlockList() {
+	function displayTeamCommentBlockList() {
 		$lang = $this->getLanguage();
 		$title = $this->getPageTitle();
 
 		$dbr = wfGetDB( DB_REPLICA );
 		$res = $dbr->select(
-			'Comments_block',
+			'TeamComments_block',
 			[ 'cb_user_name_blocked', 'cb_date' ],
 			[ 'cb_user_id' => $this->getUser()->getId() ],
 			__METHOD__,
@@ -107,7 +107,7 @@ class CommentIgnoreList extends SpecialPage {
 			foreach ( $res as $row ) {
 				$user_title = Title::makeTitle( NS_USER, $row->cb_user_name_blocked );
 				$out .= '<li>' . $this->msg(
-					'comments-ignore-item',
+					'teamcomments-ignore-item',
 					htmlspecialchars( $user_title->getFullURL() ),
 					$user_title->getText(),
 					$lang->timeanddate( $row->cb_date ),
@@ -116,29 +116,29 @@ class CommentIgnoreList extends SpecialPage {
 			}
 			$out .= '</ul>';
 		} else {
-			$out = '<div class="comment_blocked_user">' .
-				$this->msg( 'comments-ignore-no-users' )->text() . '</div>';
+			$out = '<div class="teamcomment_blocked_user">' .
+				$this->msg( 'teamcomments-ignore-no-users' )->text() . '</div>';
 		}
 		return $out;
 	}
 
 	/**
-	 * Asks for a confirmation when you're about to unblock someone's comments.
+	 * Asks for a confirmation when you're about to unblock someone's teamcomments.
 	 *
 	 * @return string HTML
 	 */
-	function confirmCommentBlockDelete() {
+	function confirmTeamCommentBlockDelete() {
 		$user_name = $this->getRequest()->getVal( 'user' );
 
-		$out = '<div class="comment_blocked_user">' .
-				$this->msg( 'comments-ignore-remove-message', $user_name )->parse() .
+		$out = '<div class="teamcomment_blocked_user">' .
+				$this->msg( 'teamcomments-ignore-remove-message', $user_name )->parse() .
 			'</div>
 			<div>
-				<form action="" method="post" name="comment_block">' .
+				<form action="" method="post" name="teamcomment_block">' .
 					Html::hidden( 'user', $user_name ) . "\n" .
 					Html::hidden( 'token', $this->getUser()->getEditToken() ) . "\n" .
-					'<input type="button" class="site-button" value="' . $this->msg( 'comments-ignore-unblock' )->text() . '" onclick="document.comment_block.submit()" />
-					<input type="button" class="site-button" value="' . $this->msg( 'comments-ignore-cancel' )->text() . '" onclick="history.go(-1)" />
+					'<input type="button" class="site-button" value="' . $this->msg( 'teamcomments-ignore-unblock' )->text() . '" onclick="document.teamcomment_block.submit()" />
+					<input type="button" class="site-button" value="' . $this->msg( 'teamcomments-ignore-cancel' )->text() . '" onclick="history.go(-1)" />
 				</form>
 			</div>';
 		return $out;

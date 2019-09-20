@@ -1,59 +1,59 @@
 /**
- * JavaScript for the Comments extension.
+ * JavaScript for the TeamComments extension.
  *
  * @file
  */
 ( function ( $, mw ) {
-	var Comment = {
+	var TeamComment = {
 		submitted: 0,
 		isBusy: false,
 		timer: '', // has to have an initial value...
 		updateDelay: 7000,
-		LatestCommentID: '',
-		CurLatestCommentID: '',
+		LatestTeamCommentID: '',
+		CurLatestTeamCommentID: '',
 		pause: 0,
 
 		/**
-		 * When a comment's author is ignored, "Show Comment" link will be
+		 * When a teamcomment's author is ignored, "Show TeamComment" link will be
 		 * presented to the user.
 		 * If the user clicks on it, this function is called to show the hidden
-		 * comment.
+		 * teamcomment.
 		 *
 		 * @param {string} id
 		 */
 		show: function ( id ) {
 			$( '#ignore-' + id ).hide( 300 );
-			$( '#comment-' + id ).show( 300 );
+			$( '#teamcomment-' + id ).show( 300 );
 		},
 
 		/**
 		 * This function is called whenever a user clicks on the "block" image to
-		 * block another user's comments.
+		 * block another user's teamcomments.
 		 *
-		 * @param {string} username Name of the user whose comments we want to block
-		 * @param {number} userID User ID number of the user whose comments we
+		 * @param {string} username Name of the user whose teamcomments we want to block
+		 * @param {number} userID User ID number of the user whose teamcomments we
 		 *                         want to block (or 0 for anonymous users)
-		 * @param {number} commentID Comment ID number
+		 * @param {number} teamcommentID TeamComment ID number
 		 */
-		blockUser: function ( username, userID, commentID ) {
+		blockUser: function ( username, userID, teamcommentID ) {
 			var message;
 
 			// Display a different message depending on whether we're blocking an
 			// anonymous user or a registered one.
 			if ( !userID || userID === 0 ) {
-				message = mw.msg( 'comments-block-warning-anon' );
+				message = mw.msg( 'teamcomments-block-warning-anon' );
 			} else {
-				message = mw.msg( 'comments-block-warning-user', username );
+				message = mw.msg( 'teamcomments-block-warning-user', username );
 			}
 
 			// eslint-disable-next-line no-alert
 			if ( window.confirm( message ) ) {
 				( new mw.Api() ).postWithToken( 'csrf', {
-					action: 'commentblock',
-					commentID: commentID
+					action: 'teamcommentblock',
+					teamcommentID: teamcommentID
 				} ).done( function ( response ) {
-					if ( response.commentblock.ok ) {
-						$( 'a.comments-block-user[data-comments-user-id=' + userID + ']' )
+					if ( response.teamcommentblock.ok ) {
+						$( 'a.teamcomments-block-user[data-teamcomments-user-id=' + userID + ']' )
 							.parents( '.c-item' ).hide( 300 )
 							.prev().show( 300 );
 					}
@@ -62,40 +62,40 @@
 		},
 
 		/**
-		 * This function is called whenever a user clicks on the "Delete Comment"
-		 * link to delete a comment.
+		 * This function is called whenever a user clicks on the "Delete TeamComment"
+		 * link to delete a teamcomment.
 		 *
-		 * @param {number} commentID Comment ID number
+		 * @param {number} teamcommentID TeamComment ID number
 		 */
-		deleteComment: function ( commentID ) {
+		deleteTeamComment: function ( teamcommentID ) {
 			// eslint-disable-next-line no-alert
-			if ( window.confirm( mw.msg( 'comments-delete-warning' ) ) ) {
+			if ( window.confirm( mw.msg( 'teamcomments-delete-warning' ) ) ) {
 				( new mw.Api() ).postWithToken( 'csrf', {
-					action: 'commentdelete',
-					commentID: commentID
+					action: 'teamcommentdelete',
+					teamcommentID: teamcommentID
 				} ).done( function ( response ) {
-					if ( response.commentdelete.ok ) {
-						$( '#comment-' + commentID ).hide( 2000 );
+					if ( response.teamcommentdelete.ok ) {
+						$( '#teamcomment-' + teamcommentID ).hide( 2000 );
 					}
 				} );
 			}
 		},
 
 		/**
-		 * Vote for a comment.
+		 * Vote for a teamcomment.
 		 *
-		 * @param {number} commentID Comment ID number
+		 * @param {number} teamcommentID TeamComment ID number
 		 * @param {number} voteValue Vote value
 		 */
-		vote: function ( commentID, voteValue ) {
+		vote: function ( teamcommentID, voteValue ) {
 			( new mw.Api() ).postWithToken( 'csrf', {
-				action: 'commentvote',
-				commentID: commentID,
+				action: 'teamcommentvote',
+				teamcommentID: teamcommentID,
 				voteValue: voteValue
 			} ).done( function ( response ) {
-				$( '#comment-' + commentID + ' .c-score' )
-					.html( response.commentvote.html ) // this will still be escaped
-					.html( $( '#comment-' + commentID + ' .c-score' ).text() ); // unescape
+				$( '#teamcomment-' + teamcommentID + ' .c-score' )
+					.html( response.teamcommentvote.html ) // this will still be escaped
+					.html( $( '#teamcomment-' + teamcommentID + ' .c-score' ).text() ); // unescape
 			} );
 		},
 
@@ -103,19 +103,19 @@
 		 * @param {number} pageID Page ID
 		 * @param {string} order Sorting order
 		 * @param {boolean} end Scroll to bottom after?
-		 * @param {number} cpage Comment page number (used for pagination)
+		 * @param {number} cpage TeamComment page number (used for pagination)
 		 */
-		viewComments: function ( pageID, order, end, cpage ) {
-			document.commentForm.cpage.value = cpage;
-			document.getElementById( 'allcomments' ).innerHTML = mw.msg( 'comments-loading' ) + '<br /><br />';
+		viewTeamComments: function ( pageID, order, end, cpage ) {
+			document.teamcommentForm.cpage.value = cpage;
+			document.getElementById( 'allteamcomments' ).innerHTML = mw.msg( 'teamcomments-loading' ) + '<br /><br />';
 
 			$.ajax( {
 				url: mw.config.get( 'wgScriptPath' ) + '/api.php',
-				data: { action: 'commentlist', format: 'json', pageID: pageID, order: order, pagerPage: cpage },
+				data: { action: 'teamcommentlist', format: 'json', pageID: pageID, order: order, pagerPage: cpage },
 				cache: false
 			} ).done( function ( response ) {
-				document.getElementById( 'allcomments' ).innerHTML = response.commentlist.html;
-				Comment.submitted = 0;
+				document.getElementById( 'allteamcomments' ).innerHTML = response.teamcommentlist.html;
+				TeamComment.submitted = 0;
 				if ( end ) {
 					window.location.hash = 'end';
 				}
@@ -123,77 +123,77 @@
 		},
 
 		/**
-		 * Submit a new comment.
+		 * Submit a new teamcomment.
 		 */
 		submit: function () {
-			var pageID, parentID, commentText;
+			var pageID, parentID, teamcommentText;
 
-			if ( Comment.submitted === 0 ) {
-				Comment.submitted = 1;
+			if ( TeamComment.submitted === 0 ) {
+				TeamComment.submitted = 1;
 
-				pageID = document.commentForm.pageId.value;
-				if ( !document.commentForm.commentParentId.value ) {
+				pageID = document.teamcommentForm.pageId.value;
+				if ( !document.teamcommentForm.teamcommentParentId.value ) {
 					parentID = 0;
 				} else {
-					parentID = document.commentForm.commentParentId.value;
+					parentID = document.teamcommentForm.teamcommentParentId.value;
 				}
-				commentText = document.commentForm.commentText.value;
+				teamcommentText = document.teamcommentForm.teamcommentText.value;
 
 				( new mw.Api() ).postWithToken( 'csrf', {
-					action: 'commentsubmit',
+					action: 'teamcommentsubmit',
 					pageID: pageID,
 					parentID: parentID,
-					commentText: commentText
+					teamcommentText: teamcommentText
 				} ).done( function ( response ) {
 					var end;
 
-					if ( response.commentsubmit && response.commentsubmit.ok ) {
-						document.commentForm.commentText.value = '';
+					if ( response.teamcommentsubmit && response.teamcommentsubmit.ok ) {
+						document.teamcommentForm.teamcommentText.value = '';
 						end = 1;
-						if ( mw.config.get( 'wgCommentsSortDescending' ) ) {
+						if ( mw.config.get( 'wgTeamCommentsSortDescending' ) ) {
 							end = 0;
 						}
-						Comment.viewComments( document.commentForm.pageId.value, 0, end, document.commentForm.cpage.value );
+						TeamComment.viewTeamComments( document.teamcommentForm.pageId.value, 0, end, document.teamcommentForm.cpage.value );
 					} else {
 						// eslint-disable-next-line no-alert
 						window.alert( response.error.info );
-						Comment.submitted = 0;
+						TeamComment.submitted = 0;
 					}
 				} );
 
-				Comment.cancelReply();
+				TeamComment.cancelReply();
 			}
 		},
 
 		/**
-		 * Toggle comment auto-refreshing on or off
+		 * Toggle teamcomment auto-refreshing on or off
 		 *
 		 * @param {boolean} status
 		 */
-		toggleLiveComments: function ( status ) {
+		toggleLiveTeamComments: function ( status ) {
 			var msg;
 
 			if ( status ) {
-				Comment.pause = 0;
+				TeamComment.pause = 0;
 			} else {
-				Comment.pause = 1;
+				TeamComment.pause = 1;
 			}
 			if ( status ) {
-				msg = mw.msg( 'comments-auto-refresher-pause' );
+				msg = mw.msg( 'teamcomments-auto-refresher-pause' );
 			} else {
-				msg = mw.msg( 'comments-auto-refresher-enable' );
+				msg = mw.msg( 'teamcomments-auto-refresher-enable' );
 			}
 
 			$( 'body' ).on( 'click', 'div#spy a', function () {
-				Comment.toggleLiveComments( ( status ) ? 0 : 1 );
+				TeamComment.toggleLiveTeamComments( ( status ) ? 0 : 1 );
 			} );
 			$( 'div#spy a' ).css( 'font-size', '10px' ).text( msg );
 
-			if ( !Comment.pause ) {
-				Comment.LatestCommentID = document.commentForm.lastCommentId.value;
-				Comment.timer = setTimeout(
-					function () { Comment.checkUpdate(); },
-					Comment.updateDelay
+			if ( !TeamComment.pause ) {
+				TeamComment.LatestTeamCommentID = document.teamcommentForm.lastTeamCommentId.value;
+				TeamComment.timer = setTimeout(
+					function () { TeamComment.checkUpdate(); },
+					TeamComment.updateDelay
 				);
 			}
 		},
@@ -201,150 +201,150 @@
 		checkUpdate: function () {
 			var pageID;
 
-			if ( Comment.isBusy ) {
+			if ( TeamComment.isBusy ) {
 				return;
 			}
-			pageID = document.commentForm.pageId.value;
+			pageID = document.teamcommentForm.pageId.value;
 
 			$.ajax( {
 				url: mw.config.get( 'wgScriptPath' ) + '/api.php',
-				data: { action: 'commentlatestid', format: 'json', pageID: pageID },
+				data: { action: 'teamcommentlatestid', format: 'json', pageID: pageID },
 				cache: false
 			} ).done( function ( response ) {
-				if ( response.commentlatestid.id ) {
+				if ( response.teamcommentlatestid.id ) {
 					// Get last new ID
-					Comment.CurLatestCommentID = response.commentlatestid.id;
-					if ( Comment.CurLatestCommentID !== Comment.LatestCommentID ) {
-						Comment.viewComments( document.commentForm.pageId.value, 0, 1, document.commentForm.cpage.value );
-						Comment.LatestCommentID = Comment.CurLatestCommentID;
+					TeamComment.CurLatestTeamCommentID = response.teamcommentlatestid.id;
+					if ( TeamComment.CurLatestTeamCommentID !== TeamComment.LatestTeamCommentID ) {
+						TeamComment.viewTeamComments( document.teamcommentForm.pageId.value, 0, 1, document.teamcommentForm.cpage.value );
+						TeamComment.LatestTeamCommentID = TeamComment.CurLatestTeamCommentID;
 					}
 				}
 
-				Comment.isBusy = false;
-				if ( !Comment.pause ) {
-					clearTimeout( Comment.timer );
-					Comment.timer = setTimeout(
-						function () { Comment.checkUpdate(); },
-						Comment.updateDelay
+				TeamComment.isBusy = false;
+				if ( !TeamComment.pause ) {
+					clearTimeout( TeamComment.timer );
+					TeamComment.timer = setTimeout(
+						function () { TeamComment.checkUpdate(); },
+						TeamComment.updateDelay
 					);
 				}
 			} );
 
-			Comment.isBusy = true;
+			TeamComment.isBusy = true;
 			return false;
 		},
 
 		/**
 		 * Show the "reply to user X" form
 		 *
-		 * @param {number} parentId Parent comment (the one we're replying to) ID
+		 * @param {number} parentId Parent teamcomment (the one we're replying to) ID
 		 * @param {string} poster Name of the person whom we're replying to
 		 * @param {string} posterGender Gender of the person whom we're replying to
 		 */
 		reply: function ( parentId, poster, posterGender ) {
 			$( '#replyto' ).text(
-				mw.msg( 'comments-reply-to', poster, posterGender ) + ' ('
+				mw.msg( 'teamcomments-reply-to', poster, posterGender ) + ' ('
 			);
 			$( '<a>', {
-				class: 'comments-cancel-reply-link',
+				class: 'teamcomments-cancel-reply-link',
 				style: 'cursor:pointer',
-				text: mw.msg( 'comments-cancel-reply' )
+				text: mw.msg( 'teamcomments-cancel-reply' )
 			} ).appendTo( '#replyto' );
 			$( '#replyto' ).append( ') <br />' );
 
-			document.commentForm.commentParentId.value = parentId;
+			document.teamcommentForm.teamcommentParentId.value = parentId;
 		},
 
 		cancelReply: function () {
 			document.getElementById( 'replyto' ).innerHTML = '';
-			document.commentForm.commentParentId.value = '';
+			document.teamcommentForm.teamcommentParentId.value = '';
 		}
 	};
 
 	$( function () {
 		// Important note: these are all using $( 'body' ) as the selector
-		// instead of the class/ID/whatever so that they work after viewComments()
-		// has been called (i.e. so that "Delete comment", reply, etc. links
-		// continue working after you've submitted a comment yourself)
+		// instead of the class/ID/whatever so that they work after viewTeamComments()
+		// has been called (i.e. so that "Delete teamcomment", reply, etc. links
+		// continue working after you've submitted a teamcomment yourself)
 
 		// "Sort by X" feature
 		$( 'body' )
 			.on( 'change', 'select[name="TheOrder"]', function () {
-				Comment.viewComments(
+				TeamComment.viewTeamComments(
 					mw.config.get( 'wgArticleId' ), // or we could use $( 'input[name="pid"]' ).val(), too
 					$( this ).val(),
 					0,
-					document.commentForm.cpage.value
+					document.teamcommentForm.cpage.value
 				);
 			} )
 
-			// Comment auto-refresher
+			// TeamComment auto-refresher
 			.on( 'click', 'div#spy a', function () {
-				Comment.toggleLiveComments( 1 );
+				TeamComment.toggleLiveTeamComments( 1 );
 			} )
 
 			// Voting links
-			.on( 'click', 'a#comment-vote-link', function () {
+			.on( 'click', 'a#teamcomment-vote-link', function () {
 				var that = $( this );
-				Comment.vote(
-					that.data( 'comment-id' ),
+				TeamComment.vote(
+					that.data( 'teamcomment-id' ),
 					that.data( 'vote-type' )
 				);
 			} )
 
 			// "Block this user" links
-			.on( 'click', 'a.comments-block-user', function () {
+			.on( 'click', 'a.teamcomments-block-user', function () {
 				var that = $( this );
-				Comment.blockUser(
-					that.data( 'comments-safe-username' ),
-					that.data( 'comments-user-id' ),
-					that.data( 'comments-comment-id' )
+				TeamComment.blockUser(
+					that.data( 'teamcomments-safe-username' ),
+					that.data( 'teamcomments-user-id' ),
+					that.data( 'teamcomments-teamcomment-id' )
 				);
 			} )
 
-			// "Delete Comment" links
-			.on( 'click', 'a.comment-delete-link', function () {
-				Comment.deleteComment( $( this ).data( 'comment-id' ) );
+			// "Delete TeamComment" links
+			.on( 'click', 'a.teamcomment-delete-link', function () {
+				TeamComment.deleteTeamComment( $( this ).data( 'teamcomment-id' ) );
 			} )
 
-			// "Show this hidden comment" -- comments made by people on the user's
+			// "Show this hidden teamcomment" -- teamcomments made by people on the user's
 			// personal block list
 			.on( 'click', 'div.c-ignored-links a', function () {
-				Comment.show( $( this ).data( 'comment-id' ) );
+				TeamComment.show( $( this ).data( 'teamcomment-id' ) );
 			} )
 
 			// Reply links
-			.on( 'click', 'a.comments-reply-to', function () {
-				Comment.reply(
-					$( this ).data( 'comment-id' ),
-					$( this ).data( 'comments-safe-username' ),
-					$( this ).data( 'comments-user-gender' )
+			.on( 'click', 'a.teamcomments-reply-to', function () {
+				TeamComment.reply(
+					$( this ).data( 'teamcomment-id' ),
+					$( this ).data( 'teamcomments-safe-username' ),
+					$( this ).data( 'teamcomments-user-gender' )
 				);
 			} )
 
 			// "Reply to <username>" links
-			.on( 'click', 'a.comments-cancel-reply-link', function () {
-				Comment.cancelReply();
+			.on( 'click', 'a.teamcomments-cancel-reply-link', function () {
+				TeamComment.cancelReply();
 			} )
 
 			// Handle clicks on the submit button (previously this was an onclick attr)
 			.on( 'click', 'div.c-form-button input[type="button"]', function () {
-				Comment.submit();
+				TeamComment.submit();
 			} )
 
 			// Change page
 			.on( 'click', 'li.c-pager-item a.c-pager-link', function () {
 				var ordCrtl, ord = 0,
-					commentsBody = $( this ).parents( 'div.comments-body:first' );
+					teamcommentsBody = $( this ).parents( 'div.teamcomments-body:first' );
 
-				if ( commentsBody.length > 0 ) {
-					ordCrtl = commentsBody.first().find( 'select[name="TheOrder"]:first' );
+				if ( teamcommentsBody.length > 0 ) {
+					ordCrtl = teamcommentsBody.first().find( 'select[name="TheOrder"]:first' );
 					if ( ordCrtl.length > 0 ) {
 						ord = ordCrtl.val();
 					}
 				}
 
-				Comment.viewComments(
+				TeamComment.viewTeamComments(
 					mw.config.get( 'wgArticleId' ), // or we could use $( 'input[name="pid"]' ).val(), too
 					ord,
 					0,

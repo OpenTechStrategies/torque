@@ -1,10 +1,10 @@
 <?php
 
-class DisplayComments {
+class DisplayTeamComments {
 
 	/**
 	 * Callback function for onParserFirstCallInit(),
-	 * displays comments.
+	 * displays teamcomments.
 	 *
 	 * @param $input
 	 * @param array $args
@@ -12,33 +12,33 @@ class DisplayComments {
 	 * @return string HTML
 	 */
 	public static function getParserHandler( $input, $args, $parser ) {
-		global $wgCommentsSortDescending;
+		global $wgTeamCommentsSortDescending;
 
 		$po = $parser->getOutput();
 		$po->updateCacheExpiry( 0 );
-		// If an unclosed <comments> tag is added to a page, the extension will
+		// If an unclosed <teamcomments> tag is added to a page, the extension will
 		// go to an infinite loop...this protects against that condition.
-		$parser->setHook( 'comments', [ __CLASS__, 'nonDisplayComments' ] );
+		$parser->setHook( 'teamcomments', [ __CLASS__, 'nonDisplayTeamComments' ] );
 
 		$title = $parser->getTitle();
-		if ( $title->getArticleID() == 0 && $title->getDBkey() == 'CommentListGet' ) {
-			return self::nonDisplayComments( $input, $args, $parser );
+		if ( $title->getArticleID() == 0 && $title->getDBkey() == 'TeamCommentListGet' ) {
+			return self::nonDisplayTeamComments( $input, $args, $parser );
 		}
 
 		// Add required CSS & JS via ResourceLoader
-		$po->addModuleStyles( 'ext.comments.css' );
-		$po->addModules( 'ext.comments.js' );
-		$po->addJsConfigVars( [ 'wgCommentsSortDescending' => $wgCommentsSortDescending ] );
+		$po->addModuleStyles( 'ext.teamcomments.css' );
+		$po->addModules( 'ext.teamcomments.js' );
+		$po->addJsConfigVars( [ 'wgTeamCommentsSortDescending' => $wgTeamCommentsSortDescending ] );
 
 		// Parse arguments
 		// The preg_match() lines here are to support the old-style way of
 		// adding arguments:
-		// <comments>
+		// <teamcomments>
 		// Allow=Foo,Bar
 		// Voting=Plus
-		// </comments>
+		// </teamcomments>
 		// whereas the normal, standard MediaWiki style, which this extension
-		// also supports is: <comments allow="Foo,Bar" voting="Plus" />
+		// also supports is: <teamcomments allow="Foo,Bar" voting="Plus" />
 		$allow = '';
 		if ( preg_match( '/^\s*Allow\s*=\s*(.*)/mi', $input, $matches ) ) {
 			$allow = htmlspecialchars( $matches[1] );
@@ -56,62 +56,62 @@ class DisplayComments {
 			$voting = $args['voting'];
 		}
 
-		// Create a new context to execute the CommentsPage
+		// Create a new context to execute the TeamCommentsPage
 		$context = new RequestContext;
 		$context->setTitle( $title );
 		$context->setRequest( new FauxRequest() );
 		$context->setUser( $parser->getUser() );
 		$context->setLanguage( $parser->getTargetLanguage() );
 
-		$commentsPage = new CommentsPage( $title->getArticleID(), $context );
-		$commentsPage->allow = $allow;
-		$commentsPage->setVoting( $voting );
+		$teamcommentsPage = new TeamCommentsPage( $title->getArticleID(), $context );
+		$teamcommentsPage->allow = $allow;
+		$teamcommentsPage->setVoting( $voting );
 
-		$output = '<div class="comments-body">';
+		$output = '<div class="teamcomments-body">';
 
-		if ( $wgCommentsSortDescending ) { // form before comments
+		if ( $wgTeamCommentsSortDescending ) { // form before teamcomments
 			$output .= '<a id="end" rel="nofollow"></a>';
 			if ( !wfReadOnly() ) {
-				$output .= $commentsPage->displayForm();
+				$output .= $teamcommentsPage->displayForm();
 			} else {
-				$output .= wfMessage( 'comments-db-locked' )->parse();
+				$output .= wfMessage( 'teamcomments-db-locked' )->parse();
 			}
 		}
 
-		$output .= $commentsPage->displayOrderForm();
+		$output .= $teamcommentsPage->displayOrderForm();
 
-		$output .= '<div id="allcomments">' . $commentsPage->display() . '</div>';
+		$output .= '<div id="allteamcomments">' . $teamcommentsPage->display() . '</div>';
 
 		// If the database is in read-only mode, display a message informing the
-		// user about that, otherwise allow them to comment
-		if ( !$wgCommentsSortDescending ) { // form after comments
+		// user about that, otherwise allow them to teamcomment
+		if ( !$wgTeamCommentsSortDescending ) { // form after teamcomments
 			if ( !wfReadOnly() ) {
-				$output .= $commentsPage->displayForm();
+				$output .= $teamcommentsPage->displayForm();
 			} else {
-				$output .= wfMessage( 'comments-db-locked' )->parse();
+				$output .= wfMessage( 'teamcomments-db-locked' )->parse();
 			}
 			$output .= '<a id="end" rel="nofollow"></a>';
 		}
 
-		$output .= '</div>'; // div.comments-body
+		$output .= '</div>'; // div.teamcomments-body
 
 		return $output;
 	}
 
-	public static function nonDisplayComments( $input, $args, $parser ) {
+	public static function nonDisplayTeamComments( $input, $args, $parser ) {
 		$attr = [];
 
 		foreach ( $args as $name => $value ) {
 			$attr[] = htmlspecialchars( $name ) . '="' . htmlspecialchars( $value ) . '"';
 		}
 
-		$output = '&lt;comments';
+		$output = '&lt;teamcomments';
 		if ( count( $attr ) > 0 ) {
 			$output .= ' ' . implode( ' ', $attr );
 		}
 
 		if ( !is_null( $input ) ) {
-			$output .= '&gt;' . htmlspecialchars( $input ) . '&lt;/comments&gt;';
+			$output .= '&gt;' . htmlspecialchars( $input ) . '&lt;/teamcomments&gt;';
 		} else {
 			$output .= ' /&gt;';
 		}

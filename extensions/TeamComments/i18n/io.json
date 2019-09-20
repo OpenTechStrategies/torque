@@ -4,8 +4,8 @@
 			"Joao Xavier"
 		]
 	},
-	"comments-sort-by-date": "Ordenar segun dato",
-	"comments-sort-by-score": "Ordinar segun nombro di punti",
-	"comments-time-days": "{{PLURAL:$1|un dio|$1 dii}}",
-	"comments-time-hours": "{{PLURAL:$1|1 horo|$1 hori}}"
+	"teamcomments-sort-by-date": "Ordenar segun dato",
+	"teamcomments-sort-by-score": "Ordinar segun nombro di punti",
+	"teamcomments-time-days": "{{PLURAL:$1|un dio|$1 dii}}",
+	"teamcomments-time-hours": "{{PLURAL:$1|1 horo|$1 hori}}"
 }

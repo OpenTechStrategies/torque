@@ -1,49 +1,49 @@
 <?php
 
-class CommentSubmitAPI extends ApiBase {
+class TeamCommentSubmitAPI extends ApiBase {
 
 	public function execute() {
 		$user = $this->getUser();
-		// Blocked users cannot submit new comments, and neither can those users
+		// Blocked users cannot submit new teamcomments, and neither can those users
 		// without the necessary privileges. Also prevent obvious cross-site request
 		// forgeries (CSRF)
 		if (
 			$user->isBlocked() ||
-			!$user->isAllowed( 'comment' ) ||
+			!$user->isAllowed( 'teamcomment' ) ||
 			wfReadOnly()
 		) {
 			return true;
 		}
 
-		$commentText = $this->getMain()->getVal( 'commentText' );
+		$teamcommentText = $this->getMain()->getVal( 'teamcommentText' );
 
-		if ( $commentText != '' ) {
+		if ( $teamcommentText != '' ) {
 			// To protect against spam, it's necessary to check the supplied text
-			// against spam filters (but comment admins are allowed to bypass the
+			// against spam filters (but teamcomment admins are allowed to bypass the
 			// spam filters)
-			if ( !$user->isAllowed( 'commentadmin' ) && CommentFunctions::isSpam( $commentText ) ) {
+			if ( !$user->isAllowed( 'teamcommentadmin' ) && TeamCommentFunctions::isSpam( $teamcommentText ) ) {
 				$this->dieWithError(
-					$this->msg( 'comments-is-spam' )->plain(),
-					'comments-is-spam'
+					$this->msg( 'teamcomments-is-spam' )->plain(),
+					'teamcomments-is-spam'
 				);
 			}
 
-			// If the comment contains links but the user isn't allowed to post
+			// If the teamcomment contains links but the user isn't allowed to post
 			// links, reject the submission
-			if ( !$user->isAllowed( 'commentlinks' ) && CommentFunctions::haveLinks( $commentText ) ) {
+			if ( !$user->isAllowed( 'teamcommentlinks' ) && TeamCommentFunctions::haveLinks( $teamcommentText ) ) {
 				$this->dieWithError(
-					$this->msg( 'comments-links-are-forbidden' )->plain(),
-					'comments-links-are-forbidden'
+					$this->msg( 'teamcomments-links-are-forbidden' )->plain(),
+					'teamcomments-links-are-forbidden'
 				);
 			}
 
-			$page = new CommentsPage( $this->getMain()->getVal( 'pageID' ), $this->getContext() );
+			$page = new TeamCommentsPage( $this->getMain()->getVal( 'pageID' ), $this->getContext() );
 
-			Comment::add( $commentText, $page, $user, $this->getMain()->getVal( 'parentID' ) );
+			TeamComment::add( $teamcommentText, $page, $user, $this->getMain()->getVal( 'parentID' ) );
 
 			if ( class_exists( 'UserStatsTrack' ) ) {
 				$stats = new UserStatsTrack( $user->getId(), $user->getName() );
-				$stats->incStatField( 'comment' );
+				$stats->incStatField( 'teamcomment' );
 			}
 		}
 
@@ -70,7 +70,7 @@ class CommentSubmitAPI extends ApiBase {
 				ApiBase::PARAM_REQUIRED => false,
 				ApiBase::PARAM_TYPE => 'integer'
 			],
-			'commentText' => [
+			'teamcommentText' => [
 				ApiBase::PARAM_REQUIRED => true,
 				ApiBase::PARAM_TYPE => 'string'
 			]

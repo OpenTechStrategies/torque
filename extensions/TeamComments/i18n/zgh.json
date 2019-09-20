@@ -5,10 +5,10 @@
 			"Mdb897"
 		]
 	},
-	"comments-comment": "ⴰⵅⴼⴰⵡⴰⵍ",
-	"comments-cancel-reply": "ⵙⵔ",
-	"comments-reply": "ⵔⴰⵔ",
-	"comments-ignore-cancel": "ⵙⵔ",
-	"logentry-comments-delete": "$1 ⵉⴽⴽⵙ ⴰⵅⴼⴰⵡⴰⵍ #$4 ⴷⵉ $3",
-	"logeventslist-comments-log": "ⵜⴰⵎⵙⵙⴽⵜⵉⵜ ⵏ ⵉⵅⴼⴰⵡⴰⵍⵏ"
+	"teamcomments-teamcomment": "ⴰⵅⴼⴰⵡⴰⵍ",
+	"teamcomments-cancel-reply": "ⵙⵔ",
+	"teamcomments-reply": "ⵔⴰⵔ",
+	"teamcomments-ignore-cancel": "ⵙⵔ",
+	"logentry-teamcomments-delete": "$1 ⵉⴽⴽⵙ ⴰⵅⴼⴰⵡⴰⵍ #$4 ⴷⵉ $3",
+	"logeventslist-teamcomments-log": "ⵜⴰⵎⵙⵙⴽⵜⵉⵜ ⵏ ⵉⵅⴼⴰⵡⴰⵍⵏ"
 }

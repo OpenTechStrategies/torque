@@ -1,6 +1,6 @@
 <?php
 
-class CommentLatestIdAPI extends ApiBase {
+class TeamCommentLatestIdAPI extends ApiBase {
 
 	public function execute() {
 		// To avoid API warning, register the parameter used to bust browser cache
@@ -8,10 +8,10 @@ class CommentLatestIdAPI extends ApiBase {
 
 		$pageID = $this->getMain()->getVal( 'pageID' );
 
-		$commentsPage = new CommentsPage( $pageID, RequestContext::getMain() );
+		$teamcommentsPage = new TeamCommentsPage( $pageID, RequestContext::getMain() );
 
 		$result = $this->getResult();
-		$result->addValue( $this->getModuleName(), 'id', $commentsPage->getLatestCommentID() );
+		$result->addValue( $this->getModuleName(), 'id', $teamcommentsPage->getLatestTeamCommentID() );
 	}
 
 	public function getAllowedParams() {

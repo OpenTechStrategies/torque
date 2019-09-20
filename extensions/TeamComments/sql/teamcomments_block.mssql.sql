@@ -1,4 +1,4 @@
--- Microsoft SQL Server (MSSQL) variant of Comments' database schema
+-- Microsoft SQL Server (MSSQL) variant of TeamComments' database schema
 -- This is probably crazy, but so is MSSQL. I've never used MSSQL so
 -- there's a fair chance that the code is full of bugs, stupid things or both.
 -- Please feel free to submit patches or just go ahead and fix it.
@@ -9,7 +9,7 @@
 -- Author: Jack Phoenix
 -- Date: 24 July 2013
 
-CREATE TABLE /*$wgDBprefix*/Comments_block (
+CREATE TABLE /*$wgDBprefix*/TeamComments_block (
   cb_id INT NOT NULL PRIMARY KEY IDENTITY(0,1),
   cb_user_id INT NOT NULL default 0,
   cb_user_name NVARCHAR(255) NOT NULL default '',
@@ -18,4 +18,4 @@ CREATE TABLE /*$wgDBprefix*/Comments_block (
   cb_date DATETIME default NULL
 ) /*$wgDBTableOptions*/;
 
-CREATE INDEX /*i*/cb_user_id ON /*$wgDBprefix*/Comments_block (cb_user_id);
+CREATE INDEX /*i*/cb_user_id ON /*$wgDBprefix*/TeamComments_block (cb_user_id);

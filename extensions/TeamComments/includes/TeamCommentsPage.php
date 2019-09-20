@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Class for Comments methods that are not specific to one comments,
- * but specific to one comment-using page
+ * Class for TeamComments methods that are not specific to one teamcomments,
+ * but specific to one teamcomment-using page
  */
-class CommentsPage extends ContextSource {
+class TeamCommentsPage extends ContextSource {
 
 	/**
 	 * @var Integer: page ID (page.page_id) of this page.
@@ -12,13 +12,13 @@ class CommentsPage extends ContextSource {
 	public $id = 0;
 
 	/**
-	 * @var Integer: if this is _not_ 0, then the comments are ordered by their
-	 *			   Comment_Score in descending order
+	 * @var Integer: if this is _not_ 0, then the teamcomments are ordered by their
+	 *			   TeamComment_Score in descending order
 	 */
 	public $orderBy = 0;
 
 	/**
-	 * @var Integer: maximum amount of threads of comments shown per page before pagination is enabled;
+	 * @var Integer: maximum amount of threads of teamcomments shown per page before pagination is enabled;
 	 */
 	public $limit = 50;
 
@@ -30,14 +30,14 @@ class CommentsPage extends ContextSource {
 	public $pagerLimit = 9;
 
 	/**
-	 * The current page of comments we are paged to
+	 * The current page of teamcomments we are paged to
 	 *
 	 * @var int
 	 */
 	public $currentPagerPage = 0;
 
 	/**
-	 * List of users allowed to comment. Empty string - any user can comment
+	 * List of users allowed to teamcomment. Empty string - any user can teamcomment
 	 *
 	 * @var string
 	 */
@@ -73,13 +73,13 @@ class CommentsPage extends ContextSource {
 	public $title = null;
 
 	/**
-	 * List of lists of comments on this page.
-	 * Each list is a separate 'thread' of comments, with the parent comment first, and any replies following
+	 * List of lists of teamcomments on this page.
+	 * Each list is a separate 'thread' of teamcomments, with the parent teamcomment first, and any replies following
 	 * Not populated until display() is called
 	 *
 	 * @var array
 	 */
-	public $comments = [];
+	public $teamcomments = [];
 
 	/**
 	 * Constructor
@@ -93,7 +93,7 @@ class CommentsPage extends ContextSource {
 	}
 
 	/**
-	 * Gets the total amount of comments on this page
+	 * Gets the total amount of teamcomments on this page
 	 *
 	 * @return int
 	 */
@@ -101,36 +101,36 @@ class CommentsPage extends ContextSource {
 		$dbr = wfGetDB( DB_REPLICA );
 		$count = 0;
 		$s = $dbr->selectRow(
-			'Comments',
-			[ 'COUNT(*) AS CommentCount' ],
-			[ 'Comment_Page_ID' => $this->id ],
+			'TeamComments',
+			[ 'COUNT(*) AS TeamCommentCount' ],
+			[ 'TeamComment_Page_ID' => $this->id ],
 			__METHOD__
 		);
 		if ( $s !== false ) {
-			$count = $s->CommentCount;
+			$count = $s->TeamCommentCount;
 		}
 		return $count;
 	}
 
 	/**
-	 * Gets the ID number of the latest comment for the current page.
+	 * Gets the ID number of the latest teamcomment for the current page.
 	 *
 	 * @return int
 	 */
-	function getLatestCommentID() {
-		$latestCommentID = 0;
+	function getLatestTeamCommentID() {
+		$latestTeamCommentID = 0;
 		$dbr = wfGetDB( DB_REPLICA );
 		$s = $dbr->selectRow(
-			'Comments',
-			[ 'CommentID' ],
-			[ 'Comment_Page_ID' => $this->id ],
+			'TeamComments',
+			[ 'TeamCommentID' ],
+			[ 'TeamComment_Page_ID' => $this->id ],
 			__METHOD__,
-			[ 'ORDER BY' => 'Comment_Date DESC', 'LIMIT' => 1 ]
+			[ 'ORDER BY' => 'TeamComment_Date DESC', 'LIMIT' => 1 ]
 		);
 		if ( $s !== false ) {
-			$latestCommentID = $s->CommentID;
+			$latestTeamCommentID = $s->TeamCommentID;
 		}
-		return $latestCommentID;
+		return $latestTeamCommentID;
 	}
 
 	/**
@@ -156,40 +156,40 @@ class CommentsPage extends ContextSource {
 	}
 
 	/**
-	 * Fetches all comments, called by display().
+	 * Fetches all teamcomments, called by display().
 	 *
 	 * @return array Array containing every possible bit of information about
-	 * 				a comment, including score, timestamp and more
+	 * 				a teamcomment, including score, timestamp and more
 	 */
-	public function getComments() {
+	public function getTeamComments() {
 		$dbr = wfGetDB( DB_REPLICA );
 
 		// Defaults (for non-social wikis)
 		$tables = [
-			'Comments',
-			'vote1' => 'Comments_Vote',
-			'vote2' => 'Comments_Vote',
+			'TeamComments',
+			'vote1' => 'TeamComments_Vote',
+			'vote2' => 'TeamComments_Vote',
 		];
 		$fields = [
-			'Comment_Username', 'Comment_IP', 'Comment_Text',
-			'Comment_Date', 'Comment_Date AS timestamp',
-			'Comment_user_id', 'CommentID', 'Comment_Parent_ID',
-			'vote1.Comment_Vote_Score AS current_vote',
-			'SUM(vote2.Comment_Vote_Score) AS comment_score'
+			'TeamComment_Username', 'TeamComment_IP', 'TeamComment_Text',
+			'TeamComment_Date', 'TeamComment_Date AS timestamp',
+			'TeamComment_user_id', 'TeamCommentID', 'TeamComment_Parent_ID',
+			'vote1.TeamComment_Vote_Score AS current_vote',
+			'SUM(vote2.TeamComment_Vote_Score) AS teamcomment_score'
 		];
 		$joinConds = [
 			// For current user's vote
 			'vote1' => [
 				'LEFT JOIN',
 				[
-					'vote1.Comment_Vote_ID = CommentID',
-					'vote1.Comment_Vote_Username' => $this->getUser()->getName()
+					'vote1.TeamComment_Vote_ID = TeamCommentID',
+					'vote1.TeamComment_Vote_Username' => $this->getUser()->getName()
 				]
 			],
 			// For total vote count
-			'vote2' => [ 'LEFT JOIN', 'vote2.Comment_Vote_ID = CommentID' ]
+			'vote2' => [ 'LEFT JOIN', 'vote2.TeamComment_Vote_ID = TeamCommentID' ]
 		];
-		$params = [ 'GROUP BY' => 'CommentID' ];
+		$params = [ 'GROUP BY' => 'TeamCommentID' ];
 
 		// If SocialProfile is installed, query the user_stats table too.
 		if (
@@ -198,8 +198,8 @@ class CommentsPage extends ContextSource {
 		) {
 			$tables[] = 'user_stats';
 			$fields[] = 'stats_total_points';
-			$joinConds['Comments'] = [
-				'LEFT JOIN', 'Comment_user_id = stats_user_id'
+			$joinConds['TeamComments'] = [
+				'LEFT JOIN', 'TeamComment_user_id = stats_user_id'
 			];
 		}
 
@@ -207,49 +207,49 @@ class CommentsPage extends ContextSource {
 		$res = $dbr->select(
 			$tables,
 			$fields,
-			[ 'Comment_Page_ID' => $this->id ],
+			[ 'TeamComment_Page_ID' => $this->id ],
 			__METHOD__,
 			$params,
 			$joinConds
 		);
 
-		$comments = [];
+		$teamcomments = [];
 
 		foreach ( $res as $row ) {
-			if ( $row->Comment_Parent_ID == 0 ) {
-				$thread = $row->CommentID;
+			if ( $row->TeamComment_Parent_ID == 0 ) {
+				$thread = $row->TeamCommentID;
 			} else {
-				$thread = $row->Comment_Parent_ID;
+				$thread = $row->TeamComment_Parent_ID;
 			}
 			$data = [
-				'Comment_Username' => $row->Comment_Username,
-				'Comment_IP' => $row->Comment_IP,
-				'Comment_Text' => $row->Comment_Text,
-				'Comment_Date' => $row->Comment_Date,
-				'Comment_user_id' => $row->Comment_user_id,
-				'Comment_user_points' => ( isset( $row->stats_total_points ) ? number_format( $row->stats_total_points ) : 0 ),
-				'CommentID' => $row->CommentID,
-				'Comment_Parent_ID' => $row->Comment_Parent_ID,
+				'TeamComment_Username' => $row->TeamComment_Username,
+				'TeamComment_IP' => $row->TeamComment_IP,
+				'TeamComment_Text' => $row->TeamComment_Text,
+				'TeamComment_Date' => $row->TeamComment_Date,
+				'TeamComment_user_id' => $row->TeamComment_user_id,
+				'TeamComment_user_points' => ( isset( $row->stats_total_points ) ? number_format( $row->stats_total_points ) : 0 ),
+				'TeamCommentID' => $row->TeamCommentID,
+				'TeamComment_Parent_ID' => $row->TeamComment_Parent_ID,
 				'thread' => $thread,
 				'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp ),
 				'current_vote' => ( isset( $row->current_vote ) ? $row->current_vote : false ),
-				'total_vote' => ( isset( $row->comment_score ) ? $row->comment_score : 0 ),
+				'total_vote' => ( isset( $row->teamcomment_score ) ? $row->teamcomment_score : 0 ),
 			];
 
-			$comments[] = new Comment( $this, $this->getContext(), $data );
+			$teamcomments[] = new TeamComment( $this, $this->getContext(), $data );
 		}
 
-		$commentThreads = [];
+		$teamcommentThreads = [];
 
-		foreach ( $comments as $comment ) {
-			if ( $comment->parentID == 0 ) {
-				$commentThreads[$comment->id] = [ $comment ];
+		foreach ( $teamcomments as $teamcomment ) {
+			if ( $teamcomment->parentID == 0 ) {
+				$teamcommentThreads[$teamcomment->id] = [ $teamcomment ];
 			} else {
-				$commentThreads[$comment->parentID][] = $comment;
+				$teamcommentThreads[$teamcomment->parentID][] = $teamcomment;
 			}
 		}
 
-		return $commentThreads;
+		return $teamcommentThreads;
 	}
 
 	/**
@@ -274,7 +274,7 @@ class CommentsPage extends ContextSource {
 	 * @param int $pagerCurrent Page we are currently paged to
 	 * @param int $pagesCount The maximum page number
 	 *
-	 * @return string the links for paging through pages of comments
+	 * @return string the links for paging through pages of teamcomments
 	 */
 	function displayPager( $pagerCurrent, $pagesCount ) {
 		// Middle is used to "center" pages around the current page.
@@ -405,7 +405,7 @@ class CommentsPage extends ContextSource {
 	}
 
 	/**
-	 * Get this list of anon commenters in the given list of comments,
+	 * Get this list of anon teamcommenters in the given list of teamcomments,
 	 * and return a mapped array of IP adressess to the number anon poster
 	 * (so anon posters can be called Anon#1, Anon#2, etc
 	 *
@@ -415,20 +415,20 @@ class CommentsPage extends ContextSource {
 		$counter = 1;
 		$bucket = [];
 
-		$commentThreads = $this->comments;
+		$teamcommentThreads = $this->teamcomments;
 
-		$comments = []; // convert 2nd threads array to a simple list of comments
-		foreach ( $commentThreads as $thread ) {
-			$comments = array_merge( $comments, $thread );
+		$teamcomments = []; // convert 2nd threads array to a simple list of teamcomments
+		foreach ( $teamcommentThreads as $thread ) {
+			$teamcomments = array_merge( $teamcomments, $thread );
 		}
-		usort( $comments, [ 'CommentFunctions', 'sortTime' ] );
+		usort( $teamcomments, [ 'TeamCommentFunctions', 'sortTime' ] );
 
-		foreach ( $comments as $comment ) {
+		foreach ( $teamcomments as $teamcomment ) {
 			if (
-				!array_key_exists( $comment->username, $bucket ) &&
-				$comment->userID == 0
+				!array_key_exists( $teamcomment->username, $bucket ) &&
+				$teamcomment->userID == 0
 			) {
-				$bucket[$comment->username] = $counter;
+				$bucket[$teamcomment->username] = $counter;
 				$counter++;
 			}
 		}
@@ -437,59 +437,59 @@ class CommentsPage extends ContextSource {
 	}
 
 	/**
-	 * Sort an array of comment threads
+	 * Sort an array of teamcomment threads
 	 * @param $threads
 	 * @return mixed
 	 */
 	function sort( $threads ) {
-		global $wgCommentsSortDescending;
+		global $wgTeamCommentsSortDescending;
 
 		if ( $this->orderBy ) {
-			usort( $threads, [ 'CommentFunctions', 'sortScore' ] );
-		} elseif ( $wgCommentsSortDescending ) {
-			usort( $threads, [ 'CommentFunctions', 'sortDesc' ] );
+			usort( $threads, [ 'TeamCommentFunctions', 'sortScore' ] );
+		} elseif ( $wgTeamCommentsSortDescending ) {
+			usort( $threads, [ 'TeamCommentFunctions', 'sortDesc' ] );
 		} else {
-			usort( $threads, [ 'CommentFunctions', 'sortAsc' ] );
+			usort( $threads, [ 'TeamCommentFunctions', 'sortAsc' ] );
 		}
 
 		return $threads;
 	}
 
 	/**
-	 * Convert an array of comment threads into an array of pages (arrays) of comment threads
-	 * @param $comments
+	 * Convert an array of teamcomment threads into an array of pages (arrays) of teamcomment threads
+	 * @param $teamcomments
 	 * @return array
 	 */
-	function page( $comments ) {
-		return array_chunk( $comments, $this->limit );
+	function page( $teamcomments ) {
+		return array_chunk( $teamcomments, $this->limit );
 	}
 
 	/**
-	 * Display all the comments for the current page.
-	 * CSS and JS is loaded in CommentsHooks.php
+	 * Display all the teamcomments for the current page.
+	 * CSS and JS is loaded in TeamCommentsHooks.php
 	 */
 	function display() {
 		$output = '';
 
-		$commentThreads = $this->getComments();
-		$commentThreads = $this->sort( $commentThreads );
+		$teamcommentThreads = $this->getTeamComments();
+		$teamcommentThreads = $this->sort( $teamcommentThreads );
 
-		$this->comments = $commentThreads;
+		$this->teamcomments = $teamcommentThreads;
 
-		$commentPages = $this->page( $commentThreads );
+		$teamcommentPages = $this->page( $teamcommentThreads );
 		$currentPageNum = $this->getCurrentPagerPage();
-		$numPages = count( $commentPages );
+		$numPages = count( $teamcommentPages );
 		// Suppress random E_NOTICE about "Undefined offset: 0", which seems to
 		// be breaking ProblemReports (at least on my local devbox, not sure
 		// about prod). --Jack Phoenix, 13 July 2015
 		Wikimedia\suppressWarnings();
-		$currentPage = $commentPages[$currentPageNum - 1];
+		$currentPage = $teamcommentPages[$currentPageNum - 1];
 		Wikimedia\restoreWarnings();
 
-		// Load complete blocked list for logged in user so they don't see their comments
+		// Load complete blocked list for logged in user so they don't see their teamcomments
 		$blockList = [];
 		if ( $this->getUser()->getId() != 0 ) {
-			$blockList = CommentFunctions::getBlockList( $this->getUser()->getId() );
+			$blockList = TeamCommentFunctions::getBlockList( $this->getUser()->getId() );
 		}
 
 		if ( $currentPage ) {
@@ -500,8 +500,8 @@ class CommentsPage extends ContextSource {
 			$anonList = $this->getAnonList();
 
 			foreach ( $currentPage as $thread ) {
-				foreach ( $thread as $comment ) {
-					$output .= $comment->display( $blockList, $anonList );
+				foreach ( $thread as $teamcomment ) {
+					$output .= $teamcomment->display( $blockList, $anonList );
 				}
 			}
 			$output .= $pager;
@@ -511,7 +511,7 @@ class CommentsPage extends ContextSource {
 	}
 
 	/**
-	 * Displays the "Sort by X" form and a link to auto-refresh comments
+	 * Displays the "Sort by X" form and a link to auto-refresh teamcomments
 	 *
 	 * @return string HTML
 	 */
@@ -521,17 +521,17 @@ class CommentsPage extends ContextSource {
 				<form name="ChangeOrder" action="">
 					<select name="TheOrder">
 						<option value="0">' .
-			wfMessage( 'comments-sort-by-date' )->plain() .
+			wfMessage( 'teamcomments-sort-by-date' )->plain() .
 			'</option>
 						<option value="1">' .
-			wfMessage( 'comments-sort-by-score' )->plain() .
+			wfMessage( 'teamcomments-sort-by-score' )->plain() .
 			'</option>
 					</select>
 				</form>
 			</div>
 			<div id="spy" class="c-spy">
 				<a href="javascript:void(0)">' .
-			wfMessage( 'comments-auto-refresher-enable' )->plain() .
+			wfMessage( 'teamcomments-auto-refresher-enable' )->plain() .
 			'</a>
 			</div>
 			<div class="visualClear"></div>
@@ -542,12 +542,12 @@ class CommentsPage extends ContextSource {
 	}
 
 	/**
-	 * Displays the form for adding new comments
+	 * Displays the form for adding new teamcomments
 	 *
 	 * @return string HTML output
 	 */
 	function displayForm() {
-		$output = '<form action="" method="post" name="commentForm">' . "\n";
+		$output = '<form action="" method="post" name="teamcommentForm">' . "\n";
 
 		if ( $this->allow ) {
 			$pos = strpos(
@@ -556,36 +556,36 @@ class CommentsPage extends ContextSource {
 			);
 		}
 
-		// 'comment' user right is required to add new comments
-		if ( !$this->getUser()->isAllowed( 'comment' ) ) {
-			$output .= wfMessage( 'comments-not-allowed' )->parse();
+		// 'teamcomment' user right is required to add new teamcomments
+		if ( !$this->getUser()->isAllowed( 'teamcomment' ) ) {
+			$output .= wfMessage( 'teamcomments-not-allowed' )->parse();
 		} else {
-			// Blocked users can't add new comments under any conditions...
+			// Blocked users can't add new teamcomments under any conditions...
 			// and maybe there's a list of users who should be allowed to post
-			// comments
+			// teamcomments
 			if ( $this->getUser()->isBlocked() == false && ( $this->allow == '' || $pos !== false ) ) {
-				$output .= '<div class="c-form-title">' . wfMessage( 'comments-submit' )->plain() . '</div>' . "\n";
+				$output .= '<div class="c-form-title">' . wfMessage( 'teamcomments-submit' )->plain() . '</div>' . "\n";
 				$output .= '<div id="replyto" class="c-form-reply-to"></div>' . "\n";
 				// Show a message to anons, prompting them to register or log in
 				if ( !$this->getUser()->isLoggedIn() ) {
 					$login_title = SpecialPage::getTitleFor( 'Userlogin' );
 					$register_title = SpecialPage::getTitleFor( 'Userlogin', 'signup' );
 					$output .= '<div class="c-form-message">' . wfMessage(
-							'comments-anon-message',
+							'teamcomments-anon-message',
 							htmlspecialchars( $register_title->getFullURL() ),
 							htmlspecialchars( $login_title->getFullURL() )
 						)->text() . '</div>' . "\n";
 				}
 
-				$output .= '<textarea name="commentText" id="comment" rows="5" cols="64"></textarea>' . "\n";
+				$output .= '<textarea name="teamcommentText" id="teamcomment" rows="5" cols="64"></textarea>' . "\n";
 				$output .= '<div class="c-form-button"><input type="button" value="' .
-					wfMessage( 'comments-post' )->plain() . '" class="site-button" /></div>' . "\n";
+					wfMessage( 'teamcomments-post' )->plain() . '" class="site-button" /></div>' . "\n";
 			}
 			$output .= '<input type="hidden" name="action" value="purge" />' . "\n";
 			$output .= '<input type="hidden" name="pageId" value="' . $this->id . '" />' . "\n";
-			$output .= '<input type="hidden" name="commentid" />' . "\n";
-			$output .= '<input type="hidden" name="lastCommentId" value="' . $this->getLatestCommentID() . '" />' . "\n";
-			$output .= '<input type="hidden" name="commentParentId" />' . "\n";
+			$output .= '<input type="hidden" name="teamcommentid" />' . "\n";
+			$output .= '<input type="hidden" name="lastTeamCommentId" value="' . $this->getLatestTeamCommentID() . '" />' . "\n";
+			$output .= '<input type="hidden" name="teamcommentParentId" />' . "\n";
 			$output .= '<input type="hidden" name="' . $this->pageQuery . '" value="' . $this->getCurrentPagerPage() . '" />' . "\n";
 			$output .= Html::hidden( 'token', $this->getUser()->getEditToken() );
 		}
@@ -596,8 +596,8 @@ class CommentsPage extends ContextSource {
 	/**
 	 * Purge caches (parser cache and Squid cache)
 	 */
-	function clearCommentListCache() {
-		wfDebug( "Clearing comments for page {$this->id} from cache\n" );
+	function clearTeamCommentListCache() {
+		wfDebug( "Clearing teamcomments for page {$this->id} from cache\n" );
 
 		if ( is_object( $this->title ) ) {
 			$this->title->invalidateCache();

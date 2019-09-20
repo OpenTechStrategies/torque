@@ -4,5 +4,5 @@
 			"Bugoslav"
 		]
 	},
-	"comments-reply-to": "Odgovori {{GENDER:$2|suradniku $1|suradnici $1}}"
+	"teamcomments-reply-to": "Odgovori {{GENDER:$2|suradniku $1|suradnici $1}}"
 }

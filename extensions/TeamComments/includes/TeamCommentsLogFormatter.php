@@ -1,11 +1,11 @@
 <?php
 /**
- * Logging formatter for Comments' log entries.
+ * Logging formatter for TeamComments' log entries.
  *
  * @file
  * @date 28 July 2013
  */
-class CommentsLogFormatter extends WikitextLogFormatter {
+class TeamCommentsLogFormatter extends WikitextLogFormatter {
 	/**
 	 * Formats parameters intented for action message from
 	 * array of all parameters. There are three hardcoded
@@ -23,13 +23,13 @@ class CommentsLogFormatter extends WikitextLogFormatter {
 		$entry = $this->entry;
 		$params = $this->extractParameters();
 
-		$commentId = $params[3]; // = $4, because array numbering starts from 0
+		$teamcommentId = $params[3]; // = $4, because array numbering starts from 0
 
 		$params[0] = Message::rawParam( $this->getPerformerElement() );
 		$params[1] = $this->canView( LogPage::DELETED_USER ) ? $entry->getPerformer()->getName() : '';
 		$title = $entry->getTarget();
 		if ( $title instanceof Title ) { // healthy paranoia
-			$title->setFragment( '#comment-' . $commentId );
+			$title->setFragment( '#teamcomment-' . $teamcommentId );
 		}
 		$params[2] = Message::rawParam( $this->makePageLink( $title ) );
 

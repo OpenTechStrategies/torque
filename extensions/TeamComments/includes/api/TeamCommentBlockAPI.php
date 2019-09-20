@@ -1,6 +1,6 @@
 <?php
 
-class CommentBlockAPI extends ApiBase {
+class TeamCommentBlockAPI extends ApiBase {
 
 	public function execute() {
 		// Do nothing when the database is in read-only mode
@@ -8,24 +8,24 @@ class CommentBlockAPI extends ApiBase {
 			return true;
 		}
 
-		// Load user_name and user_id for person we want to block from the comment it originated from
+		// Load user_name and user_id for person we want to block from the teamcomment it originated from
 		$dbr = wfGetDB( DB_REPLICA );
 		$s = $dbr->selectRow(
-			'Comments',
-			[ 'comment_username', 'comment_user_id' ],
-			[ 'CommentID' => $this->getMain()->getVal( 'commentID' ) ],
+			'TeamComments',
+			[ 'teamcomment_username', 'teamcomment_user_id' ],
+			[ 'TeamCommentID' => $this->getMain()->getVal( 'teamcommentID' ) ],
 			__METHOD__
 		);
 		if ( $s !== false ) {
-			$userID = $s->comment_user_id;
-			$username = $s->comment_username;
+			$userID = $s->teamcomment_user_id;
+			$username = $s->teamcomment_username;
 		}
 
-		CommentFunctions::blockUser( $this->getUser(), $userID, $username );
+		TeamCommentFunctions::blockUser( $this->getUser(), $userID, $username );
 
 		if ( class_exists( 'UserStatsTrack' ) ) {
 			$stats = new UserStatsTrack( $userID, $username );
-			$stats->incStatField( 'comment_ignored' );
+			$stats->incStatField( 'teamcomment_ignored' );
 		}
 
 		$result = $this->getResult();
@@ -43,7 +43,7 @@ class CommentBlockAPI extends ApiBase {
 
 	public function getAllowedParams() {
 		return [
-			'commentID' => [
+			'teamcommentID' => [
 				ApiBase::PARAM_REQUIRED => true,
 				ApiBase::PARAM_TYPE => 'integer'
 			]

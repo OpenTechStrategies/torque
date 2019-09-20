@@ -1,6 +1,6 @@
 <?php
 /**
- * Hooked functions used by the Comments extension.
+ * Hooked functions used by the TeamComments extension.
  * All class methods are public and static.
  *
  * @file
@@ -9,20 +9,20 @@
  * @author Alexia E. Smith
  * @copyright (c) 2013 Curse Inc.
  * @license GPL-2.0-or-later
- * @link https://www.mediawiki.org/wiki/Extension:Comments Documentation
+ * @link https://www.mediawiki.org/wiki/Extension:TeamComments Documentation
  */
 
-class CommentsHooks {
+class TeamCommentsHooks {
 	/**
 	 * Registers the following tags and magic words:
-	 * - <comments />
-	 * - NUMBEROFCOMMENTSPAGE
+	 * - <teamcomments />
+	 * - NUMBEROFTEAMCOMMENTSPAGE
 	 *
 	 * @param Parser $parser
 	 */
 	public static function onParserFirstCallInit( Parser &$parser ) {
-		$parser->setHook( 'comments', [ 'DisplayComments', 'getParserHandler' ] );
-		$parser->setFunctionHook( 'NUMBEROFCOMMENTSPAGE', 'NumberOfComments::getParserHandler', Parser::SFH_NO_HASH );
+		$parser->setHook( 'teamcomments', [ 'DisplayTeamComments', 'getParserHandler' ] );
+		$parser->setFunctionHook( 'NUMBEROFTEAMCOMMENTSPAGE', 'NumberOfTeamComments::getParserHandler', Parser::SFH_NO_HASH );
 	}
 
 	/**
@@ -37,18 +37,18 @@ class CommentsHooks {
 		$dbType = $updater->getDB()->getType();
 		// For non-MySQL/MariaDB/SQLite DBMSes, use the appropriately named file
 		if ( !in_array( $dbType, [ 'mysql', 'sqlite' ] ) ) {
-			$comments = "comments.{$dbType}.sql";
-			$comments_vote = "comments_vote.{$dbType}.sql";
-			$comments_block = "comments_block.{$dbType}.sql";
+			$teamcomments = "teamcomments.{$dbType}.sql";
+			$teamcomments_vote = "teamcomments_vote.{$dbType}.sql";
+			$teamcomments_block = "teamcomments_block.{$dbType}.sql";
 		} else {
-			$comments = 'comments.sql';
-			$comments_vote = 'comments_vote.sql';
-			$comments_block = 'comments_block.sql';
+			$teamcomments = 'teamcomments.sql';
+			$teamcomments_vote = 'teamcomments_vote.sql';
+			$teamcomments_block = 'teamcomments_block.sql';
 		}
 
-		$updater->addExtensionTable( 'Comments', "{$dir}/{$comments}" );
-		$updater->addExtensionTable( 'Comments_Vote', "{$dir}/{$comments_vote}" );
-		$updater->addExtensionTable( 'Comments_block', "{$dir}/{$comments_block}" );
+		$updater->addExtensionTable( 'TeamComments', "{$dir}/{$teamcomments}" );
+		$updater->addExtensionTable( 'TeamComments_Vote', "{$dir}/{$teamcomments_vote}" );
+		$updater->addExtensionTable( 'TeamComments_block', "{$dir}/{$teamcomments_block}" );
 	}
 
 	/**
@@ -57,9 +57,9 @@ class CommentsHooks {
 	 * @param RenameuserSQL $renameUserSQL
 	 */
 	public static function onRenameUserSQL( $renameUserSQL ) {
-		$renameUserSQL->tables['Comments'] = [ 'Comment_Username', 'Comment_user_id' ];
-		$renameUserSQL->tables['Comments_Vote'] = [ 'Comment_Vote_Username', 'Comment_Vote_user_id' ];
-		$renameUserSQL->tables['Comments_block'] = [ 'cb_user_name', 'cb_user_id' ];
-		$renameUserSQL->tables['Comments_block'] = [ 'cb_user_name_blocked', 'cb_user_id_blocked' ];
+		$renameUserSQL->tables['TeamComments'] = [ 'Comment_Username', 'Comment_user_id' ];
+		$renameUserSQL->tables['TeamComments_Vote'] = [ 'Comment_Vote_Username', 'Comment_Vote_user_id' ];
+		$renameUserSQL->tables['TeamComments_block'] = [ 'cb_user_name', 'cb_user_id' ];
+		$renameUserSQL->tables['TeamComments_block'] = [ 'cb_user_name_blocked', 'cb_user_id_blocked' ];
 	}
 }

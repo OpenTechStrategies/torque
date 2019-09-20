@@ -10,5 +10,5 @@ $specialPageAliases = [];
 
 /** English */
 $specialPageAliases['en'] = [
-	'CommentIgnoreList' => [ 'CommentIgnoreList' ],
+	'TeamCommentIgnoreList' => [ 'TeamCommentIgnoreList' ],
 ];

@@ -1,6 +1,6 @@
 <?php
 
-class CommentFunctions {
+class TeamCommentFunctions {
 	/**
 	 * The following four functions are borrowed
 	 * from includes/wikia/GlobalFunctionsNY.php
@@ -23,8 +23,8 @@ class CommentFunctions {
 		$timeStr = ''; // misza: initialize variables, DUMB FUCKS!
 		if ( $time[$timeabrv] > 0 ) {
 			// Give grep a chance to find the usages:
-			// comments-time-days, comments-time-hours, comments-time-minutes, comments-time-seconds, comments-time-months
-			$timeStr = wfMessage( "comments-time-{$timename}", $time[$timeabrv] )->parse();
+			// teamcomments-time-days, teamcomments-time-hours, teamcomments-time-minutes, teamcomments-time-seconds, teamcomments-time-months
+			$timeStr = wfMessage( "teamcomments-time-{$timename}", $time[$timeabrv] )->parse();
 		}
 		if ( $timeStr ) {
 			$timeStr .= ' ';
@@ -54,7 +54,7 @@ class CommentFunctions {
 			}
 		}
 		if ( !$timeStr ) {
-			$timeStr = wfMessage( 'comments-time-seconds', 1 )->parse();
+			$timeStr = wfMessage( 'teamcomments-time-seconds', 1 )->parse();
 		}
 		return $timeStr;
 	}
@@ -66,7 +66,7 @@ class CommentFunctions {
 	 * @param $matches Array
 	 * @return String shortened URL
 	 */
-	public static function cutCommentLinkText( $matches ) {
+	public static function cutTeamCommentLinkText( $matches ) {
 		$tagOpen = $matches[1];
 		$linkText = $matches[2];
 		$tagClose = $matches[3];
@@ -96,7 +96,7 @@ class CommentFunctions {
 		// Allow to hook other anti-spam extensions so that sites that use,
 		// for example, AbuseFilter, Phalanx or SpamBlacklist can add additional
 		// checks
-		Hooks::run( 'Comments::isSpam', [ &$text, &$retVal ] );
+		Hooks::run( 'TeamComments::isSpam', [ &$text, &$retVal ] );
 		if ( $retVal ) {
 			// Should only be true here...
 			return $retVal;
@@ -139,10 +139,10 @@ class CommentFunctions {
 	}
 
 	/**
-	 * Blocks comments from a user
+	 * Blocks teamcomments from a user
 	 *
-	 * @param User $blocker The user who is blocking someone else's comments
-	 * @param int $userId User ID of the guy whose comments we want to block
+	 * @param User $blocker The user who is blocking someone else's teamcomments
+	 * @param int $userId User ID of the guy whose teamcomments we want to block
 	 * @param mixed $userName User name of the same guy
 	 */
 	public static function blockUser( $blocker, $userId, $userName ) {
@@ -152,7 +152,7 @@ class CommentFunctions {
 		$date = date( 'Y-m-d H:i:s' );
 		Wikimedia\restoreWarnings();
 		$dbw->insert(
-			'Comments_block',
+			'TeamComments_block',
 			[
 				'cb_user_id' => $blocker->getId(),
 				'cb_user_name' => $blocker->getName(),
@@ -168,13 +168,13 @@ class CommentFunctions {
 	 * Fetches the list of blocked users from the database
 	 *
 	 * @param int $userId User ID for whom we're getting the blocks(?)
-	 * @return array List of comment-blocked users
+	 * @return array List of teamcomment-blocked users
 	 */
 	static function getBlockList( $userId ) {
 		$blockList = [];
 		$dbr = wfGetDB( DB_REPLICA );
 		$res = $dbr->select(
-			'Comments_block',
+			'TeamComments_block',
 			'cb_user_name_blocked',
 			[ 'cb_user_id' => $userId ],
 			__METHOD__
@@ -185,10 +185,10 @@ class CommentFunctions {
 		return $blockList;
 	}
 
-	static function isUserCommentBlocked( $userId, $userIdBlocked ) {
+	static function isUserTeamCommentBlocked( $userId, $userIdBlocked ) {
 		$dbr = wfGetDB( DB_REPLICA );
 		$s = $dbr->selectRow(
-			'Comments_block',
+			'TeamComments_block',
 			[ 'cb_id' ],
 			[
 				'cb_user_id' => $userId,
@@ -204,7 +204,7 @@ class CommentFunctions {
 	}
 
 	/**
-	 * Deletes a user from your personal comment-block list.
+	 * Deletes a user from your personal teamcomment-block list.
 	 *
 	 * @param int $userId Your user ID
 	 * @param int $userIdBlocked User ID of the blocked user
@@ -212,7 +212,7 @@ class CommentFunctions {
 	public static function deleteBlock( $userId, $userIdBlocked ) {
 		$dbw = wfGetDB( DB_MASTER );
 		$dbw->delete(
-			'Comments_block',
+			'TeamComments_block',
 			[
 				'cb_user_id' => $userId,
 				'cb_user_id_blocked' => $userIdBlocked
@@ -278,7 +278,7 @@ class CommentFunctions {
 	}
 
 	/**
-	 * Sort the comments purely by the time, from earliest to latest
+	 * Sort the teamcomments purely by the time, from earliest to latest
 	 *
 	 * @param $x
 	 * @param $y

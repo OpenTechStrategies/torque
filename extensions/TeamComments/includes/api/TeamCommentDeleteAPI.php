@@ -1,25 +1,25 @@
 <?php
 
-class CommentDeleteAPI extends ApiBase {
+class TeamCommentDeleteAPI extends ApiBase {
 
 	public function execute() {
 		$user = $this->getUser();
 
-		$comment = Comment::newFromID( $this->getMain()->getVal( 'commentID' ) );
-		// Blocked users cannot delete comments, and neither can unprivileged ones.
+		$teamcomment = TeamComment::newFromID( $this->getMain()->getVal( 'teamcommentID' ) );
+		// Blocked users cannot delete teamcomments, and neither can unprivileged ones.
 		// Also check for database read-only status
 		if (
 			$user->isBlocked() ||
 			!(
-				$user->isAllowed( 'commentadmin' ) ||
-				$user->isAllowed( 'comment-delete-own' ) && $comment->isOwner( $user )
+				$user->isAllowed( 'teamcommentadmin' ) ||
+				$user->isAllowed( 'teamcomment-delete-own' ) && $teamcomment->isOwner( $user )
 			) ||
 			wfReadOnly()
 		) {
 			return true;
 		}
 
-		$comment->delete();
+		$teamcomment->delete();
 
 		$result = $this->getResult();
 		$result->addValue( $this->getModuleName(), 'ok', 'ok' );
@@ -36,7 +36,7 @@ class CommentDeleteAPI extends ApiBase {
 
 	public function getAllowedParams() {
 		return [
-			'commentID' => [
+			'teamcommentID' => [
 				ApiBase::PARAM_REQUIRED => true,
 				ApiBase::PARAM_TYPE => 'integer'
 			]
