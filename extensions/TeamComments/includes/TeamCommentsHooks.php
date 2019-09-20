@@ -26,23 +26,14 @@ class TeamCommentsHooks {
   }
 
   /**
-   * Adds the three new required database tables into the database when the
+   * Adds the new required databas tables into the database when the
    * user runs /maintenance/update.php (the core database updater script).
    *
    * @param DatabaseUpdater $updater
    */
   public static function onLoadExtensionSchemaUpdates( $updater ) {
     $dir = __DIR__ . '/../sql';
-
-    $dbType = $updater->getDB()->getType();
-    // For non-MySQL/MariaDB/SQLite DBMSes, use the appropriately named file
-    if ( !in_array( $dbType, [ 'mysql', 'sqlite' ] ) ) {
-      $teamcomments = "teamcomments.{$dbType}.sql";
-    } else {
-      $teamcomments = 'teamcomments.sql';
-    }
-
-    $updater->addExtensionTable( 'TeamComments', "{$dir}/{$teamcomments}" );
+    $updater->addExtensionTable( 'teamcomments', "{$dir}/teamcomments.sql" );
   }
 
   /**
@@ -51,6 +42,6 @@ class TeamCommentsHooks {
    * @param RenameuserSQL $renameUserSQL
    */
   public static function onRenameUserSQL( $renameUserSQL ) {
-    $renameUserSQL->tables['TeamComments'] = [ 'Comment_Username', 'Comment_user_id' ];
+    $renameUserSQL->tables['teamcomments'] = [ 'comment_username', 'comment_user_id' ];
   }
 }

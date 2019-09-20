@@ -78,9 +78,9 @@ class TeamCommentsPage extends ContextSource {
     $dbr = wfGetDB( DB_REPLICA );
     $count = 0;
     $s = $dbr->selectRow(
-      'TeamComments',
+      'teamcomments',
       [ 'COUNT(*) AS TeamCommentCount' ],
-      [ 'TeamComment_Page_ID' => $this->id ],
+      [ 'teamcomment_page_id' => $this->id ],
       __METHOD__
     );
     if ( $s !== false ) {
@@ -98,14 +98,14 @@ class TeamCommentsPage extends ContextSource {
     $latestTeamCommentID = 0;
     $dbr = wfGetDB( DB_REPLICA );
     $s = $dbr->selectRow(
-      'TeamComments',
-      [ 'TeamCommentID' ],
-      [ 'TeamComment_Page_ID' => $this->id ],
+      'teamcomments',
+      [ 'teamcomment_id' ],
+      [ 'teamComment_page_id' => $this->id ],
       __METHOD__,
-      [ 'ORDER BY' => 'TeamComment_Date DESC', 'LIMIT' => 1 ]
+      [ 'ORDER BY' => 'teamcomment_date DESC', 'LIMIT' => 1 ]
     );
     if ( $s !== false ) {
-      $latestTeamCommentID = $s->TeamCommentID;
+      $latestTeamCommentID = $s->teamcomment_id;
     }
     return $latestTeamCommentID;
   }
@@ -121,14 +121,14 @@ class TeamCommentsPage extends ContextSource {
 
     // Defaults (for non-social wikis)
     $tables = [
-      'TeamComments'
+      'teamcomments'
     ];
     $fields = [
-      'TeamComment_Username', 'TeamComment_IP', 'TeamComment_Text',
-      'TeamComment_Date', 'TeamComment_Date AS timestamp',
-      'TeamComment_user_id', 'TeamCommentID', 'TeamComment_Parent_ID'
+      'teamcomment_username', 'teamcomment_ip', 'teamcomment_text',
+      'teamcomment_date', 'teamcomment_date AS timestamp',
+      'teamcomment_user_id', 'teamcomment_id', 'teamcomment_parent_id'
     ];
-    $params = [ 'GROUP BY' => 'TeamCommentID' ];
+    $params = [ 'GROUP BY' => 'teamcomment_id' ];
 
     // If SocialProfile is installed, query the user_stats table too.
     $joinConds = [];
@@ -138,8 +138,8 @@ class TeamCommentsPage extends ContextSource {
     ) {
       $tables[] = 'user_stats';
       $fields[] = 'stats_total_points';
-      $joinConds['TeamComments'] = [
-        'LEFT JOIN', 'TeamComment_user_id = stats_user_id'
+      $joinConds['teamcomments'] = [
+        'LEFT JOIN', 'teamcomment_user_id = stats_user_id'
       ];
     }
 
@@ -147,7 +147,7 @@ class TeamCommentsPage extends ContextSource {
     $res = $dbr->select(
       $tables,
       $fields,
-      [ 'TeamComment_Page_ID' => $this->id ],
+      [ 'teamcomment_page_id' => $this->id ],
       __METHOD__,
       $params,
       $joinConds
@@ -156,20 +156,20 @@ class TeamCommentsPage extends ContextSource {
     $teamcomments = [];
 
     foreach ( $res as $row ) {
-      if ( $row->TeamComment_Parent_ID == 0 ) {
-        $thread = $row->TeamCommentID;
+      if ( $row->teamcomment_parent_id == 0 ) {
+        $thread = $row->teamcomment_id;
       } else {
-        $thread = $row->TeamComment_Parent_ID;
+        $thread = $row->teamcomment_parent_id;
       }
       $data = [
-        'TeamComment_Username' => $row->TeamComment_Username,
-        'TeamComment_IP' => $row->TeamComment_IP,
-        'TeamComment_Text' => $row->TeamComment_Text,
-        'TeamComment_Date' => $row->TeamComment_Date,
-        'TeamComment_user_id' => $row->TeamComment_user_id,
+        'teamcomment_username' => $row->teamcomment_username,
+        'teamcomment_ip' => $row->teamcomment_ip,
+        'teamcomment_text' => $row->teamcomment_text,
+        'teamcomment_date' => $row->teamcomment_date,
+        'teamcomment_user_id' => $row->teamcomment_user_id,
         'TeamComment_user_points' => ( isset( $row->stats_total_points ) ? number_format( $row->stats_total_points ) : 0 ),
-        'TeamCommentID' => $row->TeamCommentID,
-        'TeamComment_Parent_ID' => $row->TeamComment_Parent_ID,
+        'teamcomment_id' => $row->teamcomment_id,
+        'teamcomment_parent_id' => $row->teamcomment_parent_id,
         'thread' => $thread,
         'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp )
       ];

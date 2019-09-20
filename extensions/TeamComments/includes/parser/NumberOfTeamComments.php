@@ -48,7 +48,7 @@ class NumberOfTeamComments {
         // Not cached → have to fetch it from the database
         $dbr = wfGetDB( DB_REPLICA );
         $teamcommentCount = (int)$dbr->selectField(
-          'TeamComments',
+          'teamcomments',
           'COUNT(*) AS count',
           [],
           __METHOD__
@@ -105,9 +105,9 @@ class NumberOfTeamComments {
       $dbr = wfGetDB( DB_REPLICA );
 
       $res = $dbr->selectField(
-        'TeamComments',
+        'teamcomments',
         'COUNT(*)',
-        [ 'TeamComment_Page_ID' => $pageId ],
+        [ 'teamcomment_page_id' => $pageId ],
         __METHOD__
       );
 

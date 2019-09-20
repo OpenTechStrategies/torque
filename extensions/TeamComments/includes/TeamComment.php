@@ -38,7 +38,7 @@ class TeamComment extends ContextSource {
   public $date = null;
 
   /**
-   * @var Integer: internal ID number (TeamComments.TeamCommentID DB field) of the
+   * @var Integer: internal ID number (teamcomments.teamcomment_id DB field) of the
    *               current teamcomment that we're dealing with
    */
   public $id = 0;
@@ -108,14 +108,14 @@ class TeamComment extends ContextSource {
 
     $this->setContext( $context );
 
-    $this->username = $data['TeamComment_Username'];
-    $this->ip = $data['TeamComment_IP'];
-    $this->text = $data['TeamComment_Text'];
-    $this->date = $data['TeamComment_Date'];
-    $this->userID = (int)$data['TeamComment_user_id'];
+    $this->username = $data['teamcomment_username'];
+    $this->ip = $data['teamcomment_ip'];
+    $this->text = $data['teamcomment_text'];
+    $this->date = $data['teamcomment_date'];
+    $this->userID = (int)$data['teamcomment_user_id'];
     $this->userPoints = $data['TeamComment_user_points'];
-    $this->id = (int)$data['TeamCommentID'];
-    $this->parentID = (int)$data['TeamComment_Parent_ID'];
+    $this->id = (int)$data['teamcomment_id'];
+    $this->parentID = (int)$data['teamcomment_parent_id'];
     $this->thread = $data['thread'];
     $this->timestamp = $data['timestamp'];
 
@@ -134,12 +134,12 @@ class TeamComment extends ContextSource {
     $joinConds = [];
 
     // Defaults (for non-social wikis)
-    $tables[] = 'TeamComments';
+    $tables[] = 'teamcomments';
     $fields = [
-      'TeamComment_Username', 'TeamComment_IP', 'TeamComment_Text',
-      'TeamComment_Date', 'TeamComment_Date AS timestamp',
-      'TeamComment_user_id', 'TeamCommentID', 'TeamComment_Parent_ID',
-      'TeamCommentID', 'TeamComment_Page_ID'
+      'teamcomment_username', 'teamcomment_ip', 'teamcomment_text',
+      'teamcomment_date', 'teamcomment_date AS timestamp',
+      'teamcomment_user_id', 'teamcomment_id', 'teamcomment_parent_id',
+      'teamcomment_id', 'teamcomment_page_id'
     ];
 
     // If SocialProfile is installed, query the user_stats table too.
@@ -150,8 +150,8 @@ class TeamComment extends ContextSource {
       $tables[] = 'user_stats';
       $fields[] = 'stats_total_points';
       $joinConds = [
-        'TeamComments' => [
-          'LEFT JOIN', 'TeamComment_user_id = stats_user_id'
+        'teamcomments' => [
+          'LEFT JOIN', 'teamcomment_user_id = stats_user_id'
         ]
       ];
     }
@@ -160,7 +160,7 @@ class TeamComment extends ContextSource {
     $res = $dbr->select(
       $tables,
       $fields,
-      [ 'TeamCommentID' => $id ],
+      [ 'teamcomment_id' => $id ],
       __METHOD__,
       $params,
       $joinConds
@@ -168,25 +168,25 @@ class TeamComment extends ContextSource {
 
     $row = $res->fetchObject();
 
-    if ( $row->TeamComment_Parent_ID == 0 ) {
-      $thread = $row->TeamCommentID;
+    if ( $row->teamcomment_parent_id == 0 ) {
+      $thread = $row->teamcomment_id;
     } else {
-      $thread = $row->TeamComment_Parent_ID;
+      $thread = $row->teamcomment_parent_id;
     }
     $data = [
-      'TeamComment_Username' => $row->TeamComment_Username,
-      'TeamComment_IP' => $row->TeamComment_IP,
-      'TeamComment_Text' => $row->TeamComment_Text,
-      'TeamComment_Date' => $row->TeamComment_Date,
-      'TeamComment_user_id' => $row->TeamComment_user_id,
+      'teamcomment_username' => $row->teamcomment_username,
+      'teamcomment_ip' => $row->teamcomment_ip,
+      'teamcomment_text' => $row->teamcomment_text,
+      'teamcomment_date' => $row->teamcomment_date,
+      'teamcomment_user_id' => $row->teamcomment_user_id,
       'TeamComment_user_points' => ( isset( $row->stats_total_points ) ? number_format( $row->stats_total_points ) : 0 ),
-      'TeamCommentID' => $row->TeamCommentID,
-      'TeamComment_Parent_ID' => $row->TeamComment_Parent_ID,
+      'teamcomment_id' => $row->teamcomment_id,
+      'teamcomment_parent_id' => $row->teamcomment_parent_id,
       'thread' => $thread,
       'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp )
     ];
 
-    $page = new TeamCommentsPage( $row->TeamComment_Page_ID, $context );
+    $page = new TeamCommentsPage( $row->teamcomment_page_id, $context );
 
     return new TeamComment( $page, $context, $data );
   }
@@ -262,15 +262,15 @@ class TeamComment extends ContextSource {
     $teamcommentDate = date( 'Y-m-d H:i:s' );
     Wikimedia\restoreWarnings();
     $dbw->insert(
-      'TeamComments',
+      'teamcomments',
       [
-        'TeamComment_Page_ID' => $page->id,
-        'TeamComment_Username' => $user->getName(),
-        'TeamComment_user_id' => $user->getId(),
-        'TeamComment_Text' => $text,
-        'TeamComment_Date' => $teamcommentDate,
-        'TeamComment_Parent_ID' => $parentID,
-        'TeamComment_IP' => $_SERVER['REMOTE_ADDR']
+        'teamcomment_page_id' => $page->id,
+        'teamcomment_username' => $user->getName(),
+        'teamcomment_user_id' => $user->getId(),
+        'teamcomment_text' => $text,
+        'teamcomment_date' => $teamcommentDate,
+        'teamcomment_parent_id' => $parentID,
+        'teamcomment_ip' => $_SERVER['REMOTE_ADDR']
       ],
       __METHOD__
     );
@@ -306,14 +306,14 @@ class TeamComment extends ContextSource {
       $thread = $parentID;
     }
     $data = [
-      'TeamComment_Username' => $user->getName(),
-      'TeamComment_IP' => $context->getRequest()->getIP(),
-      'TeamComment_Text' => $text,
-      'TeamComment_Date' => $teamcommentDate,
-      'TeamComment_user_id' => $user->getId(),
+      'teamcomment_username' => $user->getName(),
+      'teamcomment_ip' => $context->getRequest()->getIP(),
+      'teamcomment_text' => $text,
+      'teamcomment_date' => $teamcommentDate,
+      'teamcomment_user_id' => $user->getId(),
       'TeamComment_user_points' => $userPoints,
-      'TeamCommentID' => $id,
-      'TeamComment_Parent_ID' => $parentID,
+      'teamcomment_id' => $id,
+      'teamcomment_parent_id' => $parentID,
       'thread' => $thread,
       'timestamp' => strtotime( $teamcommentDate )
     ];
@@ -333,8 +333,8 @@ class TeamComment extends ContextSource {
     $dbw = wfGetDB( DB_MASTER );
     $dbw->startAtomic( __METHOD__ );
     $dbw->delete(
-      'TeamComments',
-      [ 'TeamCommentID' => $this->id ],
+      'teamcomments',
+      [ 'teamcomment_id' => $this->id ],
       __METHOD__
     );
     $dbw->endAtomic( __METHOD__ );
