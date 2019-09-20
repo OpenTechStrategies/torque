@@ -17,8 +17,6 @@
 	"teamcomments-submit": "خپله تبصره ورگډول",
 	"teamcomments-delete-link": "تبصره ړنگول",
 	"teamcomments-anon-name": "ورکنومی کارن",
-	"teamcomments-ignore-unblock": "بنديز لرې کول",
-	"teamcomments-ignore-cancel": "ناگارل",
 	"log-name-teamcomments": "د تبصرو يادښت",
 	"teamcomments-time-ago": "$1 دمخه",
 	"teamcomments-time-months": "{{PLURAL:$1|۱ مياشت|$1 مياشت}}",

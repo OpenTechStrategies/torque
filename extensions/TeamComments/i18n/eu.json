@@ -11,7 +11,6 @@
 	"teamcomments-submit": "Gehitu zure iruzkina",
 	"teamcomments-delete-link": "Ezabatu iruzkina",
 	"teamcomments-anon-name": "Erabiltzaile anonimoa",
-	"teamcomments-ignore-cancel": "Utzi",
 	"teamcomments-time-ago": "Duela $1",
 	"teamcomments-time-months": "{{PLURAL:$1|hilabete bat|$1 hilabete}}",
 	"teamcomments-time-days": "{{PLURAL:$1|egun bat|$1 egun}}",

@@ -17,7 +17,6 @@
 	"teamcomments-post": "टिप्पणी पोस्ट करें",
 	"teamcomments-submit": "अपनी टिप्पणी जोड़ें",
 	"teamcomments-score-text": "अंक",
-	"teamcomments-ignore-cancel": "रद्द करें",
 	"log-name-teamcomments": "टिप्पणी लॉग",
 	"teamcomments-time-ago": "$1 पहले",
 	"teamcomments-time-months": "{{PLURAL:$1|एक महीना|$1 महीने}}"

@@ -486,12 +486,6 @@ class TeamCommentsPage extends ContextSource {
 		$currentPage = $teamcommentPages[$currentPageNum - 1];
 		Wikimedia\restoreWarnings();
 
-		// Load complete blocked list for logged in user so they don't see their teamcomments
-		$blockList = [];
-		if ( $this->getUser()->getId() != 0 ) {
-			$blockList = TeamCommentFunctions::getBlockList( $this->getUser()->getId() );
-		}
-
 		if ( $currentPage ) {
 			$pager = $this->displayPager( $currentPageNum, $numPages );
 			$output .= $pager;
@@ -501,7 +495,7 @@ class TeamCommentsPage extends ContextSource {
 
 			foreach ( $currentPage as $thread ) {
 				foreach ( $thread as $teamcomment ) {
-					$output .= $teamcomment->display( $blockList, $anonList );
+					$output .= $teamcomment->display( $anonList );
 				}
 			}
 			$output .= $pager;

@@ -11,8 +11,6 @@
 	"teamcomments-reply": "Җавап бирергә",
 	"teamcomments-score-text": "Билге",
 	"teamcomments-permalink": "Даими сылтама",
-	"teamcomments-ignore-unblock": "Блоктан алу",
-	"teamcomments-ignore-cancel": "Баш тарту",
 	"teamcomments-time-ago": "$1 элек",
 	"teamcomments-time-months": "{{PLURAL:$1|бер ай|$1 ай}}",
 	"teamcomments-time-days": "{{PLURAL:$1|бер көн|$1 көн}}",

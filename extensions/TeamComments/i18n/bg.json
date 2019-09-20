@@ -7,8 +7,6 @@
 			"Vlad5250"
 		]
 	},
-	"apihelp-teamcommentblock-description": "API-то на commentblock позволява блокиране на потребител на база негов коментар, след попълване на  следните параметри: CommentID.",
-	"apihelp-teamcommentblock-summary": "API-то на commentblock позволява блокиране на потребител на база негов коментар, след попълване на  следните параметри: CommentID.",
 	"apihelp-teamcommentdelete-description": "API-то на commentblock позволява изтриването на коментар, след попълване на следните параметри: CommentID.",
 	"apihelp-teamcommentdelete-summary": "API-то на commentblock позволява изтриването на коментар, след попълване на следните параметри: CommentID.",
 	"apihelp-teamcommentlatestid-description": "API-то на commentblock позволява получаването на ID на последния коментар, след попълване на следните параметри: pageID",
@@ -26,8 +24,6 @@
 	"teamcomments-you": "Вие",
 	"teamcomments-reply": "Отговор",
 	"teamcomments-score-text": "Точки",
-	"teamcomments-ignore-unblock": "Отблокиране",
-	"teamcomments-ignore-cancel": "Отказ",
 	"right-teamcomment": "Изпращане на коментари",
 	"right-teamcommentadmin": "Управление на потребителски коментари",
 	"right-teamcommentlinks": "Използване на външни препратки в коментарите",

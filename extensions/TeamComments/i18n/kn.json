@@ -22,8 +22,6 @@
 	"teamcomments-score-text": "ಅಂಕ",
 	"teamcomments-delete-link": "ಟಿಪ್ಪಣಿಗಳನ್ನು ಅಳಿಸಿ",
 	"teamcomments-anon-name": "ಅನಾಮಿಕ ಸದಸ್ಯ",
-	"teamcomments-ignore-unblock": "ತಡೆಯನ್ನು ತಗೆ",
-	"teamcomments-ignore-cancel": "ರದ್ದುಗೊಳಿಸಿ",
 	"teamcomments-time-minutes": "$1 {{PLURAL:$1|ನಿಮಿಷ|ನಿಮಿಷಗಳು}}",
 	"teamcomments-time-seconds": "$1 {{PLURAL:$1|ಕ್ಷಣ|ಕ್ಷಣಗಳು}}",
 	"group-teamcommentadmin": "ಟಿಪ್ಪಣಿಗಳ ನಿರ್ವಾಹಕರು",

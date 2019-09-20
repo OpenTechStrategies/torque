@@ -16,8 +16,6 @@
 	"teamcomments-score-text": "নম্বৰ",
 	"teamcomments-permalink": "স্থায়ী সংযোগ",
 	"teamcomments-delete-link": "মন্তব্য বিলোপ কৰক",
-	"teamcomments-ignore-unblock": "প্ৰতিবন্ধক উঠাই লওক",
-	"teamcomments-ignore-cancel": "বাতিল কৰক",
 	"log-name-teamcomments": "মন্তব্য অভিলেখ",
 	"teamcomments-time-ago": "$1 আগেয়ে",
 	"teamcomments-time-days": "{{PLURAL:$1|$1 দিন|$1 দিন}}",

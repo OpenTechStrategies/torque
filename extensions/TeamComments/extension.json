@@ -32,9 +32,6 @@
 		"teamcommentlinks",
 		"teamcomment-delete-own"
 	],
-	"SpecialPages": {
-		"TeamCommentIgnoreList": "TeamCommentIgnoreList"
-	},
 	"LogTypes": [
 		"teamcomments"
 	],
@@ -46,7 +43,6 @@
 		"teamcomments/delete": "LogFormatter"
 	},
 	"APIModules": {
-		"teamcommentblock": "TeamCommentBlockAPI",
 		"teamcommentdelete": "TeamCommentDeleteAPI",
 		"teamcommentlatestid": "TeamCommentLatestIdAPI",
 		"teamcommentlist": "TeamCommentListAPI",
@@ -59,7 +55,6 @@
 		]
 	},
 	"ExtensionMessagesFiles": {
-		"TeamCommentsAliases": "TeamComments.i18n.alias.php",
 		"TeamCommentsMagic": "TeamComments.i18n.magic.php",
 		"NumberOfTeamCommentsMagic": "TeamComments.i18n.magic.php"
 	},
@@ -69,10 +64,8 @@
 		"NumberOfTeamComments": "includes/parser/NumberOfTeamComments.php",
 		"DisplayTeamComments": "includes/parser/DisplayTeamComments.php",
 		"TeamCommentFunctions": "includes/TeamCommentFunctions.php",
-		"TeamCommentIgnoreList": "includes/specials/TeamCommentIgnoreList.php",
 		"TeamCommentsLogFormatter": "includes/TeamCommentsLogFormatter.php",
 		"TeamCommentsHooks": "includes/TeamCommentsHooks.php",
-		"TeamCommentBlockAPI": "includes/api/TeamCommentBlockAPI.php",
 		"TeamCommentDeleteAPI": "includes/api/TeamCommentDeleteAPI.php",
 		"TeamCommentLatestIdAPI": "includes/api/TeamCommentLatestIdAPI.php",
 		"TeamCommentListAPI": "includes/api/TeamCommentListAPI.php",
@@ -97,8 +90,6 @@
 				"teamcomments-auto-refresher-enable",
 				"teamcomments-cancel-reply",
 				"teamcomments-reply-to",
-				"teamcomments-block-warning-anon",
-				"teamcomments-block-warning-user",
 				"teamcomments-delete-warning"
 			],
 			"targets": [

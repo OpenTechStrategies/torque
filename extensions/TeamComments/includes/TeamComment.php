@@ -550,11 +550,10 @@ class TeamComment extends ContextSource {
 	/**
 	 * Show the HTML for this teamcomment and ignore section
 	 *
-	 * @param array $blockList List of users the current user has blocked
 	 * @param array $anonList Map of IP addresses to names like anon#1, anon#2
 	 * @return string HTML
 	 */
-	function display( $blockList, $anonList ) {
+	function display( $anonList ) {
 		if ( $this->parentID == 0 ) {
 			$container_class = 'full';
 		} else {
@@ -563,41 +562,7 @@ class TeamComment extends ContextSource {
 
 		$output = '';
 
-		if ( in_array( $this->username, $blockList ) ) {
-			$output .= $this->showIgnore( false, $container_class );
-			$output .= $this->showTeamComment( true, $container_class, $blockList, $anonList );
-		} else {
-			$output .= $this->showIgnore( true, $container_class );
-			$output .= $this->showTeamComment( false, $container_class, $blockList, $anonList );
-		}
-
-		return $output;
-	}
-
-	/**
-	 * Show the box for if this teamcomment has been ignored
-	 *
-	 * @param bool $hide
-	 * @param $containerClass
-	 * @return string
-	 */
-	function showIgnore( $hide = false, $containerClass ) {
-		$blockListTitle = SpecialPage::getTitleFor( 'TeamCommentIgnoreList' );
-
-		$style = '';
-		if ( $hide ) {
-			$style = " style='display:none;'";
-		}
-
-		$output = "<div id='ignore-{$this->id}' class='c-ignored {$containerClass}'{$style}>\n";
-		$output .= wfMessage( 'teamcomments-ignore-message' )->parse();
-		$output .= '<div class="c-ignored-links">' . "\n";
-		$output .= "<a href=\"javascript:void(0);\" data-teamcomment-id=\"{$this->id}\">" .
-			$this->msg( 'teamcomments-show-teamcomment-link' )->plain() . '</a> | ';
-		$output .= '<a href="' . htmlspecialchars( $blockListTitle->getFullURL() ) . '">' .
-			$this->msg( 'teamcomments-manage-blocklist-link' )->plain() . '</a>';
-		$output .= '</div>' . "\n";
-		$output .= '</div>' . "\n";
+		$output .= $this->showTeamComment( false, $container_class, $anonList );
 
 		return $output;
 	}
@@ -607,11 +572,10 @@ class TeamComment extends ContextSource {
 	 *
 	 * @param bool $hide If true, teamcomment is returned but hidden (display:none)
 	 * @param string $containerClass
-	 * @param array $blockList
 	 * @param array $anonList
 	 * @return string
 	 */
-	function showTeamComment( $hide = false, $containerClass, $blockList, $anonList ) {
+	function showTeamComment( $hide = false, $containerClass, $anonList ) {
 		global $wgUserLevels, $wgExtensionAssetsPath;
 
 		$style = '';
@@ -680,22 +644,6 @@ class TeamComment extends ContextSource {
 			$teamcomment_class = 'r-message';
 		}
 
-		// Display Block icon for logged in users for teamcomments of users
-		// that are already not in your block list
-		$blockLink = '';
-
-		if (
-			$userObj->getId() != 0 && $userObj->getId() != $this->userID &&
-			!( in_array( $this->userID, $blockList ) )
-		) {
-			$blockLink = '<a href="javascript:void(0);" rel="nofollow" class="teamcomments-block-user" data-teamcomments-safe-username="' .
-				htmlspecialchars( $this->username, ENT_QUOTES ) .
-				'" data-teamcomments-teamcomment-id="' . $this->id . '" data-teamcomments-user-id="' .
-				$this->userID . "\">
-					<img src=\"{$wgExtensionAssetsPath}/TeamComments/resources/images/block.svg\" border=\"0\" alt=\"\"/>
-				</a>";
-		}
-
 		// Default avatar image, if SocialProfile extension isn't enabled
 		global $wgTeamCommentsDefaultAvatar;
 		$avatarImg = '<img src="' . $wgTeamCommentsDefaultAvatar . '" alt="" border="0" />';
@@ -710,7 +658,7 @@ class TeamComment extends ContextSource {
 		$output .= '<div class="c-container">' . "\n";
 		$output .= '<div class="c-user">' . "\n";
 		$output .= "{$teamcommentPoster}";
-		$output .= "<span class=\"c-user-level\">{$teamcommentPosterLevel}</span> {$blockLink}" . "\n";
+		$output .= "<span class=\"c-user-level\">{$teamcommentPosterLevel}</span>" . "\n";
 
 		Wikimedia\suppressWarnings(); // E_STRICT bitches about strtotime()
 		$output .= '<div class="c-time">' .

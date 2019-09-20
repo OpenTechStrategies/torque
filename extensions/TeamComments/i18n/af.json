@@ -10,6 +10,5 @@
 	"teamcomments-cancel-reply": "Kanselleer",
 	"teamcomments-you": "U",
 	"teamcomments-reply": "Antwoord",
-	"teamcomments-ignore-cancel": "Kanselleer",
 	"teamcomments-time-minutes": "{{PLURAL:$1|$1 minuut|$1 minute}}"
 }

@@ -18,7 +18,6 @@
 	"teamcomments-permalink": "Permanent henvisning",
 	"teamcomments-delete-link": "Slet kommentar",
 	"teamcomments-anon-name": "Anonym bruger",
-	"teamcomments-ignore-cancel": "Annuller",
 	"teamcomments-time-days": "{{PLURAL:$1|en dag|$1 dage}}",
 	"teamcomments-time-hours": "{{PLURAL:$1|en time|$1 timer}}",
 	"teamcomments-time-minutes": "{{PLURAL:$1|et minut|$1 minutter}}",

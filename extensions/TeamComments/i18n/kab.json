@@ -4,8 +4,6 @@
 			"Belkacem77"
 		]
 	},
-	"apihelp-teamcommentblock-description": "API commentblock ad isireg asewḥel n useqdac seg uwennit ansa i d-yekka s umuddu i ɣewwaṛen-agi: CommentID.",
-	"apihelp-teamcommentblock-summary": "API commentblock ad isireg asewḥel n useqdac seg uwennit aida yella d ameskar s umuddu n iɣewwaṛen-agi: CommentID.",
 	"apihelp-teamcommentdelete-description": "API commentdelete ad isireg tukksa deffir umuddu n iɣewwaṛen-agi: CommentID.",
 	"apihelp-teamcommentdelete-summary": "API commentdelete ad isireg tukksa ticki tmuddeḍ iɣewwaṛen-agi: CommentID.",
 	"teamcomments-you": "Kečč",

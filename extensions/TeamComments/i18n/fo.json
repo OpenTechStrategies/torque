@@ -15,7 +15,6 @@
 	"teamcomments-reply": "Svara",
 	"teamcomments-anon-name": "Dulnevndur brúkari",
 	"teamcomments-anon-message": "{{SITENAME}} vil gjarna hava <b>viðmerkingar</b>. Um tú ikki vilt vera dulnevnd/ur, so kanst tú <a href=\"$1\">skráseta teg</a> ella <a href=\"$2\">rita inn</a>. Tað er ókeypis.",
-	"teamcomments-ignore-item": "<a href=\"$1\">$2</a> hin $3 <a href=\"$4\">(tak sperring burtur)</a>",
 	"teamcomments-time-ago": "$1 síðan",
 	"teamcomments-time-days": "{{PLURAL:$1|ein dagur|$1 dagar}}",
 	"teamcomments-time-hours": "{{PLURAL:$1|ein tími|$1 tímar}}",

@@ -27,41 +27,6 @@
 		},
 
 		/**
-		 * This function is called whenever a user clicks on the "block" image to
-		 * block another user's teamcomments.
-		 *
-		 * @param {string} username Name of the user whose teamcomments we want to block
-		 * @param {number} userID User ID number of the user whose teamcomments we
-		 *                         want to block (or 0 for anonymous users)
-		 * @param {number} teamcommentID TeamComment ID number
-		 */
-		blockUser: function ( username, userID, teamcommentID ) {
-			var message;
-
-			// Display a different message depending on whether we're blocking an
-			// anonymous user or a registered one.
-			if ( !userID || userID === 0 ) {
-				message = mw.msg( 'teamcomments-block-warning-anon' );
-			} else {
-				message = mw.msg( 'teamcomments-block-warning-user', username );
-			}
-
-			// eslint-disable-next-line no-alert
-			if ( window.confirm( message ) ) {
-				( new mw.Api() ).postWithToken( 'csrf', {
-					action: 'teamcommentblock',
-					teamcommentID: teamcommentID
-				} ).done( function ( response ) {
-					if ( response.teamcommentblock.ok ) {
-						$( 'a.teamcomments-block-user[data-teamcomments-user-id=' + userID + ']' )
-							.parents( '.c-item' ).hide( 300 )
-							.prev().show( 300 );
-					}
-				} );
-			}
-		},
-
-		/**
 		 * This function is called whenever a user clicks on the "Delete TeamComment"
 		 * link to delete a teamcomment.
 		 *
@@ -289,16 +254,6 @@
 				TeamComment.vote(
 					that.data( 'teamcomment-id' ),
 					that.data( 'vote-type' )
-				);
-			} )
-
-			// "Block this user" links
-			.on( 'click', 'a.teamcomments-block-user', function () {
-				var that = $( this );
-				TeamComment.blockUser(
-					that.data( 'teamcomments-safe-username' ),
-					that.data( 'teamcomments-user-id' ),
-					that.data( 'teamcomments-teamcomment-id' )
 				);
 			} )
 

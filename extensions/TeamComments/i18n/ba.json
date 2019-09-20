@@ -10,8 +10,6 @@
 	"teamcomments-loading": "Тейәү",
 	"teamcomments-reply-to": "{{GENDER:$2|ҡатнашыусыға}} $1 яуап бирергә",
 	"teamcomments-cancel-reply": "Кире алырға",
-	"teamcomments-block-warning-anon": "Был аноним ҡатнашыусының (IP-адресы аша килгән) комментарийҙарына әһәмиәт бирмәҫкә теләүегеҙҙе раҫлайһығыҙмы?",
-	"teamcomments-block-warning-user": "$1 ҡатнашыусының комментарийҙарына әһәмиәт бирмәҫкә теләүегеҙҙе раҫлайһығыҙмы?",
 	"teamcomments-delete-warning": "Был комментарийҙы ысынлап та юйырға теләйһегеҙме?",
 	"teamcomments-sort-by-date": "Датаһы буйынса тәртипкә килтереү",
 	"teamcomments-sort-by-score": "Балл һандары буйынса тәртипкә килтереү",
