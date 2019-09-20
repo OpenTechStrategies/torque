@@ -31,7 +31,7 @@
   "apihelp-teamcommentsubmit-param-parentID": "{{doc-apihelp-param|commentsubmit|parentID}}",
   "apihelp-teamcommentsubmit-param-teamcommentText": "{{doc-apihelp-param|commentsubmit|commentText}}",
   "teamcomments-teamcomment": "This message might be unused.\n{{Identical|Comment}}",
-  "teamcomments-desc": "{{desc|name=Comments|url=https://www.mediawiki.org/wiki/Extension:Comments}}",
+  "teamcomments-desc": "{{desc|name=TeamComments|url=https://github.com/OpenTechStrategies/torque}}",
   "teamcomments-db-locked": "Displayed if a page contains the <code><nowiki><comments /></nowiki></code> tag while the database is locked.",
   "teamcomments-loading": "{{Identical|Loading}}",
   "teamcomments-auto-refresher-enable": "Auto-refresher is a feature where a page with the <code><nowiki><comments /></nowiki></code> tag is automatically refreshed for new comments.\n\nRefer to the [[mw:File:Comments.png|image]] for details.",

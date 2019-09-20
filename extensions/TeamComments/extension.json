@@ -1,15 +1,16 @@
 {
   "name": "TeamComments",
-  "version": "4.5.1",
+  "version": "0.0.1",
   "author": [
     "David Pean",
     "Misza",
     "Jack Phoenix",
     "Adam Carter/UltrasonicNXT",
-    "Samantha Nguyen"
+    "Samantha Nguyen",
+    "Open Tech Strategies, LLC"
   ],
   "license-name": "GPL-2.0-or-later",
-  "url": "https://www.mediawiki.org/wiki/Extension:TeamComments",
+  "url": "https://github.com/OpenTechStrategies/torque",
   "descriptionmsg": "teamcomments-desc",
   "type": "parserhook",
   "requires": {

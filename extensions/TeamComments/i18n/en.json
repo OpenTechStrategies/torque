@@ -23,7 +23,7 @@
   "apihelp-teamcommentsubmit-param-parentID": "Comment ID of the parent comment",
   "apihelp-teamcommentsubmit-param-teamcommentText": "Comment Text",
   "teamcomments-teamcomment": "Comment",
-  "teamcomments-desc": "Adds <code>&lt;comments&gt;</code> parser hook that allows commenting on pages",
+  "teamcomments-desc": "Adds <code>&lt;teamcomments&gt;</code> parser hook that allows commenting on pages",
   "teamcomments-db-locked": "<h3>Adding comments</h3>The database is currently locked for routine database maintenance, after which it will be back to normal. Please check back later!",
   "teamcomments-loading": "Loading...",
   "teamcomments-auto-refresher-enable": "Enable comment auto-refresher",
