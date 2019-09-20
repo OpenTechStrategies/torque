@@ -4,12 +4,10 @@
 			"Ильнар"
 		]
 	},
-	"teamcomments-voted-label": "Тавыш бирде",
 	"teamcomments-loading": "Йөкләү...",
 	"teamcomments-cancel-reply": "Баш тарту",
 	"teamcomments-you": "Сез",
 	"teamcomments-reply": "Җавап бирергә",
-	"teamcomments-score-text": "Билге",
 	"teamcomments-permalink": "Даими сылтама",
 	"teamcomments-time-ago": "$1 элек",
 	"teamcomments-time-months": "{{PLURAL:$1|бер ай|$1 ай}}",

@@ -5,7 +5,6 @@
 		]
 	},
 	"teamcomments-teamcomment": "Коммент",
-	"teamcomments-voted-label": "Кхаж тесна",
 	"teamcomments-loading": "Чуйолуш…",
 	"teamcomments-auto-refresher-enable": "Латаде комментареш автоматически карладахар",
 	"teamcomments-auto-refresher-pause": "Сацаде комментареш автоматически карладахар",
@@ -16,7 +15,6 @@
 	"teamcomments-reply": "Жоп далар",
 	"teamcomments-post": "Йита коммент",
 	"teamcomments-submit": "ТӀетоха хьай коммент",
-	"teamcomments-score-text": "Мах хадор",
 	"teamcomments-permalink": "Цахийцалун хьажорг",
 	"teamcomments-time-ago": "$1 юха",
 	"teamcomments-time-months": "{{PLURAL:$1|цхьа бутт|$1 беттанаш}}",

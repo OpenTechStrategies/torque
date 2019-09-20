@@ -5,7 +5,6 @@
 		]
 	},
 	"teamcomments-teamcomment": "মন্তব্য",
-	"teamcomments-voted-label": "ভোট দিয়া হ’ল",
 	"teamcomments-loading": "ল'ড হৈ আছে…",
 	"teamcomments-cancel-reply": "বাতিল কৰক",
 	"teamcomments-show-teamcomment-link": "মন্তব্য দেখুৱাওক",
@@ -13,7 +12,6 @@
 	"teamcomments-reply": "উত্তৰ",
 	"teamcomments-post": "মন্তব্য প্ৰেৰণ কৰক",
 	"teamcomments-submit": "আপোনাৰ মন্তব্য যোগ দিয়ক",
-	"teamcomments-score-text": "নম্বৰ",
 	"teamcomments-permalink": "স্থায়ী সংযোগ",
 	"teamcomments-delete-link": "মন্তব্য বিলোপ কৰক",
 	"log-name-teamcomments": "মন্তব্য অভিলেখ",

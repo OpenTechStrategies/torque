@@ -38,14 +38,11 @@ class TeamCommentsHooks {
 		// For non-MySQL/MariaDB/SQLite DBMSes, use the appropriately named file
 		if ( !in_array( $dbType, [ 'mysql', 'sqlite' ] ) ) {
 			$teamcomments = "teamcomments.{$dbType}.sql";
-			$teamcomments_vote = "teamcomments_vote.{$dbType}.sql";
 		} else {
 			$teamcomments = 'teamcomments.sql';
-			$teamcomments_vote = 'teamcomments_vote.sql';
 		}
 
 		$updater->addExtensionTable( 'TeamComments', "{$dir}/{$teamcomments}" );
-		$updater->addExtensionTable( 'TeamComments_Vote', "{$dir}/{$teamcomments_vote}" );
 	}
 
 	/**
@@ -55,6 +52,5 @@ class TeamCommentsHooks {
 	 */
 	public static function onRenameUserSQL( $renameUserSQL ) {
 		$renameUserSQL->tables['TeamComments'] = [ 'Comment_Username', 'Comment_user_id' ];
-		$renameUserSQL->tables['TeamComments_Vote'] = [ 'Comment_Vote_Username', 'Comment_Vote_user_id' ];
 	}
 }

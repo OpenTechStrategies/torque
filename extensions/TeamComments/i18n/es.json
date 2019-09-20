@@ -14,7 +14,6 @@
 			"Dgstranz"
 		]
 	},
-	"apihelp-teamcommentvote-description": "La API commentvote permite votar un comentario tras proporcionar los parámetros siguientes: commentID, voteValue.",
 	"apihelp-teamcommentdelete-param-teamcommentID": "Identificador del comentario que se eliminará",
 	"apihelp-teamcommentlatestid-param-pageID": "Identificador de la página donde está el comentario más reciente",
 	"apihelp-teamcommentlist-param-pageID": "Identificador de la página desde la cual se recupera la lista de comentarios",
@@ -25,7 +24,6 @@
 	"teamcomments-teamcomment": "Comentario",
 	"teamcomments-desc": "Añade el asociador analítico <code>&lt;comments&gt;</code> que permite hacer comentarios en las páginas",
 	"teamcomments-db-locked": "<h3>Agregar comentarios</h3>En este momento la base de datos está bloqueada por tareas rutinarias de mantenimiento, luego de los cuales volverá a la normalidad. Regresa más tarde.",
-	"teamcomments-voted-label": "Valorado",
 	"teamcomments-loading": "Cargando...",
 	"teamcomments-auto-refresher-enable": "Habilitar actualización automática de comentarios",
 	"teamcomments-auto-refresher-pause": "Pausar actualización automática de comentarios",
@@ -33,7 +31,6 @@
 	"teamcomments-cancel-reply": "Cancelar",
 	"teamcomments-delete-warning": "¿Confirmas que quieres borrar este comentario?",
 	"teamcomments-sort-by-date": "Ordenar por fecha",
-	"teamcomments-sort-by-score": "Ordenar por valoración",
 	"teamcomments-show-teamcomment-link": "Mostrar comentario",
 	"teamcomments-you": "Tú",
 	"teamcomments-reply": "Responder",
@@ -41,7 +38,6 @@
 	"teamcomments-not-allowed": "No puedes publicar comentarios.",
 	"teamcomments-post": "Publicar comentario",
 	"teamcomments-submit": "Agrega tu comentario",
-	"teamcomments-score-text": "Valoración",
 	"teamcomments-permalink": "Enlace permanente",
 	"teamcomments-delete-link": "Borrar comentario",
 	"teamcomments-anon-name": "Usuario anónimo",

@@ -16,7 +16,6 @@
 	"teamcomments-reply": "उत्तर दें",
 	"teamcomments-post": "टिप्पणी पोस्ट करें",
 	"teamcomments-submit": "अपनी टिप्पणी जोड़ें",
-	"teamcomments-score-text": "अंक",
 	"log-name-teamcomments": "टिप्पणी लॉग",
 	"teamcomments-time-ago": "$1 पहले",
 	"teamcomments-time-months": "{{PLURAL:$1|एक महीना|$1 महीने}}"

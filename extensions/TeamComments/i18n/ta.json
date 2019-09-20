@@ -5,7 +5,6 @@
 		]
 	},
 	"teamcomments-teamcomment": "கருத்து",
-	"teamcomments-voted-label": "வாக்களிக்கப்பட்டது",
 	"teamcomments-loading": "ஏற்றப்படுகிறது...",
 	"teamcomments-cancel-reply": "ரத்து செய்",
 	"teamcomments-sort-by-date": "தேதியைப பொறுத்து வரிசைப்படுத்து",
@@ -16,7 +15,6 @@
 	"teamcomments-not-allowed": "கருத்துகளை பதிவு செய்ய நீங்கள் அனுமதிக்கப்படவில்லை.",
 	"teamcomments-post": "கருத்துக்களை பதியவும்",
 	"teamcomments-submit": "உங்கள் கருத்தை சேர்க்கவும்",
-	"teamcomments-score-text": "பெறுபுள்ளி",
 	"teamcomments-permalink": "நிரந்தர இணைப்பு",
 	"teamcomments-delete-link": "கருத்தை நீக்கவும்",
 	"teamcomments-anon-name": "அடையாளம் காட்டாத பயனர்",

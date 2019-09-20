@@ -35,25 +35,14 @@ class DisplayTeamComments {
 		// adding arguments:
 		// <teamcomments>
 		// Allow=Foo,Bar
-		// Voting=Plus
 		// </teamcomments>
 		// whereas the normal, standard MediaWiki style, which this extension
-		// also supports is: <teamcomments allow="Foo,Bar" voting="Plus" />
+		// also supports is: <teamcomments allow="Foo,Bar" />
 		$allow = '';
 		if ( preg_match( '/^\s*Allow\s*=\s*(.*)/mi', $input, $matches ) ) {
 			$allow = htmlspecialchars( $matches[1] );
 		} elseif ( !empty( $args['allow'] ) ) {
 			$allow = $args['allow'];
-		}
-
-		$voting = '';
-		if ( preg_match( '/^\s*Voting\s*=\s*(.*)/mi', $input, $matches ) ) {
-			$voting = htmlspecialchars( $matches[1] );
-		} elseif (
-			!empty( $args['voting'] ) &&
-			in_array( strtoupper( $args['voting'] ), [ 'OFF', 'PLUS', 'MINUS' ] )
-		) {
-			$voting = $args['voting'];
 		}
 
 		// Create a new context to execute the TeamCommentsPage
@@ -65,7 +54,6 @@ class DisplayTeamComments {
 
 		$teamcommentsPage = new TeamCommentsPage( $title->getArticleID(), $context );
 		$teamcommentsPage->allow = $allow;
-		$teamcommentsPage->setVoting( $voting );
 
 		$output = '<div class="teamcomments-body">';
 

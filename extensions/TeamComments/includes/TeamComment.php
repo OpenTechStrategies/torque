@@ -49,18 +49,6 @@ class TeamComment extends ContextSource {
 	public $parentID = 0;
 
 	/**
-	 * The current vote from this user on this teamcomment
-	 *
-	 * @var int|boolean: false if no vote, otherwise -1, 0, or 1
-	 */
-	public $currentVote = false;
-
-	/**
-	 * @var string: teamcomment score (SUM() of all votes) of the current teamcomment
-	 */
-	public $currentScore = '0';
-
-	/**
 	 * Username of the user who posted the teamcomment
 	 *
 	 * @var string
@@ -131,30 +119,6 @@ class TeamComment extends ContextSource {
 		$this->thread = $data['thread'];
 		$this->timestamp = $data['timestamp'];
 
-		if ( isset( $data['current_vote'] ) ) {
-			$vote = $data['current_vote'];
-		} else {
-			$dbr = wfGetDB( DB_REPLICA );
-			$row = $dbr->selectRow(
-				'TeamComments_Vote',
-				[ 'TeamComment_Vote_Score' ],
-				[
-					'TeamComment_Vote_ID' => $this->id,
-					'TeamComment_Vote_Username' => $this->getUser()->getName()
-				],
-				__METHOD__
-			);
-			if ( $row !== false ) {
-				$vote = $row->TeamComment_Vote_Score;
-			} else {
-				$vote = false;
-			}
-		}
-
-		$this->currentVote = $vote;
-
-		$this->currentScore = isset( $data['total_vote'] )
-			? $data['total_vote'] : $this->getScore();
 	}
 
 	public static function newFromID( $id ) {
@@ -363,85 +327,7 @@ class TeamComment extends ContextSource {
 	}
 
 	/**
-	 * Gets the score for this teamcomment from the database table TeamComments_Vote
-	 *
-	 * @return string
-	 */
-	function getScore() {
-		$dbr = wfGetDB( DB_REPLICA );
-		$row = $dbr->selectRow(
-			'TeamComments_Vote',
-			[ 'SUM(TeamComment_Vote_Score) AS TeamCommentScore' ],
-			[ 'TeamComment_Vote_ID' => $this->id ],
-			__METHOD__
-		);
-		$score = '0';
-		if ( $row !== false && $row->TeamCommentScore ) {
-			$score = $row->TeamCommentScore;
-		}
-		return $score;
-	}
-
-	/**
-	 * Adds a vote for a teamcomment if the user hasn't voted for said teamcomment yet.
-	 *
-	 * @param int $value Upvote or downvote (1 or -1)
-	 */
-	function vote( $value ) {
-		$dbw = wfGetDB( DB_MASTER );
-
-		if ( $value < -1 ) { // limit to range -1 -> 0 -> 1
-			$value = -1;
-		} elseif ( $value > 1 ) {
-			$value = 1;
-		}
-
-		if ( $value == $this->currentVote ) { // user toggling off a preexisting vote
-			$value = 0;
-		}
-
-		Wikimedia\suppressWarnings();
-		$teamcommentDate = date( 'Y-m-d H:i:s' );
-		Wikimedia\restoreWarnings();
-
-		if ( $this->currentVote === false ) { // no vote, insert
-			$dbw->insert(
-				'TeamComments_Vote',
-				[
-					'TeamComment_Vote_id' => $this->id,
-					'TeamComment_Vote_Username' => $this->getUser()->getName(),
-					'TeamComment_Vote_user_id' => $this->getUser()->getId(),
-					'TeamComment_Vote_Score' => $value,
-					'TeamComment_Vote_Date' => $teamcommentDate,
-					'TeamComment_Vote_IP' => $_SERVER['REMOTE_ADDR']
-				],
-				__METHOD__
-			);
-		} else { // already a vote, update
-			$dbw->update(
-				'TeamComments_Vote',
-				[
-					'TeamComment_Vote_Score' => $value,
-					'TeamComment_Vote_Date' => $teamcommentDate,
-					'TeamComment_Vote_IP' => $_SERVER['REMOTE_ADDR']
-				],
-				[
-					'TeamComment_Vote_id' => $this->id,
-					'TeamComment_Vote_Username' => $this->getUser()->getName(),
-					'TeamComment_Vote_user_id' => $this->getUser()->getId(),
-				],
-				__METHOD__
-			);
-		}
-
-		$score = $this->getScore();
-
-		$this->currentVote = $value;
-		$this->currentScore = $score;
-	}
-
-	/**
-	 * Deletes entries from TeamComments and TeamComments_Vote tables and clears caches
+	 * Deletes entries from TeamComments tables and clears caches
 	 */
 	function delete() {
 		$dbw = wfGetDB( DB_MASTER );
@@ -449,11 +335,6 @@ class TeamComment extends ContextSource {
 		$dbw->delete(
 			'TeamComments',
 			[ 'TeamCommentID' => $this->id ],
-			__METHOD__
-		);
-		$dbw->delete(
-			'TeamComments_Vote',
-			[ 'TeamComment_Vote_ID' => $this->id ],
 			__METHOD__
 		);
 		$dbw->endAtomic( __METHOD__ );
@@ -490,61 +371,6 @@ class TeamComment extends ContextSource {
 		] );
 		$logId = $logEntry->insert();
 		$logEntry->publish( $logId, ( $wgTeamCommentsInRecentChanges ? 'rcandudp' : 'udp' ) );
-	}
-
-	/**
-	 * Return the HTML for the teamcomment vote links
-	 *
-	 * @param int $voteType up (+1) vote or down (-1) vote
-	 * @return string
-	 */
-	function getVoteLink( $voteType ) {
-		global $wgExtensionAssetsPath;
-
-		// Blocked users cannot vote, obviously
-		if ( $this->getUser()->isBlocked() ) {
-			return '';
-		}
-		if ( !$this->getUser()->isAllowed( 'teamcomment' ) ) {
-			return '';
-		}
-
-		$voteLink = '';
-		if ( $this->getUser()->isLoggedIn() ) {
-			$voteLink .= '<a id="teamcomment-vote-link" data-teamcomment-id="' .
-				$this->id . '" data-vote-type="' . $voteType .
-				'" data-voting="' . $this->page->voting . '" href="javascript:void(0);">';
-		} else {
-			$login = SpecialPage::getTitleFor( 'Userlogin' ); // Anonymous users need to log in before they can vote
-			$urlParams = [];
-			// @todo FIXME: *when* and *why* is this null?
-			if ( $this->page->title instanceof Title ) {
-				$returnTo = $this->page->title->getPrefixedDBkey(); // Determine a sane returnto URL parameter
-				$urlParams = [ 'returnto' => $returnTo ];
-			}
-
-			$voteLink .=
-				"<a href=\"" .
-				htmlspecialchars( $login->getLocalURL( $urlParams ) ) .
-				"\" rel=\"nofollow\">";
-		}
-
-		$imagePath = $wgExtensionAssetsPath . '/TeamComments/resources/images';
-		if ( $voteType == 1 ) {
-			if ( $this->currentVote == 1 ) {
-				$voteLink .= "<img src=\"{$imagePath}/up-voted.png\" border=\"0\" alt=\"+\" /></a>";
-			} else {
-				$voteLink .= "<img src=\"{$imagePath}/up-unvoted.png\" border=\"0\" alt=\"+\" /></a>";
-			}
-		} else {
-			if ( $this->currentVote == -1 ) {
-				$voteLink .= "<img src=\"{$imagePath}/down-voted.png\" border=\"0\" alt=\"+\" /></a>";
-			} else {
-				$voteLink .= "<img src=\"{$imagePath}/down-unvoted.png\" border=\"0\" alt=\"+\" /></a>";
-			}
-		}
-
-		return $voteLink;
 	}
 
 	/**
@@ -668,10 +494,6 @@ class TeamComment extends ContextSource {
 			)->parse() . '</div>' . "\n";
 		Wikimedia\restoreWarnings();
 
-		$output .= '<div class="c-score">' . "\n";
-		$output .= $this->getScoreHTML();
-		$output .= '</div>' . "\n";
-
 		$output .= '</div>' . "\n";
 		$output .= "<div class=\"c-teamcomment {$teamcomment_class}\">" . "\n";
 		$output .= $this->getText();
@@ -688,41 +510,6 @@ class TeamComment extends ContextSource {
 		$output .= '</div>' . "\n";
 		$output .= '<div class="visualClear"></div>' . "\n";
 		$output .= '</div>' . "\n";
-
-		return $output;
-	}
-
-	/**
-	 * Get the HTML for the teamcomment score section of the teamcomment
-	 *
-	 * @return string
-	 */
-	function getScoreHTML() {
-		$output = '';
-
-		if ( $this->page->allowMinus == true || $this->page->allowPlus == true ) {
-			$output .= '<span class="c-score-title">' .
-				wfMessage( 'teamcomments-score-text' )->plain() .
-				" <span id=\"TeamComment{$this->id}\">{$this->currentScore}</span></span>";
-
-			// Voting is possible only when database is unlocked
-			if ( !wfReadOnly() ) {
-				// You can only vote for other people's teamcomments, not for your own
-				if ( $this->getUser()->getName() != $this->username ) {
-					$output .= "<span id=\"TeamCommentBtn{$this->id}\">";
-					if ( $this->page->allowPlus == true ) {
-						$output .= $this->getVoteLink( 1 );
-					}
-
-					if ( $this->page->allowMinus == true ) {
-						$output .= $this->getVoteLink( -1 );
-					}
-					$output .= '</span>';
-				} else {
-					$output .= wfMessage( 'word-separator' )->plain() . wfMessage( 'teamcomments-you' )->plain();
-				}
-			}
-		}
 
 		return $output;
 	}

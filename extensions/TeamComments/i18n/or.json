@@ -6,7 +6,6 @@
 		]
 	},
 	"teamcomments-teamcomment": "ମତାମତ",
-	"teamcomments-voted-label": "ମତଦାନ",
 	"teamcomments-loading": "ଖୋଲୁଅଛି...",
 	"teamcomments-reply-to": "କୁ ଉତ୍ତର ଦେବେ",
 	"teamcomments-cancel-reply": "ବାତିଲ",
@@ -19,7 +18,6 @@
 	"teamcomments-not-allowed": "ଆପଣଙ୍କୁ ମନ୍ତବ୍ୟ ଦେବା ପାଇଁ ଅନୁମତି ନାହିଁ ।",
 	"teamcomments-post": "ମତ ଦେବେ",
 	"teamcomments-submit": "ଆପଣଙ୍କ ମତ ଦେବେ",
-	"teamcomments-score-text": "ଗଣନା",
 	"teamcomments-delete-link": "ମତ ହଟାଇବେ",
 	"log-name-teamcomments": "ମନ୍ତବ୍ୟ ତାଲିକା",
 	"log-description-teamcomments": "ଏହା ମନ୍ତବ୍ୟଗୁଡିକର ଏକ ତାଲିକା ।",

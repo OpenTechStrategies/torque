@@ -7,7 +7,6 @@
 		]
 	},
 	"teamcomments-teamcomment": "Komentar",
-	"teamcomments-voted-label": "Glasano",
 	"teamcomments-loading": "Učitavam…",
 	"teamcomments-auto-refresher-enable": "Omogući samoosvežavanje komentara",
 	"teamcomments-auto-refresher-pause": "Onemogući samoosvežavanje komentara",
@@ -15,7 +14,6 @@
 	"teamcomments-cancel-reply": "Otkaži",
 	"teamcomments-delete-warning": "Želite li da obrišete ovaj komentar?",
 	"teamcomments-sort-by-date": "Poređaj po datumu",
-	"teamcomments-sort-by-score": "Poređaj po bodovima",
 	"teamcomments-show-teamcomment-link": "Prikaži komentar",
 	"teamcomments-permalink": "Trajna veza",
 	"log-name-teamcomments": "Dnevnik komentara",

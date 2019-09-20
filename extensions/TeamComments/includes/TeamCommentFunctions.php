@@ -177,24 +177,6 @@ class TeamCommentFunctions {
 	}
 
 	/**
-	 * Sort threads by score
-	 *
-	 * @param $x
-	 * @param $y
-	 */
-	public static function sortScore( $x, $y ) {
-		// return -1  -  x goes above y
-		// return  1  -  x goes below y
-		// return  0  -  order irrelevant (only when x == y)
-
-		if ( $x[0]->currentScore > $y[0]->currentScore ) {
-			return -1;
-		} else {
-			return 1;
-		}
-	}
-
-	/**
 	 * Sort the teamcomments purely by the time, from earliest to latest
 	 *
 	 * @param $x

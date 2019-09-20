@@ -5,7 +5,6 @@
 		]
 	},
 	"teamcomments-teamcomment": "კომენტარი",
-	"teamcomments-voted-label": "ხმა მიცემულია",
 	"teamcomments-loading": "იტვირთება…",
 	"teamcomments-reply-to": "პასუხი მომხმარებელს {{GENDER:$2|$1}}",
 	"teamcomments-cancel-reply": "გაუქმება",
@@ -14,7 +13,6 @@
 	"teamcomments-reply": "პასუხი",
 	"teamcomments-post": "კომენტარის დატოვება",
 	"teamcomments-submit": "დაამატეთ თქვენი კომენტარი",
-	"teamcomments-score-text": "შეფასება",
 	"teamcomments-permalink": "მუდმივი ბმული",
 	"teamcomments-delete-link": "კომენტარის წაშლა",
 	"teamcomments-anon-name": "ანონიმური მომხმარებელი",

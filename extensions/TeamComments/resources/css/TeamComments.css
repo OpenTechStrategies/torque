@@ -84,20 +84,6 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
 	width: 360px;
 }
 
-.c-score {
-	position: absolute;
-	top: -2px;
-	right: 0px;
-	font-size: 11px;
-	padding-top: 6px;
-	font-weight: bold;
-	z-index: 4;
-}
-
-.c-score-title {
-	margin: 0px 10px 0px 0px;
-}
-
 .c-actions {
 	float: right;
 	font-size: 10px;
@@ -106,11 +92,6 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
 
 .c-delete a {
 	color: red !important;
-}
-
-.c-score img {
-	vertical-align: middle;
-	margin: -5px 0px 0px 2px
 }
 
 .c-form-title {

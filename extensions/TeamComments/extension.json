@@ -46,8 +46,7 @@
 		"teamcommentdelete": "TeamCommentDeleteAPI",
 		"teamcommentlatestid": "TeamCommentLatestIdAPI",
 		"teamcommentlist": "TeamCommentListAPI",
-		"teamcommentsubmit": "TeamCommentSubmitAPI",
-		"teamcommentvote": "TeamCommentVoteAPI"
+		"teamcommentsubmit": "TeamCommentSubmitAPI"
 	},
 	"MessagesDirs": {
 		"TeamComments": [
@@ -69,8 +68,7 @@
 		"TeamCommentDeleteAPI": "includes/api/TeamCommentDeleteAPI.php",
 		"TeamCommentLatestIdAPI": "includes/api/TeamCommentLatestIdAPI.php",
 		"TeamCommentListAPI": "includes/api/TeamCommentListAPI.php",
-		"TeamCommentSubmitAPI": "includes/api/TeamCommentSubmitAPI.php",
-		"TeamCommentVoteAPI": "includes/api/TeamCommentVoteAPI.php"
+		"TeamCommentSubmitAPI": "includes/api/TeamCommentSubmitAPI.php"
 	},
 	"ResourceModules": {
 		"ext.teamcomments.css": {
@@ -84,7 +82,6 @@
 			"scripts": "resources/js/TeamComment.js",
 			"dependencies": [ "mediawiki.api" ],
 			"messages": [
-				"teamcomments-voted-label",
 				"teamcomments-loading",
 				"teamcomments-auto-refresher-pause",
 				"teamcomments-auto-refresher-enable",

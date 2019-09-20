@@ -4,19 +4,16 @@
 			"Papuass"
 		]
 	},
-	"teamcomments-voted-label": "Nobalsots",
 	"teamcomments-loading": "Ielādē…",
 	"teamcomments-reply-to": "Atbildēt uz {{GENDER:$2|$1}}",
 	"teamcomments-cancel-reply": "Atcelt",
 	"teamcomments-sort-by-date": "Kārtot pēc datuma",
-	"teamcomments-sort-by-score": "Kārtot pēc vērtējuma",
 	"teamcomments-show-teamcomment-link": "Parādīt komentāru",
 	"teamcomments-reply": "Atbildēt",
 	"teamcomments-login-required": "Jums ir jāpieslēdzas, lai pievienotu komentārus",
 	"teamcomments-not-allowed": "Jums nav atļauts publicēt komentārus.",
 	"teamcomments-post": "Publicēt komentāru",
 	"teamcomments-submit": "Pievienot savu komentāru",
-	"teamcomments-score-text": "Vērtējums",
 	"teamcomments-permalink": "Pastāvīgā saite",
 	"teamcomments-delete-link": "Dzēst komentāru",
 	"teamcomments-anon-name": "Anonīms lietotājs"

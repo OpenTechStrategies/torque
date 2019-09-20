@@ -12,12 +12,6 @@ class TeamCommentsPage extends ContextSource {
 	public $id = 0;
 
 	/**
-	 * @var Integer: if this is _not_ 0, then the teamcomments are ordered by their
-	 *			   TeamComment_Score in descending order
-	 */
-	public $orderBy = 0;
-
-	/**
 	 * @var Integer: maximum amount of threads of teamcomments shown per page before pagination is enabled;
 	 */
 	public $limit = 50;
@@ -42,23 +36,6 @@ class TeamCommentsPage extends ContextSource {
 	 * @var string
 	 */
 	public $allow = '';
-
-	/**
-	 * What voting to disallow - disallow PLUS, MINUS, or BOTH
-	 *
-	 * @var string
-	 */
-	public $voting = '';
-
-	/**
-	 * @var Boolean: allow positive (plus) votes?
-	 */
-	public $allowPlus = true;
-
-	/**
-	 * @var Boolean: allow negative (minus) votes?
-	 */
-	public $allowMinus = true;
 
 	/**
 	 * @TODO document
@@ -134,64 +111,27 @@ class TeamCommentsPage extends ContextSource {
 	}
 
 	/**
-	 * Set voting either totally off, or disallow "thumbs down" or disallow
-	 * "thumbs up".
-	 *
-	 * @param string $voting 'OFF', 'PLUS' or 'MINUS' (will be strtoupper()ed)
-	 */
-	function setVoting( $voting ) {
-		$this->voting = $voting;
-		$voting = strtoupper( $voting );
-
-		if ( $voting == 'OFF' ) {
-			$this->allowMinus = false;
-			$this->allowPlus = false;
-		}
-		if ( $voting == 'PLUS' ) {
-			$this->allowMinus = false;
-		}
-		if ( $voting == 'MINUS' ) {
-			$this->allowPlus = false;
-		}
-	}
-
-	/**
 	 * Fetches all teamcomments, called by display().
 	 *
 	 * @return array Array containing every possible bit of information about
-	 * 				a teamcomment, including score, timestamp and more
+	 * 				a teamcomment, including timestamp and more
 	 */
 	public function getTeamComments() {
 		$dbr = wfGetDB( DB_REPLICA );
 
 		// Defaults (for non-social wikis)
 		$tables = [
-			'TeamComments',
-			'vote1' => 'TeamComments_Vote',
-			'vote2' => 'TeamComments_Vote',
+			'TeamComments'
 		];
 		$fields = [
 			'TeamComment_Username', 'TeamComment_IP', 'TeamComment_Text',
 			'TeamComment_Date', 'TeamComment_Date AS timestamp',
-			'TeamComment_user_id', 'TeamCommentID', 'TeamComment_Parent_ID',
-			'vote1.TeamComment_Vote_Score AS current_vote',
-			'SUM(vote2.TeamComment_Vote_Score) AS teamcomment_score'
-		];
-		$joinConds = [
-			// For current user's vote
-			'vote1' => [
-				'LEFT JOIN',
-				[
-					'vote1.TeamComment_Vote_ID = TeamCommentID',
-					'vote1.TeamComment_Vote_Username' => $this->getUser()->getName()
-				]
-			],
-			// For total vote count
-			'vote2' => [ 'LEFT JOIN', 'vote2.TeamComment_Vote_ID = TeamCommentID' ]
+			'TeamComment_user_id', 'TeamCommentID', 'TeamComment_Parent_ID'
 		];
 		$params = [ 'GROUP BY' => 'TeamCommentID' ];
 
 		// If SocialProfile is installed, query the user_stats table too.
+    $joinConds = [];
 		if (
 			class_exists( 'UserProfile' ) &&
 			$dbr->tableExists( 'user_stats' )
@@ -231,9 +171,7 @@ class TeamCommentsPage extends ContextSource {
 				'TeamCommentID' => $row->TeamCommentID,
 				'TeamComment_Parent_ID' => $row->TeamComment_Parent_ID,
 				'thread' => $thread,
-				'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp ),
-				'current_vote' => ( isset( $row->current_vote ) ? $row->current_vote : false ),
-				'total_vote' => ( isset( $row->teamcomment_score ) ? $row->teamcomment_score : 0 ),
+				'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp )
 			];
 
 			$teamcomments[] = new TeamComment( $this, $this->getContext(), $data );
@@ -444,9 +382,7 @@ class TeamCommentsPage extends ContextSource {
 	function sort( $threads ) {
 		global $wgTeamCommentsSortDescending;
 
-		if ( $this->orderBy ) {
-			usort( $threads, [ 'TeamCommentFunctions', 'sortScore' ] );
-		} elseif ( $wgTeamCommentsSortDescending ) {
+		if ( $wgTeamCommentsSortDescending ) {
 			usort( $threads, [ 'TeamCommentFunctions', 'sortDesc' ] );
 		} else {
 			usort( $threads, [ 'TeamCommentFunctions', 'sortAsc' ] );
@@ -516,9 +452,6 @@ class TeamCommentsPage extends ContextSource {
 					<select name="TheOrder">
 						<option value="0">' .
 			wfMessage( 'teamcomments-sort-by-date' )->plain() .
-			'</option>
-						<option value="1">' .
-			wfMessage( 'teamcomments-sort-by-score' )->plain() .
 			'</option>
 					</select>
 				</form>

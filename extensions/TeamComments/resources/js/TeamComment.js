@@ -47,24 +47,6 @@
 		},
 
 		/**
-		 * Vote for a teamcomment.
-		 *
-		 * @param {number} teamcommentID TeamComment ID number
-		 * @param {number} voteValue Vote value
-		 */
-		vote: function ( teamcommentID, voteValue ) {
-			( new mw.Api() ).postWithToken( 'csrf', {
-				action: 'teamcommentvote',
-				teamcommentID: teamcommentID,
-				voteValue: voteValue
-			} ).done( function ( response ) {
-				$( '#teamcomment-' + teamcommentID + ' .c-score' )
-					.html( response.teamcommentvote.html ) // this will still be escaped
-					.html( $( '#teamcomment-' + teamcommentID + ' .c-score' ).text() ); // unescape
-			} );
-		},
-
-		/**
 		 * @param {number} pageID Page ID
 		 * @param {string} order Sorting order
 		 * @param {boolean} end Scroll to bottom after?
@@ -246,15 +228,6 @@
 			// TeamComment auto-refresher
 			.on( 'click', 'div#spy a', function () {
 				TeamComment.toggleLiveTeamComments( 1 );
-			} )
-
-			// Voting links
-			.on( 'click', 'a#teamcomment-vote-link', function () {
-				var that = $( this );
-				TeamComment.vote(
-					that.data( 'teamcomment-id' ),
-					that.data( 'vote-type' )
-				);
 			} )
 
 			// "Delete TeamComment" links

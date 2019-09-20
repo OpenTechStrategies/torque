@@ -4,7 +4,6 @@ class TeamCommentListAPI extends ApiBase {
 
 	public function execute() {
 		$teamcommentsPage = new TeamCommentsPage( $this->getMain()->getVal( 'pageID' ), RequestContext::getMain() );
-		$teamcommentsPage->orderBy = $this->getMain()->getVal( 'order' );
 		$teamcommentsPage->currentPagerPage = $this->getMain()->getVal( 'pagerPage' );
 
 		$output = '';
