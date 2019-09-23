@@ -12,7 +12,11 @@ class DisplayTeamComments {
    * @return string HTML
    */
   public static function getParserHandler( $input, $args, $parser ) {
-    global $wgTeamCommentsSortDescending;
+    global $wgTeamCommentsSortDescending, $wgTeamCommentsEnabled;
+
+    if(! $wgTeamCommentsEnabled) {
+      return "";
+    }
 
     $po = $parser->getOutput();
     $po->updateCacheExpiry( 0 );

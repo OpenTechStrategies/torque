@@ -104,6 +104,7 @@
     "RenameUserSQL": "TeamCommentsHooks::onRenameUserSQL"
   },
   "config": {
+    "TeamCommentsEnabled": true,
     "TeamCommentsSortDescending": false,
     "TeamCommentsInRecentChanges": false
   },
