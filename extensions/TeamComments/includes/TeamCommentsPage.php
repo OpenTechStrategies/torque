@@ -431,7 +431,9 @@ class TeamCommentsPage extends ContextSource {
    * @return string HTML
    */
   function displayOrderForm() {
-    $output = '<div class="c-order">
+    $output = '
+<h1>Comments</h1>
+<div class="c-order">
 <div class="c-order-select">
 <form name="ChangeOrder" action="">
 <select name="TheOrder">
