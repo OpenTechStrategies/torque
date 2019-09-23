@@ -16,13 +16,11 @@ class TeamCommentsHooks {
   /**
    * Registers the following tags and magic words:
    * - <teamcomments />
-   * - NUMBEROFTEAMCOMMENTSPAGE
    *
    * @param Parser $parser
    */
   public static function onParserFirstCallInit( Parser &$parser ) {
     $parser->setHook( 'teamcomments', [ 'DisplayTeamComments', 'getParserHandler' ] );
-    $parser->setFunctionHook( 'NUMBEROFTEAMCOMMENTSPAGE', 'NumberOfTeamComments::getParserHandler', Parser::SFH_NO_HASH );
   }
 
   /**

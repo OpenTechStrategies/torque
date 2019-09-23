@@ -55,13 +55,11 @@
     ]
   },
   "ExtensionMessagesFiles": {
-    "TeamCommentsMagic": "TeamComments.i18n.magic.php",
-    "NumberOfTeamCommentsMagic": "TeamComments.i18n.magic.php"
+    "TeamCommentsMagic": "TeamComments.i18n.magic.php"
   },
   "AutoloadClasses": {
     "TeamComment": "includes/TeamComment.php",
     "TeamCommentsPage": "includes/TeamCommentsPage.php",
-    "NumberOfTeamComments": "includes/parser/NumberOfTeamComments.php",
     "DisplayTeamComments": "includes/parser/DisplayTeamComments.php",
     "TeamCommentFunctions": "includes/TeamCommentFunctions.php",
     "TeamCommentsLogFormatter": "includes/TeamCommentsLogFormatter.php",
@@ -103,9 +101,7 @@
   "Hooks": {
     "ParserFirstCallInit": "TeamCommentsHooks::onParserFirstCallInit",
     "LoadExtensionSchemaUpdates": "TeamCommentsHooks::onLoadExtensionSchemaUpdates",
-    "RenameUserSQL": "TeamCommentsHooks::onRenameUserSQL",
-    "MagicWordwgVariableIDs": "NumberOfTeamComments::onMagicWordwgVariableIDs",
-    "ParserGetVariableValueSwitch": "NumberOfTeamComments::onParserGetVariableValueSwitch"
+    "RenameUserSQL": "TeamCommentsHooks::onRenameUserSQL"
   },
   "config": {
     "TeamCommentsSortDescending": false,

@@ -20,12 +20,6 @@ class TeamComment extends ContextSource {
   public $page = null;
 
   /**
-   * @var Integer: total amount of teamcomments by distinct teamcommenters that the
-   *               current page has
-   */
-  public $teamcommentTotal = 0;
-
-  /**
    * @var String: text of the current teamcomment
    */
   public $text = null;
