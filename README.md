@@ -16,6 +16,10 @@ for evaluation notes on various plugins we're considering using.
 See the [ansible install guide](ansible/INSTALL.md) for installation
 instructions.
 
+An example of a torque-compatible proposal input pipeline for one
+particular use case can be seen in the
+[MacFound](https://github.com/opentechstrategies/MacFound) repository.
+
 # Extensions
 
 ## Wildcard
