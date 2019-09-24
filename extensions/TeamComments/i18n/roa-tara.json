@@ -64,7 +64,5 @@
   "action-teamcommentadmin": "gestisce le commende de le utinde confermate",
   "right-teamcommentadmin": "Gestisce le commende de le utinde confermate",
   "action-teamcommentlinks": "ause le collegaminde de fore jndr'à le commende",
-  "right-teamcommentlinks": "Ause le collegaminde de fore jndr'à le commende",
-  "action-teamcomment-delete-own": "Scangìlle le commende tune",
-  "right-teamcomment-delete-own": "Scangìlle le commende tune"
+  "right-teamcommentlinks": "Ause le collegaminde de fore jndr'à le commende"
 }

@@ -23,6 +23,5 @@
   "teamcomments-reply": "Отговор",
   "right-teamcomment": "Изпращане на коментари",
   "right-teamcommentadmin": "Управление на потребителски коментари",
-  "right-teamcommentlinks": "Използване на външни препратки в коментарите",
-  "right-teamcomment-delete-own": "Изтриване на собствени коментари"
+  "right-teamcommentlinks": "Използване на външни препратки в коментарите"
 }

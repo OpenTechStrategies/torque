@@ -30,8 +30,7 @@
   "AvailableRights": [
     "teamcomment",
     "teamcommentadmin",
-    "teamcommentlinks",
-    "teamcomment-delete-own"
+    "teamcommentlinks"
   ],
   "LogTypes": [
     "teamcomments"

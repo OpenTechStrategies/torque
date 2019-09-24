@@ -52,6 +52,5 @@
   "grouppage-teamcommentadmin": "{{ns:project}}:Administratores de commentos",
   "right-teamcomment": "Submitter commentos",
   "right-teamcommentadmin": "Administrar commentos submittite per usatores",
-  "right-teamcommentlinks": "Usar ligamines externe in commentos",
-  "right-teamcomment-delete-own": "Deler le proprie commentos"
+  "right-teamcommentlinks": "Usar ligamines externe in commentos"
 }

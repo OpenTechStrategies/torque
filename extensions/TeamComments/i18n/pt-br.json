@@ -67,7 +67,5 @@
   "action-teamcommentadmin": "administrar comentários enviados por usuários",
   "right-teamcommentadmin": "Administrar comentários enviados por utilizadores",
   "action-teamcommentlinks": "usar links externos em comentários",
-  "right-teamcommentlinks": "Usar hiperligações externas em comentários",
-  "action-teamcomment-delete-own": "eliminar comentários do próprio",
-  "right-teamcomment-delete-own": "Excluir seus próprios comentários"
+  "right-teamcommentlinks": "Usar hiperligações externas em comentários"
 }

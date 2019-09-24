@@ -46,6 +46,5 @@
   "grouppage-teamcommentadmin": "{{ns:project}}:コメント管理者",
   "right-teamcomment": "コメントを投稿",
   "right-teamcommentadmin": "利用者が投稿したコメントを管理",
-  "right-teamcommentlinks": "コメント内で外部リンクを使用",
-  "right-teamcomment-delete-own": "自身のコメントを削除"
+  "right-teamcommentlinks": "コメント内で外部リンクを使用"
 }

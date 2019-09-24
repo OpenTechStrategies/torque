@@ -70,7 +70,5 @@
   "action-teamcommentadmin": "адміністрування доданих користувачами коментарів",
   "right-teamcommentadmin": "Адмініструвати надіслані користувачами коментарі",
   "action-teamcommentlinks": "використовування зовнішніх посилань у коментарях",
-  "right-teamcommentlinks": "Вживати зовнішні посилання у коментарях",
-  "action-teamcomment-delete-own": "видалення власних коментарів",
-  "right-teamcomment-delete-own": "вилучення власних коментарів"
+  "right-teamcommentlinks": "Вживати зовнішні посилання у коментарях"
 }

@@ -68,7 +68,5 @@
   "action-teamcommentadmin": "administrera kommentarer från användare",
   "right-teamcommentadmin": "Administrera kommentarer som användare har skickat",
   "action-teamcommentlinks": "använda externa länkar i kommentarer",
-  "right-teamcommentlinks": "Använd externa länkar i kommentarer",
-  "action-teamcomment-delete-own": "radera egna kommentarer",
-  "right-teamcomment-delete-own": "Radera egna kommentarer"
+  "right-teamcommentlinks": "Använd externa länkar i kommentarer"
 }

@@ -49,7 +49,5 @@
   "action-teamcommentadmin": "amministrare i commenti inseriti dagli utenti",
   "right-teamcommentadmin": "Gestisce i commenti inviati dagli utenti",
   "action-teamcommentlinks": "usare collegamenti esterni nei commenti",
-  "right-teamcommentlinks": "Usa collegamenti esterni nei commenti",
-  "action-teamcomment-delete-own": "cancellare i tuoi commenti",
-  "right-teamcomment-delete-own": "Cancella i propri commenti"
+  "right-teamcommentlinks": "Usa collegamenti esterni nei commenti"
 }

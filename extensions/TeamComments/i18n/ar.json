@@ -65,7 +65,5 @@
   "action-teamcommentadmin": "إدارة التعليقات التي أرسلها المستخدم",
   "right-teamcommentadmin": "إدارة التعليقات التي أرسلها المستخدم",
   "action-teamcommentlinks": "استخدام الروابط الخارجية في التعليقات",
-  "right-teamcommentlinks": "استخدام الروابط الخارجية في التعليقات",
-  "action-teamcomment-delete-own": "حذف التعليقات الخاصة",
-  "right-teamcomment-delete-own": "حذف التعليقات الخاصة"
+  "right-teamcommentlinks": "استخدام الروابط الخارجية في التعليقات"
 }

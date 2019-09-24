@@ -53,6 +53,5 @@
   "grouppage-teamcommentadmin": "{{ns:project}}:Модераторы комментариев",
   "right-teamcomment": "Отправить комментарии",
   "right-teamcommentadmin": "Администрировать комментарии, опубликованные участником",
-  "right-teamcommentlinks": "Использовать внешние ссылки в комментариях",
-  "right-teamcomment-delete-own": "удаление собственных комментариев"
+  "right-teamcommentlinks": "Использовать внешние ссылки в комментариях"
 }

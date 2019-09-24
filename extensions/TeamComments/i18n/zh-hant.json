@@ -74,7 +74,5 @@
   "action-teamcommentadmin": "管理使用者送出的評論",
   "right-teamcommentadmin": "管理使用者送出的評論",
   "action-teamcommentlinks": "在評論中使用外部連結",
-  "right-teamcommentlinks": "在評論中使用外部連結",
-  "action-teamcomment-delete-own": "刪除擁有的評論",
-  "right-teamcomment-delete-own": "刪除自有的評論"
+  "right-teamcommentlinks": "在評論中使用外部連結"
 }

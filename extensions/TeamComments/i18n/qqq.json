@@ -73,7 +73,5 @@
   "action-teamcommentadmin": "{{doc-action|commentadmin}}",
   "right-teamcommentadmin": "{{doc-right|commentadmin}}",
   "action-teamcommentlinks": "{{doc-action|commentlinks}}",
-  "right-teamcommentlinks": "{{doc-right|commentlinks}}",
-  "action-teamcomment-delete-own": "{{doc-action|comment-delete-own}}",
-  "right-teamcomment-delete-own": "{{doc-right|comment-delete-own}}"
+  "right-teamcommentlinks": "{{doc-right|commentlinks}}"
 }

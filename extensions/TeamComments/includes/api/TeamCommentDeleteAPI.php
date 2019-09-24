@@ -8,14 +8,7 @@ class TeamCommentDeleteAPI extends ApiBase {
     $teamcomment = TeamComment::newFromID( $this->getMain()->getVal( 'teamcommentID' ) );
     // Blocked users cannot delete teamcomments, and neither can unprivileged ones.
     // Also check for database read-only status
-    if (
-      $user->isBlocked() ||
-      !(
-        $user->isAllowed( 'teamcommentadmin' ) ||
-        $user->isAllowed( 'teamcomment-delete-own' ) && $teamcomment->isOwner( $user )
-      ) ||
-      wfReadOnly()
-    ) {
+    if (! $teamcomment->isOwner($user) || wfReadOnly()) {
       return true;
     }
 

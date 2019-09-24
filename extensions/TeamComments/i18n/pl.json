@@ -53,7 +53,5 @@
   "action-teamcommentadmin": "administrowania komentarzy opublikowanych przez użytkownika",
   "right-teamcommentadmin": "Administrowanie komentarzy opublikowanych przez użytkownika",
   "action-teamcommentlinks": "używania linków zewnętrznych w komentarzach",
-  "right-teamcommentlinks": "Używanie linków zewnętrznych w komentarzach",
-  "action-teamcomment-delete-own": "usuwania własnych komentarzy",
-  "right-teamcomment-delete-own": "Usuwanie własnych komentarzy"
+  "right-teamcommentlinks": "Używanie linków zewnętrznych w komentarzach"
 }

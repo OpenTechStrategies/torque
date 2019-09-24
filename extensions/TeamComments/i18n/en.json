@@ -65,7 +65,5 @@
   "action-teamcommentadmin": "administrate user-submitted comments",
   "right-teamcommentadmin": "Administrate user-submitted comments",
   "action-teamcommentlinks": "use external links in comments",
-  "right-teamcommentlinks": "Use external links in comments",
-  "action-teamcomment-delete-own": "delete own comments",
-  "right-teamcomment-delete-own": "Delete own comments"
+  "right-teamcommentlinks": "Use external links in comments"
 }

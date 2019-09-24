@@ -73,7 +73,5 @@
   "action-teamcommentadmin": "管理员提交的评论",
   "right-teamcommentadmin": "管理用户提交的评论",
   "action-teamcommentlinks": "评论中使用外部链接",
-  "right-teamcommentlinks": "评论中使用外部链接",
-  "action-teamcomment-delete-own": "删除自己的评论",
-  "right-teamcomment-delete-own": "删除自己的评论"
+  "right-teamcommentlinks": "评论中使用外部链接"
 }

@@ -65,7 +65,5 @@
   "action-teamcommentadmin": "Benutzerkommentare zu verwalten",
   "right-teamcommentadmin": "Benutzerkommentare verwalten",
   "action-teamcommentlinks": "Weblinks in Kommentaren zu verwenden",
-  "right-teamcommentlinks": "Weblinks in Kommentaren verwenden",
-  "action-teamcomment-delete-own": "eigene Kommentare zu löschen",
-  "right-teamcomment-delete-own": "Eigene Kommentare löschen"
+  "right-teamcommentlinks": "Weblinks in Kommentaren verwenden"
 }

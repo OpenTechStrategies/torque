@@ -65,7 +65,5 @@
   "action-teamcommentadmin": "раководење со кориснички коментари",
   "right-teamcommentadmin": "Раководење со кориснички коментари",
   "action-teamcommentlinks": "употреба на надворешни врски во коментарите",
-  "right-teamcommentlinks": "Употреба на надворешни врски во коментарите",
-  "action-teamcomment-delete-own": "бришење на сопствени коментари",
-  "right-teamcomment-delete-own": "Бришење на сопствени коментари"
+  "right-teamcommentlinks": "Употреба на надворешни врски во коментарите"
 }

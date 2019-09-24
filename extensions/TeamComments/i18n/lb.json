@@ -48,6 +48,5 @@
   "grouppage-teamcommentadmin": "{{ns:project}}:Bemierkungs-Administrateuren",
   "right-teamcomment": "Bemierkunge späicheren",
   "right-teamcommentadmin": "Bemierkunge vu Benotzer verwalten",
-  "right-teamcommentlinks": "Extern Linken a Bemierkunge benotzen",
-  "action-teamcomment-delete-own": "eege Bemierkunge läschen"
+  "right-teamcommentlinks": "Extern Linken a Bemierkunge benotzen"
 }

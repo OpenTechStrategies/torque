@@ -72,7 +72,5 @@
   "action-teamcommentadmin": "administrer les commentaires soumis par l’utilisateur",
   "right-teamcommentadmin": "Administrer les commentaires soumis par les utilisateurs",
   "action-teamcommentlinks": "utiliser des liens externes dans les commentaires",
-  "right-teamcommentlinks": "Utiliser les liens externes dans les commentaires",
-  "action-teamcomment-delete-own": "supprimer vos propres commentaires",
-  "right-teamcomment-delete-own": "Supprimer vos propres commentaires"
+  "right-teamcommentlinks": "Utiliser les liens externes dans les commentaires"
 }

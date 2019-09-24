@@ -14,53 +14,13 @@ use MediaWiki\MediaWikiServices;
  * @ingroup Extensions
  */
 class TeamComment extends ContextSource {
-  /**
-   * @var TeamCommentsPage: page of the page the <teamcomments /> tag is in
-   */
   public $page = null;
-
-  /**
-   * @var String: text of the current teamcomment
-   */
   public $text = null;
-
-  /**
-   * Date when the teamcomment was posted
-   *
-   * @var null
-   */
   public $date = null;
-
-  /**
-   * @var Integer: internal ID number (teamcomments.teamcomment_id DB field) of the
-   *               current teamcomment that we're dealing with
-   */
   public $id = 0;
-
-  /**
-   * @var Integer: ID of the parent teamcomment, if this is a child teamcomment
-   */
   public $parentID = 0;
-
-  /**
-   * Username of the user who posted the teamcomment
-   *
-   * @var string
-   */
   public $username = '';
-
-  /**
-   * IP of the teamcomment poster
-   *
-   * @var string
-   */
   public $ip = '';
-
-  /**
-   * ID of the user who posted the teamcomment
-   *
-   * @var int
-   */
   public $userID = 0;
 
   /**
@@ -68,18 +28,9 @@ class TeamComment extends ContextSource {
    * this is the ID of the parent teamcomment if there is one,
    * or this teamcomment if there is not
    * Used for sorting
-   *
-   * @var null
    */
   public $thread = null;
 
-  /**
-   * Unix timestamp when the teamcomment was posted
-   * Used for sorting
-   * Processed from $date
-   *
-   * @var null
-   */
   public $timestamp = null;
 
   /**
@@ -157,6 +108,21 @@ class TeamComment extends ContextSource {
     $page = new TeamCommentsPage( $row->teamcomment_page_id, $context );
 
     return new TeamComment( $page, $context, $data );
+  }
+
+  // This does a database lookup, because we only care about whether
+  // we have children at delete time, and we don't have the full
+  // reference of the page's comments at that time.
+  public function hasChildren() {
+    $dbr = wfGetDB( DB_REPLICA );
+
+    $res = $dbr->select(
+      'teamcomments',
+      ['teamcomment_id'],
+      ['teamcomment_parent_id' => $this->id]
+    );
+
+    return $res->numRows() > 0;
   }
 
   /**
@@ -281,11 +247,20 @@ class TeamComment extends ContextSource {
   function delete() {
     $dbw = wfGetDB( DB_MASTER );
     $dbw->startAtomic( __METHOD__ );
-    $dbw->delete(
-      'teamcomments',
-      [ 'teamcomment_id' => $this->id ],
-      __METHOD__
-    );
+    if($this->hasChildren()) {
+      $dbw->update(
+        'teamcomments',
+        [ 'teamcomment_text' => "[deleted]" ],
+        [ 'teamcomment_id' => $this->id ],
+        __METHOD__
+      );
+    } else {
+      $dbw->delete(
+        'teamcomments',
+        [ 'teamcomment_id' => $this->id ],
+        __METHOD__
+      );
+    }
     $dbw->endAtomic( __METHOD__ );
 
     // Log the deletion to Special:Log/teamcomments.
@@ -379,13 +354,7 @@ class TeamComment extends ContextSource {
     $userObj = $this->getUser();
     $dlt = '';
 
-    if (
-      $userObj->isAllowed( 'teamcommentadmin' ) ||
-      // Allow users to delete their own teamcomments if that feature is enabled in
-      // site configuration
-      // @see https://phabricator.wikimedia.org/T147796
-      $userObj->isAllowed( 'teamcomment-delete-own' ) && $this->isOwner( $userObj )
-    ) {
+    if ($this->isOwner($userObj)) {
       $dlt = ' | <span class="c-delete">' .
         '<a href="javascript:void(0);" rel="nofollow" class="teamcomment-delete-link" data-teamcomment-id="' .
         $this->id . '">' .
