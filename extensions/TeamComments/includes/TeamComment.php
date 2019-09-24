@@ -64,14 +64,6 @@ class TeamComment extends ContextSource {
   public $userID = 0;
 
   /**
-   * The amount of points the user has; fetched from the user_stats table if
-   * SocialProfile is installed, otherwise this remains 0
-   *
-   * @var int
-   */
-  public $userPoints = 0;
-
-  /**
    * TeamComment ID of the thread this teamcomment is in
    * this is the ID of the parent teamcomment if there is one,
    * or this teamcomment if there is not
@@ -107,7 +99,6 @@ class TeamComment extends ContextSource {
     $this->text = $data['teamcomment_text'];
     $this->date = $data['teamcomment_date'];
     $this->userID = (int)$data['teamcomment_user_id'];
-    $this->userPoints = $data['TeamComment_user_points'];
     $this->id = (int)$data['teamcomment_id'];
     $this->parentID = (int)$data['teamcomment_parent_id'];
     $this->thread = $data['thread'];
@@ -125,7 +116,6 @@ class TeamComment extends ContextSource {
 
     $tables = [];
     $params = [];
-    $joinConds = [];
 
     // Defaults (for non-social wikis)
     $tables[] = 'teamcomments';
@@ -136,28 +126,13 @@ class TeamComment extends ContextSource {
       'teamcomment_id', 'teamcomment_page_id'
     ];
 
-    // If SocialProfile is installed, query the user_stats table too.
-    if (
-      class_exists( 'UserProfile' ) &&
-      $dbr->tableExists( 'user_stats' )
-    ) {
-      $tables[] = 'user_stats';
-      $fields[] = 'stats_total_points';
-      $joinConds = [
-        'teamcomments' => [
-          'LEFT JOIN', 'teamcomment_user_id = stats_user_id'
-        ]
-      ];
-    }
-
     // Perform the query
     $res = $dbr->select(
       $tables,
       $fields,
       [ 'teamcomment_id' => $id ],
       __METHOD__,
-      $params,
-      $joinConds
+      $params
     );
 
     $row = $res->fetchObject();
@@ -173,7 +148,6 @@ class TeamComment extends ContextSource {
       'teamcomment_text' => $row->teamcomment_text,
       'teamcomment_date' => $row->teamcomment_date,
       'teamcomment_user_id' => $row->teamcomment_user_id,
-      'TeamComment_user_points' => ( isset( $row->stats_total_points ) ? number_format( $row->stats_total_points ) : 0 ),
       'teamcomment_id' => $row->teamcomment_id,
       'teamcomment_parent_id' => $row->teamcomment_parent_id,
       'thread' => $thread,
@@ -276,24 +250,6 @@ class TeamComment extends ContextSource {
     // Add a log entry.
     self::log( 'add', $user, $page->id, $teamcommentId, $text );
 
-    $dbr = wfGetDB( DB_REPLICA );
-    if (
-      class_exists( 'UserProfile' ) &&
-      $dbr->tableExists( 'user_stats' )
-    ) {
-      $res = $dbr->select( // need this data for seeding a TeamComment object
-        'user_stats',
-        'stats_total_points',
-        [ 'stats_user_id' => $user->getId() ],
-        __METHOD__
-      );
-
-      $row = $res->fetchObject();
-      $userPoints = number_format( $row->stats_total_points );
-    } else {
-      $userPoints = 0;
-    }
-
     if ( $parentID == 0 ) {
       $thread = $id;
     } else {
@@ -305,7 +261,6 @@ class TeamComment extends ContextSource {
       'teamcomment_text' => $text,
       'teamcomment_date' => $teamcommentDate,
       'teamcomment_user_id' => $user->getId(),
-      'TeamComment_user_points' => $userPoints,
       'teamcomment_id' => $id,
       'teamcomment_parent_id' => $parentID,
       'thread' => $thread,
@@ -396,14 +351,12 @@ class TeamComment extends ContextSource {
    * @return string
    */
   function showTeamComment( $hide = false, $containerClass, $anonList ) {
-    global $wgUserLevels, $wgExtensionAssetsPath;
+    global $wgExtensionAssetsPath;
 
     $style = '';
     if ( $hide ) {
       $style = " style='display:none;'";
     }
-
-    $teamcommentPosterLevel = '';
 
     if ( $this->userID != 0 ) {
       $title = Title::makeTitle( NS_USER, $this->username );
@@ -412,11 +365,6 @@ class TeamComment extends ContextSource {
         '" rel="nofollow">' . $this->username . '</a>';
 
       $TeamCommentReplyTo = $this->username;
-
-      if ( $wgUserLevels && class_exists( 'UserLevel' ) ) {
-        $user_level = new UserLevel( $this->userPoints );
-        $teamcommentPosterLevel = "{$user_level->getLevelName()}";
-      }
 
       $user = User::newFromId( $this->userID );
       $TeamCommentReplyToGender = $user->getOption( 'gender', 'unknown' );
@@ -468,7 +416,6 @@ class TeamComment extends ContextSource {
     $output .= '<div class="c-container">' . "\n";
     $output .= '<div class="c-user">' . "\n";
     $output .= "{$teamcommentPoster}";
-    $output .= "<span class=\"c-user-level\">{$teamcommentPosterLevel}</span>" . "\n";
 
     Wikimedia\suppressWarnings(); // E_STRICT bitches about strtotime()
     $output .= '<div class="c-time">' .

@@ -130,27 +130,13 @@ class TeamCommentsPage extends ContextSource {
     ];
     $params = [ 'GROUP BY' => 'teamcomment_id' ];
 
-    // If SocialProfile is installed, query the user_stats table too.
-    $joinConds = [];
-    if (
-      class_exists( 'UserProfile' ) &&
-      $dbr->tableExists( 'user_stats' )
-    ) {
-      $tables[] = 'user_stats';
-      $fields[] = 'stats_total_points';
-      $joinConds['teamcomments'] = [
-        'LEFT JOIN', 'teamcomment_user_id = stats_user_id'
-      ];
-    }
-
     // Perform the query
     $res = $dbr->select(
       $tables,
       $fields,
       [ 'teamcomment_page_id' => $this->id ],
       __METHOD__,
-      $params,
-      $joinConds
+      $params
     );
 
     $teamcomments = [];
@@ -167,7 +153,6 @@ class TeamCommentsPage extends ContextSource {
         'teamcomment_text' => $row->teamcomment_text,
         'teamcomment_date' => $row->teamcomment_date,
         'teamcomment_user_id' => $row->teamcomment_user_id,
-        'TeamComment_user_points' => ( isset( $row->stats_total_points ) ? number_format( $row->stats_total_points ) : 0 ),
         'teamcomment_id' => $row->teamcomment_id,
         'teamcomment_parent_id' => $row->teamcomment_parent_id,
         'thread' => $thread,
