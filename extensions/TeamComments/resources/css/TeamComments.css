@@ -12,29 +12,25 @@
 }
 
 .full {
-  width: 530px;
 }
 
 .reply {
-  margin-left: 70px !important;
-  width: 460px;
+  margin-left: 40px !important;
 }
 
 .c-item {
   position: relative;
-  border-bottom: 1px solid #dcdcdc;
 /* this works for Monaco, but not for Monobook.
 Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
   padding: 0px 0px 10px 0px;*/
-  padding: 0px 0px 35px 0px;
-  margin: 0px 0px 15px 0px;
+  padding: 0px 0px 15px 0px;
+  margin: 0px 0px 5px 0px;
 }
 
 .c-container {
   position: relative;
   top: 0px;
-  top: 0px;
-  margin: 0px 0px 0px 70px;
+  margin-left: 10px;
 }
 
 .c-user {
@@ -67,15 +63,12 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
 }
 
 .f-message {
-  width: 460px;
 }
 
 .r-message {
-  width: 360px;
 }
 
 .c-actions {
-  float: right;
   font-size: 10px;
   margin: 10px 0px 0px 0px;
 }
