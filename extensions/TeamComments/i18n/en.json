@@ -41,6 +41,7 @@
   "teamcomments-submit": "Add your comment",
   "teamcomments-permalink": "Permalink",
   "teamcomments-delete-link": "Delete comment",
+  "teamcomments-deleted-text": "[This comment has been deleted]",
   "teamcomments-edit-link": "Edit",
   "teamcomments-edit-save": "Save",
   "teamcomments-anon-name": "Anonymous user",

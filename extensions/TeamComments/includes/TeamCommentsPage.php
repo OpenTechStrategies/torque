@@ -126,7 +126,8 @@ class TeamCommentsPage extends ContextSource {
     $fields = [
       'teamcomment_username', 'teamcomment_ip', 'teamcomment_text',
       'teamcomment_date', 'teamcomment_date AS timestamp',
-      'teamcomment_user_id', 'teamcomment_id', 'teamcomment_parent_id'
+      'teamcomment_user_id', 'teamcomment_id', 'teamcomment_parent_id',
+      'teamcomment_deleted'
     ];
     $params = [ 'GROUP BY' => 'teamcomment_id' ];
 
@@ -155,6 +156,7 @@ class TeamCommentsPage extends ContextSource {
         'teamcomment_user_id' => $row->teamcomment_user_id,
         'teamcomment_id' => $row->teamcomment_id,
         'teamcomment_parent_id' => $row->teamcomment_parent_id,
+        'teamcomment_deleted' => $row->teamcomment_deleted,
         'thread' => $thread,
         'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp )
       ];

@@ -22,6 +22,7 @@ class TeamComment extends ContextSource {
   public $username = '';
   public $ip = '';
   public $userID = 0;
+  public $deleted = false;
 
   /**
    * TeamComment ID of the thread this teamcomment is in
@@ -54,6 +55,7 @@ class TeamComment extends ContextSource {
     $this->parentID = (int)$data['teamcomment_parent_id'];
     $this->thread = $data['thread'];
     $this->timestamp = $data['timestamp'];
+    $this->deleted = $data['teamcomment_deleted'];
 
   }
 
@@ -74,7 +76,7 @@ class TeamComment extends ContextSource {
       'teamcomment_username', 'teamcomment_ip', 'teamcomment_text',
       'teamcomment_date', 'teamcomment_date AS timestamp',
       'teamcomment_user_id', 'teamcomment_id', 'teamcomment_parent_id',
-      'teamcomment_id', 'teamcomment_page_id'
+      'teamcomment_id', 'teamcomment_page_id', 'teamcomment_deleted'
     ];
 
     // Perform the query
@@ -101,6 +103,7 @@ class TeamComment extends ContextSource {
       'teamcomment_user_id' => $row->teamcomment_user_id,
       'teamcomment_id' => $row->teamcomment_id,
       'teamcomment_parent_id' => $row->teamcomment_parent_id,
+      'teamcomment_deleted' => $row->teamcomment_deleted,
       'thread' => $thread,
       'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp )
     ];
@@ -142,6 +145,9 @@ class TeamComment extends ContextSource {
    * @throws MWException
    */
   function getText() {
+    if($this->deleted) {
+      return wfMessage('teamcomments-deleted-text')->plain();
+    }
     $parser = MediaWikiServices::getInstance()->getParser();
 
     $teamcommentText = trim( str_replace( '&quot;', "'", $this->text ) );
@@ -250,7 +256,7 @@ class TeamComment extends ContextSource {
     if($this->hasChildren()) {
       $dbw->update(
         'teamcomments',
-        [ 'teamcomment_text' => "[deleted]" ],
+        [ 'teamcomment_text' => "", 'teamcomment_deleted' => true ],
         [ 'teamcomment_id' => $this->id ],
         __METHOD__
       );
@@ -379,7 +385,7 @@ class TeamComment extends ContextSource {
     $edt = '';
     $shadowEditArea = '';
 
-    if ($this->isOwner($userObj)) {
+    if ($this->isOwner($userObj) && !$this->deleted) {
       $dlt = ' | <span class="c-delete">' .
         '<a href="javascript:void(0);" rel="nofollow" class="teamcomment-delete-link" data-teamcomment-id="' .
         $this->id . '">' .
