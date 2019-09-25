@@ -54,9 +54,6 @@
       "i18n"
     ]
   },
-  "ExtensionMessagesFiles": {
-    "TeamCommentsMagic": "TeamComments.i18n.magic.php"
-  },
   "AutoloadClasses": {
     "TeamComment": "includes/TeamComment.php",
     "TeamCommentsPage": "includes/TeamCommentsPage.php",
