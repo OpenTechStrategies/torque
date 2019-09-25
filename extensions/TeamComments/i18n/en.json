@@ -57,6 +57,7 @@
   "teamcomments-time-hours": "{{PLURAL:$1|one hour|$1 hours}}",
   "teamcomments-time-minutes": "{{PLURAL:$1|one minute|$1 minutes}}",
   "teamcomments-time-seconds": "{{PLURAL:$1|one second|$1 seconds}}",
+  "teamcomments-commentedat": "on $1, at $2",
   "log-show-hide-teamcomments": "$1 comment log",
   "logeventslist-teamcomments-log": "Comment log",
   "group-teamcommentadmin": "Comment administrators",

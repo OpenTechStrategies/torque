@@ -49,6 +49,7 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
 }
 
 .c-time {
+  display: inline;
   font-size: 10px;
   color: #888;
   line-height: 11px !important;

@@ -351,7 +351,7 @@ class TeamComment extends ContextSource {
    * @return string
    */
   function showTeamComment( $hide = false, $containerClass, $anonList ) {
-    global $wgExtensionAssetsPath;
+    global $wgExtensionAssetsPath, $wgLang, $wgUser;
 
     $style = '';
     if ( $hide ) {
@@ -423,10 +423,11 @@ class TeamComment extends ContextSource {
     $output .= "{$teamcommentPoster}";
 
     Wikimedia\suppressWarnings(); // E_STRICT bitches about strtotime()
-    $output .= '<div class="c-time">' .
+    $output .= '<div class="c-time"> ' .
       wfMessage(
-        'teamcomments-time-ago',
-        TeamCommentFunctions::getTimeAgo( strtotime( $this->date ) )
+        'teamcomments-commentedat',
+        $wgLang->userDate($this->date, $wgUser),
+        $wgLang->userTime($this->date, $wgUser)
       )->parse() . '</div>' . "\n";
     Wikimedia\restoreWarnings();
 
