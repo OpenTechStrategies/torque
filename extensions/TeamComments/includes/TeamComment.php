@@ -327,7 +327,7 @@ class TeamComment extends ContextSource {
   }
 
   /**
-   * Show the HTML for this teamcomment and ignore section
+   * Show the HTML for this teamcomment
    *
    * @param array $anonList Map of IP addresses to names like anon#1, anon#2
    * @return string HTML
@@ -339,11 +339,7 @@ class TeamComment extends ContextSource {
       $container_class = 'reply';
     }
 
-    $output = '';
-
-    $output .= $this->showTeamComment( false, $container_class, $anonList );
-
-    return $output;
+    return $this->showTeamComment( false, $container_class, $anonList );
   }
 
   /**

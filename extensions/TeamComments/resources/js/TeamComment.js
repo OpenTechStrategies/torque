@@ -14,19 +14,6 @@
     pause: 0,
 
     /**
-     * When a teamcomment's author is ignored, "Show TeamComment" link will be
-     * presented to the user.
-     * If the user clicks on it, this function is called to show the hidden
-     * teamcomment.
-     *
-     * @param {string} id
-     */
-    show: function ( id ) {
-      $( '#ignore-' + id ).hide( 300 );
-      $( '#teamcomment-' + id ).show( 300 );
-    },
-
-    /**
      * This function is called whenever a user clicks on the "Delete TeamComment"
      * link to delete a teamcomment.
      *
@@ -280,12 +267,6 @@
       // "Save the Edit" links
       .on( 'click', 'button.teamcomment-save-button', function () {
         TeamComment.saveEditTeamComment($(this ));
-      } )
-
-      // "Show this hidden teamcomment" -- teamcomments made by people on the user's
-      // personal block list
-      .on( 'click', 'div.c-ignored-links a', function () {
-        TeamComment.show( $( this ).data( 'teamcomment-id' ) );
       } )
 
       // Reply links
