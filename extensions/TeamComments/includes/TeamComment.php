@@ -274,6 +274,29 @@ class TeamComment extends ContextSource {
   }
 
   /**
+   * Edits an entry in TeamComments table
+   */
+  function edit($newText) {
+    $dbw = wfGetDB( DB_MASTER );
+    $dbw->startAtomic( __METHOD__ );
+    $dbw->update(
+      'teamcomments',
+      [ 'teamcomment_text' => $newText ],
+      [ 'teamcomment_id' => $this->id ],
+      __METHOD__
+    );
+    $dbw->endAtomic( __METHOD__ );
+
+    // Log the deletion to Special:Log/teamcomments.
+    self::log( 'delete', $this->getUser(), $this->page->id, $this->id );
+
+    // Clear memcache & Squid cache
+    $this->page->clearTeamCommentListCache();
+
+    $this->text = $newText;
+  }
+
+  /**
    * Log an action in the teamcomment log.
    *
    * @param string $action Action to log, can be either 'add' or 'delete'
@@ -353,12 +376,23 @@ class TeamComment extends ContextSource {
     // TeamComment delete button for privileged users
     $userObj = $this->getUser();
     $dlt = '';
+    $edt = '';
+    $shadowEditArea = '';
 
     if ($this->isOwner($userObj)) {
       $dlt = ' | <span class="c-delete">' .
         '<a href="javascript:void(0);" rel="nofollow" class="teamcomment-delete-link" data-teamcomment-id="' .
         $this->id . '">' .
         $this->msg( 'teamcomments-delete-link' )->plain() . '</a></span>';
+      $edt = ' | <span class="c-edit">' .
+        '<a href="javascript:void(0);" rel="nofollow" class="teamcomment-edit-link" data-teamcomment-id="' .
+        $this->id . '">' .
+        $this->msg( 'teamcomments-edit-link' )->plain() . '</a></span>';
+      $shadowEditArea = '<div class="teamcomment-editarea" data-teamcomment-id="' .
+        $this->id . '">' .
+      $shadowEditArea .= '<textarea>' . $this->text . '</textarea>';
+      $shadowEditArea .= '<br><button class="teamcomment-save-button">' . $this->msg('teamcomments-edit-save') . '</button>';
+      $shadowEditArea .= '</div>';
     }
 
     // Reply Link (does not appear on child teamcomments)
@@ -398,13 +432,14 @@ class TeamComment extends ContextSource {
     $output .= "<div class=\"c-teamcomment {$teamcomment_class}\">" . "\n";
     $output .= $this->getText();
     $output .= '</div>' . "\n";
+    $output .= $shadowEditArea;
     $output .= '<div class="c-actions">' . "\n";
     if ( $this->page->title ) { // for some reason doesn't always exist
       $output .= '<a href="' . htmlspecialchars( $this->page->title->getFullURL() ) . "#teamcomment-{$this->id}\" rel=\"nofollow\">" .
       $this->msg( 'teamcomments-permalink' )->plain() . '</a> ';
     }
     if ( $replyRow || $dlt ) {
-      $output .= "{$replyRow} {$dlt}" . "\n";
+      $output .= "{$replyRow} ${edt} {$dlt}" . "\n";
     }
     $output .= '</div>' . "\n";
     $output .= '</div>' . "\n";

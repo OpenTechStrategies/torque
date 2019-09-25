@@ -94,6 +94,23 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
   color: red !important;
 }
 
+.teamcomment-showedit .teamcomment-editarea {
+  display:block;
+}
+
+.teamcomment-showedit .c-teamcomment {
+  display:none;
+}
+
+.teamcomment-editarea {
+  display:none;
+}
+
+.teamcomment-editarea textarea {
+  width: 530px;
+  height: 150px;
+}
+
 .c-form-title {
   color: #333;
   font-weight: bold;

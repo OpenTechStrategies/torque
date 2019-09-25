@@ -47,6 +47,43 @@
     },
 
     /**
+     * This function is called whenever a user clicks on the "Edit"
+     * link to delete a teamcomment.
+     *
+     * @param {number} teamcommentID TeamComment ID number
+     */
+    editTeamComment: function ( teamcommentID ) {
+      var containerDiv = document.getElementById('teamcomment-' + teamcommentID);
+      containerDiv.className = containerDiv.className + ' teamcomment-showedit';
+    },
+
+    /**
+     * This function is called whenever a user clicks on the "Edit"
+     * link to delete a teamcomment.
+     *
+     * @param {number} teamcommentID TeamComment ID number
+     */
+    saveEditTeamComment: function (callingButton) {
+      var editareaContainer = $(callingButton).closest(".teamcomment-editarea");
+      var teamcommentID = editareaContainer.attr('data-teamcomment-id');
+      var teamcommentText = editareaContainer.find('textarea').val();
+
+      ( new mw.Api() ).postWithToken( 'csrf', {
+        action: 'teamcommentedit',
+        teamcommentID: teamcommentID,
+        teamcommentText: teamcommentText
+      } ).done( function ( response ) {
+        var end;
+
+        if(response.teamcommentedit && response.teamcommentedit.newFormattedText) {
+          var containerDiv = $(document.getElementById('teamcomment-' + teamcommentID));
+          containerDiv.removeClass('teamcomment-showedit');
+          containerDiv.find('.c-teamcomment').html(response.teamcommentedit.newFormattedText);
+        }
+      } );
+    },
+
+    /**
      * @param {number} pageID Page ID
      * @param {string} order Sorting order
      * @param {boolean} end Scroll to bottom after?
@@ -233,6 +270,16 @@
       // "Delete TeamComment" links
       .on( 'click', 'a.teamcomment-delete-link', function () {
         TeamComment.deleteTeamComment( $( this ).data( 'teamcomment-id' ) );
+      } )
+
+      // "Edit TeamComment" links
+      .on( 'click', 'a.teamcomment-edit-link', function () {
+        TeamComment.editTeamComment( $( this ).data( 'teamcomment-id' ) );
+      } )
+
+      // "Save the Edit" links
+      .on( 'click', 'button.teamcomment-save-button', function () {
+        TeamComment.saveEditTeamComment($(this ));
       } )
 
       // "Show this hidden teamcomment" -- teamcomments made by people on the user's

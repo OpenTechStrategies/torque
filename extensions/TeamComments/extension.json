@@ -46,6 +46,7 @@
     "teamcommentdelete": "TeamCommentDeleteAPI",
     "teamcommentlatestid": "TeamCommentLatestIdAPI",
     "teamcommentlist": "TeamCommentListAPI",
+    "teamcommentedit": "TeamCommentEditAPI",
     "teamcommentsubmit": "TeamCommentSubmitAPI"
   },
   "MessagesDirs": {
@@ -66,6 +67,7 @@
     "TeamCommentDeleteAPI": "includes/api/TeamCommentDeleteAPI.php",
     "TeamCommentLatestIdAPI": "includes/api/TeamCommentLatestIdAPI.php",
     "TeamCommentListAPI": "includes/api/TeamCommentListAPI.php",
+    "TeamCommentEditAPI": "includes/api/TeamCommentEditAPI.php",
     "TeamCommentSubmitAPI": "includes/api/TeamCommentSubmitAPI.php"
   },
   "ResourceModules": {
