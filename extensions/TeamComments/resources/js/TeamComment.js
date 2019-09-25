@@ -72,17 +72,16 @@
 
     /**
      * @param {number} pageID Page ID
-     * @param {string} order Sorting order
      * @param {boolean} end Scroll to bottom after?
      * @param {number} cpage TeamComment page number (used for pagination)
      */
-    viewTeamComments: function ( pageID, order, end, cpage ) {
+    viewTeamComments: function ( pageID, end, cpage ) {
       document.teamcommentForm.cpage.value = cpage;
       document.getElementById( 'allteamcomments' ).innerHTML = mw.msg( 'teamcomments-loading' ) + '<br /><br />';
 
       $.ajax( {
         url: mw.config.get( 'wgScriptPath' ) + '/api.php',
-        data: { action: 'teamcommentlist', format: 'json', pageID: pageID, order: order, pagerPage: cpage },
+        data: { action: 'teamcommentlist', format: 'json', pageID: pageID, pagerPage: cpage },
         cache: false
       } ).done( function ( response ) {
         document.getElementById( 'allteamcomments' ).innerHTML = response.teamcommentlist.html;
@@ -124,7 +123,7 @@
             if ( mw.config.get( 'wgTeamCommentsSortDescending' ) ) {
               end = 0;
             }
-            TeamComment.viewTeamComments( document.teamcommentForm.pageId.value, 0, end, document.teamcommentForm.cpage.value );
+            TeamComment.viewTeamComments( document.teamcommentForm.pageId.value, end, document.teamcommentForm.cpage.value );
           } else {
             // eslint-disable-next-line no-alert
             window.alert( response.error.info );
@@ -186,7 +185,7 @@
           // Get last new ID
           TeamComment.CurLatestTeamCommentID = response.teamcommentlatestid.id;
           if ( TeamComment.CurLatestTeamCommentID !== TeamComment.LatestTeamCommentID ) {
-            TeamComment.viewTeamComments( document.teamcommentForm.pageId.value, 0, 1, document.teamcommentForm.cpage.value );
+            TeamComment.viewTeamComments( document.teamcommentForm.pageId.value, 1, document.teamcommentForm.cpage.value );
             TeamComment.LatestTeamCommentID = TeamComment.CurLatestTeamCommentID;
           }
         }
@@ -240,15 +239,6 @@
 
     // "Sort by X" feature
     $( 'body' )
-      .on( 'change', 'select[name="TheOrder"]', function () {
-        TeamComment.viewTeamComments(
-          mw.config.get( 'wgArticleId' ), // or we could use $( 'input[name="pid"]' ).val(), too
-          $( this ).val(),
-          0,
-          document.teamcommentForm.cpage.value
-        );
-      } )
-
       // TeamComment auto-refresher
       .on( 'click', 'div#spy a', function () {
         TeamComment.toggleLiveTeamComments( 1 );
@@ -290,19 +280,10 @@
 
       // Change page
       .on( 'click', 'li.c-pager-item a.c-pager-link', function () {
-        var ordCrtl, ord = 0,
-          teamcommentsBody = $( this ).parents( 'div.teamcomments-body:first' );
-
-        if ( teamcommentsBody.length > 0 ) {
-          ordCrtl = teamcommentsBody.first().find( 'select[name="TheOrder"]:first' );
-          if ( ordCrtl.length > 0 ) {
-            ord = ordCrtl.val();
-          }
-        }
+        var teamcommentsBody = $( this ).parents( 'div.teamcomments-body:first' );
 
         TeamComment.viewTeamComments(
           mw.config.get( 'wgArticleId' ), // or we could use $( 'input[name="pid"]' ).val(), too
-          ord,
           0,
           $( this ).data( 'cpage' )
         );

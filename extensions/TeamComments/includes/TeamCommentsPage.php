@@ -129,7 +129,7 @@ class TeamCommentsPage extends ContextSource {
       'teamcomment_user_id', 'teamcomment_id', 'teamcomment_parent_id',
       'teamcomment_deleted'
     ];
-    $params = [ 'GROUP BY' => 'teamcomment_id' ];
+    $params = [ 'ORDER BY' => 'teamcomment_date' ];
 
     // Perform the query
     $res = $dbr->select(
@@ -362,23 +362,6 @@ class TeamCommentsPage extends ContextSource {
   }
 
   /**
-   * Sort an array of teamcomment threads
-   * @param $threads
-   * @return mixed
-   */
-  function sort( $threads ) {
-    global $wgTeamCommentsSortDescending;
-
-    if ( $wgTeamCommentsSortDescending ) {
-      usort( $threads, [ 'TeamCommentFunctions', 'sortDesc' ] );
-    } else {
-      usort( $threads, [ 'TeamCommentFunctions', 'sortAsc' ] );
-    }
-
-    return $threads;
-  }
-
-  /**
    * Convert an array of teamcomment threads into an array of pages (arrays) of teamcomment threads
    * @param $teamcomments
    * @return array
@@ -395,7 +378,6 @@ class TeamCommentsPage extends ContextSource {
     $output = '';
 
     $teamcommentThreads = $this->getTeamComments();
-    $teamcommentThreads = $this->sort( $teamcommentThreads );
 
     $this->teamcomments = $teamcommentThreads;
 
@@ -435,16 +417,7 @@ class TeamCommentsPage extends ContextSource {
   function displayOrderForm() {
     $output = '
 <h1>Comments</h1>
-<div class="c-order">
-<div class="c-order-select">
-<form name="ChangeOrder" action="">
-<select name="TheOrder">
-<option value="0">' .
-wfMessage( 'teamcomments-sort-by-date' )->plain() .
-'</option>
-</select>
-</form>
-</div>
+<div>
 <div id="spy" class="c-spy">
 <a href="javascript:void(0)">' .
 wfMessage( 'teamcomments-auto-refresher-enable' )->plain() .

@@ -39,7 +39,6 @@
   "teamcomments-reply-to": "回复{{GENDER:$2|$1}}",
   "teamcomments-cancel-reply": "取消",
   "teamcomments-delete-warning": "您确定要删除此评论吗？",
-  "teamcomments-sort-by-date": "按日期排序",
   "teamcomments-show-teamcomment-link": "显示评论",
   "teamcomments-you": "您",
   "teamcomments-reply": "回复",

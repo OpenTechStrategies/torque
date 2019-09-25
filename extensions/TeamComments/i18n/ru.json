@@ -22,7 +22,6 @@
   "teamcomments-reply-to": "Ответить {{GENDER:$2|участнику|участнице}} $1",
   "teamcomments-cancel-reply": "Отменить",
   "teamcomments-delete-warning": "Вы уверены, что хотите удалить данный комментарий?",
-  "teamcomments-sort-by-date": "Упорядочить по дате",
   "teamcomments-show-teamcomment-link": "Показать комментарий",
   "teamcomments-you": "Вы",
   "teamcomments-reply": "Ответить",

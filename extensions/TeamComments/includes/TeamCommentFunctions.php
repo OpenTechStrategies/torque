@@ -139,44 +139,6 @@ class TeamCommentFunctions {
   }
 
   /**
-   * Sort threads ascending
-   *
-   * @param $x
-   * @param $y
-   * @return int
-   */
-  public static function sortAsc( $x, $y ) {
-    // return -1  -  x goes above y
-    // return  1  -  x goes below y
-    // return  0  -  order irrelevant (only when x == y)
-
-    if ( $x[0]->timestamp < $y[0]->timestamp ) {
-      return -1;
-    } else {
-      return 1;
-    }
-  }
-
-  /**
-   * Sort threads descending
-   *
-   * @param $x
-   * @param $y
-   * @return int
-   */
-  public static function sortDesc( $x, $y ) {
-    // return -1  -  x goes above y
-    // return  1  -  x goes below y
-    // return  0  -  order irrelevant (only when x == y)
-
-    if ( $x[0]->timestamp > $y[0]->timestamp ) {
-      return -1;
-    } else {
-      return 1;
-    }
-  }
-
-  /**
    * Sort the teamcomments purely by the time, from earliest to latest
    *
    * @param $x

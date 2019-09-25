@@ -26,10 +26,6 @@ class TeamCommentListAPI extends ApiBase {
         ApiBase::PARAM_REQUIRED => true,
         ApiBase::PARAM_TYPE => 'integer'
       ],
-      'order' => [
-        ApiBase::PARAM_REQUIRED => true,
-        ApiBase::PARAM_TYPE => 'boolean'
-      ],
       'pagerPage' => [
         ApiBase::PARAM_REQUIRED => true,
         ApiBase::PARAM_TYPE => 'integer'

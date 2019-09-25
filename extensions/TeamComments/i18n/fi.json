@@ -16,7 +16,6 @@
   "teamcomments-reply-to": "Vastaa käyttäjälle {{GENDER:$2|$1}}",
   "teamcomments-cancel-reply": "Peru",
   "teamcomments-delete-warning": "Oletko varma, että haluat poistaa tämän kommentin?",
-  "teamcomments-sort-by-date": "Järjestä päivämäärän mukaan",
   "teamcomments-show-teamcomment-link": "Näytä kommentti",
   "teamcomments-you": "Sinä",
   "teamcomments-reply": "Vastaa",

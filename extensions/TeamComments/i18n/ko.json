@@ -18,7 +18,6 @@
   "teamcomments-reply-to": "{{GENDER:$2|$1}}에게 답변하기",
   "teamcomments-cancel-reply": "취소",
   "teamcomments-delete-warning": "이 댓글을 삭제하겠습니까?",
-  "teamcomments-sort-by-date": "날짜순으로 정렬",
   "teamcomments-show-teamcomment-link": "댓글 보기",
   "teamcomments-you": "나",
   "teamcomments-reply": "답변",

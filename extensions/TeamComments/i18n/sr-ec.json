@@ -15,7 +15,6 @@
   "teamcomments-reply-to": "Одговори на {{GENDER:$2|$1}}",
   "teamcomments-cancel-reply": "Откажи",
   "teamcomments-delete-warning": "Желите ли да обришете овај коментар?",
-  "teamcomments-sort-by-date": "Поређај по датуму",
   "teamcomments-show-teamcomment-link": "Прикажи коментар",
   "log-name-teamcomments": "Дневник коментара",
   "log-description-teamcomments": "Ово је дневник коментара.",

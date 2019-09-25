@@ -34,7 +34,6 @@
   "teamcomments-reply-to": "תשובה אל {{GENDER:$2|$1}}",
   "teamcomments-cancel-reply": "ביטול",
   "teamcomments-delete-warning": "האם ברצונך באמת למחוק את התגובה הזאת?",
-  "teamcomments-sort-by-date": "מיון לפי תאריך",
   "teamcomments-show-teamcomment-link": "הצגת התגובה",
   "teamcomments-you": "{{GENDER:|אתה|את}}",
   "teamcomments-reply": "תשובה",

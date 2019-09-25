@@ -40,7 +40,6 @@
   "teamcomments-reply-to": "回覆 {{GENDER:$2|$1}}",
   "teamcomments-cancel-reply": "取消",
   "teamcomments-delete-warning": "您確定要刪除此評論？",
-  "teamcomments-sort-by-date": "依日期排序",
   "teamcomments-show-teamcomment-link": "顯示評論",
   "teamcomments-you": "您",
   "teamcomments-reply": "回覆",
