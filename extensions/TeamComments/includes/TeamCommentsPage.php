@@ -141,7 +141,7 @@ class TeamCommentsPage extends ContextSource {
       'teamcomment_username', 'teamcomment_ip', 'teamcomment_text',
       'teamcomment_date', 'teamcomment_date AS timestamp',
       'teamcomment_user_id', 'teamcomment_id', 'teamcomment_parent_id',
-      'teamcomment_deleted'
+      'teamcomment_deleted', 'teamcomment_date_lastedited'
     ];
     $params = [ 'ORDER BY' => 'teamcomment_date' ];
 
@@ -171,6 +171,7 @@ class TeamCommentsPage extends ContextSource {
         'teamcomment_id' => $row->teamcomment_id,
         'teamcomment_parent_id' => $row->teamcomment_parent_id,
         'teamcomment_deleted' => $row->teamcomment_deleted,
+        'teamcomment_date_lastedited' => $row->teamcomment_date_lastedited,
         'thread' => $thread,
         'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp )
       ];

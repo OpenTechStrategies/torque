@@ -7,6 +7,7 @@ CREATE TABLE /*_*/teamcomments (
   teamcomment_username varchar(200) NOT NULL default '',
   teamcomment_text text NOT NULL,
   teamcomment_date datetime NOT NULL default '1970-01-01 00:00:01',
+  teamcomment_date_lastedited datetime,
   teamcomment_parent_id int(11) NOT NULL default 0,
   teamcomment_ip varchar(45) NOT NULL default '',
   teamcomment_deleted boolean NOT NULL default false

@@ -17,6 +17,7 @@ class TeamComment extends ContextSource {
   public $page = null;
   public $text = null;
   public $date = null;
+  public $dateLastEdited = null;
   public $id = 0;
   public $parentID = 0;
   public $username = '';
@@ -50,6 +51,7 @@ class TeamComment extends ContextSource {
     $this->ip = $data['teamcomment_ip'];
     $this->text = $data['teamcomment_text'];
     $this->date = $data['teamcomment_date'];
+    $this->dateLastEdited = $data['teamcomment_date_lastedited'];
     $this->userID = (int)$data['teamcomment_user_id'];
     $this->id = (int)$data['teamcomment_id'];
     $this->parentID = (int)$data['teamcomment_parent_id'];
@@ -76,7 +78,8 @@ class TeamComment extends ContextSource {
       'teamcomment_username', 'teamcomment_ip', 'teamcomment_text',
       'teamcomment_date', 'teamcomment_date AS timestamp',
       'teamcomment_user_id', 'teamcomment_id', 'teamcomment_parent_id',
-      'teamcomment_id', 'teamcomment_page_id', 'teamcomment_deleted'
+      'teamcomment_id', 'teamcomment_page_id', 'teamcomment_deleted',
+      'teamcomment_date_lastedited'
     ];
 
     // Perform the query
@@ -104,6 +107,7 @@ class TeamComment extends ContextSource {
       'teamcomment_id' => $row->teamcomment_id,
       'teamcomment_parent_id' => $row->teamcomment_parent_id,
       'teamcomment_deleted' => $row->teamcomment_deleted,
+      'teamcomment_date_lastedited' => $row->teamcomment_date_lastedited,
       'thread' => $thread,
       'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp )
     ];
@@ -285,9 +289,14 @@ class TeamComment extends ContextSource {
   function edit($newText) {
     $dbw = wfGetDB( DB_MASTER );
     $dbw->startAtomic( __METHOD__ );
+
+    $teamcommentDate = date( 'Y-m-d H:i:s' );
+
     $dbw->update(
       'teamcomments',
-      [ 'teamcomment_text' => $newText ],
+      [ 'teamcomment_text' => $newText,
+        'teamcomment_date_lastedited' => $teamcommentDate,
+    ],
       [ 'teamcomment_id' => $this->id ],
       __METHOD__
     );
@@ -300,6 +309,7 @@ class TeamComment extends ContextSource {
     $this->page->clearTeamCommentListCache();
 
     $this->text = $newText;
+    $this->dateLastEdited = $teamcommentDate;
   }
 
   /**
@@ -428,7 +438,15 @@ class TeamComment extends ContextSource {
         'teamcomments-commentedat',
         $wgLang->userDate($this->date, $wgUser),
         $wgLang->userTime($this->date, $wgUser)
-      )->parse() . '</div>' . "\n";
+      )->parse();
+    if($this->dateLastEdited) {
+      $output .= wfMessage(
+        'teamcomments-editedat',
+        $wgLang->userDate($this->dateLastEdited, $wgUser),
+        $wgLang->userTime($this->dateLastEdited, $wgUser)
+      )->parse();
+    }
+    $output .= '</div>' . "\n";
     Wikimedia\restoreWarnings();
 
     $output .= '</div>' . "\n";
