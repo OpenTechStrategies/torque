@@ -385,11 +385,16 @@ class TeamComment extends ContextSource {
       $TeamCommentReplyToGender = 'unknown'; // Undisclosed gender as anon user
     }
 
+    $TeamCommentPostDate = wfMessage(
+        'teamcomments-commentedat',
+        $wgLang->userDate($this->date, $wgUser),
+        $wgLang->userTime($this->date, $wgUser)
+      )->parse();
+
     // TeamComment delete button for privileged users
     $userObj = $this->getUser();
     $dlt = '';
     $edt = '';
-    $shadowEditArea = '';
 
     if ($this->isOwner($userObj) && !$this->deleted) {
       $dlt = ' | <span class="c-delete">' .
@@ -400,11 +405,6 @@ class TeamComment extends ContextSource {
         '<a href="javascript:void(0);" rel="nofollow" class="teamcomment-edit-link" data-teamcomment-id="' .
         $this->id . '">' .
         $this->msg( 'teamcomments-edit-link' )->plain() . '</a></span>';
-      $shadowEditArea = '<div class="teamcomment-editarea" data-teamcomment-id="' .
-        $this->id . '">' .
-      $shadowEditArea .= '<textarea>' . $this->text . '</textarea>';
-      $shadowEditArea .= '<br><button class="teamcomment-save-button">' . $this->msg('teamcomments-edit-save') . '</button>';
-      $shadowEditArea .= '</div>';
     }
 
     // Reply Link (does not appear on child teamcomments)
@@ -414,9 +414,11 @@ class TeamComment extends ContextSource {
         if ( $replyRow ) {
           $replyRow .= wfMessage( 'pipe-separator' )->plain();
         }
-        $replyRow .= " | <a href=\"#end\" rel=\"nofollow\" class=\"teamcomments-reply-to\" data-teamcomment-id=\"{$this->id}\" data-teamcomments-safe-username=\"" .
-          htmlspecialchars( $TeamCommentReplyTo, ENT_QUOTES ) . "\" data-teamcomments-user-gender=\"" .
-          htmlspecialchars( $TeamCommentReplyToGender ) . '">' .
+        $replyRow .= " | <a href=\"#end\" rel=\"nofollow\" class=\"teamcomments-reply-to\" data-teamcomment-id=\"{$this->id}\"" .
+          " data-teamcomments-safe-replyon=\"" . htmlspecialchars( $TeamCommentPostDate, ENT_QUOTES ) . "\"" .
+          " data-teamcomments-safe-username=\"" . htmlspecialchars( $TeamCommentReplyTo, ENT_QUOTES ) . "\"" .
+          " data-teamcomments-user-gender=\"" .  htmlspecialchars( $TeamCommentReplyToGender ) .  '"' .
+          '>' .
           wfMessage( 'teamcomments-reply' )->plain() . '</a>';
       }
     }
@@ -433,12 +435,7 @@ class TeamComment extends ContextSource {
     $output .= "{$teamcommentPoster}";
 
     Wikimedia\suppressWarnings(); // E_STRICT bitches about strtotime()
-    $output .= '<div class="c-time"> ' .
-      wfMessage(
-        'teamcomments-commentedat',
-        $wgLang->userDate($this->date, $wgUser),
-        $wgLang->userTime($this->date, $wgUser)
-      )->parse();
+    $output .= '<div class="c-time"> ' . $TeamCommentPostDate;
     if($this->dateLastEdited) {
       $output .= wfMessage(
         'teamcomments-editedat',
@@ -453,7 +450,14 @@ class TeamComment extends ContextSource {
     $output .= "<div class=\"c-teamcomment {$teamcomment_class}\">" . "\n";
     $output .= $this->getText();
     $output .= '</div>' . "\n";
-    $output .= $shadowEditArea;
+
+    # We always have a (hidden) edit area because it contains the raw text of the comment,
+    # useful for commenting as well.  But we use this for editing as well.
+    $output .= '<div class="teamcomment-editarea" data-teamcomment-id="' .  $this->id . '">';
+    $output .= '<pre><textarea>' . $this->text . '</textarea></pre>';
+    $output .= '<br><button class="teamcomment-save-button">' . $this->msg('teamcomments-edit-save') . '</button>';
+    $output .= '</div>';
+
     $output .= '<div class="c-actions">' . "\n";
     if ( $this->page->title ) { // for some reason doesn't always exist
       $output .= '<a href="' . htmlspecialchars( $this->page->title->getFullURL() ) . "#teamcomment-{$this->id}\" rel=\"nofollow\">" .

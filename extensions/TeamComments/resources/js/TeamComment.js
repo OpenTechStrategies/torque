@@ -173,7 +173,7 @@
      * @param {string} poster Name of the person whom we're replying to
      * @param {string} posterGender Gender of the person whom we're replying to
      */
-    reply: function ( parentId, poster, posterGender ) {
+    reply: function ( parentId, poster, replyon, posterGender ) {
       $( '#replyto' ).text(
         mw.msg( 'teamcomments-reply-to', poster, posterGender ) + ' ('
       );
@@ -184,12 +184,19 @@
       } ).appendTo( '#replyto' );
       $( '#replyto' ).append( ') <br />' );
 
+      var quotedText = "<blockquote>\n";
+      quotedText += "'''" + replyon + ", " + poster + " said:'''\n\n";
+      quotedText += $("#teamcomment-" + parentId).find("textarea").val();
+      quotedText += "\n</blockquote>";
+      $("#teamcomment").val(quotedText);
+
       document.teamcommentForm.teamcommentParentId.value = parentId;
     },
 
     cancelReply: function () {
       document.getElementById( 'replyto' ).innerHTML = '';
       document.teamcommentForm.teamcommentParentId.value = '';
+      $("#teamcomment").val('');
     }
   };
 
@@ -229,6 +236,7 @@
         TeamComment.reply(
           $( this ).data( 'teamcomment-id' ),
           $( this ).data( 'teamcomments-safe-username' ),
+          $( this ).data( 'teamcomments-safe-replyon' ),
           $( this ).data( 'teamcomments-user-gender' )
         );
       } )
