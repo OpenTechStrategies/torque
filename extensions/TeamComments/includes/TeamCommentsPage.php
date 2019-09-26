@@ -124,6 +124,14 @@ class TeamCommentsPage extends ContextSource {
     return $s->numRows();
   }
 
+  public static function findThreadId($teamcomment, $teamcomments) {
+    if($teamcomment->parentID == 0) {
+      return $teamcomment->id;
+    } else {
+      return TeamCommentsPage::findThreadId($teamcomments[$teamcomment->parentID], $teamcomments);
+    }
+  }
+
   /**
    * Fetches all teamcomments, called by display().
    *
@@ -157,11 +165,6 @@ class TeamCommentsPage extends ContextSource {
     $teamcomments = [];
 
     foreach ( $res as $row ) {
-      if ( $row->teamcomment_parent_id == 0 ) {
-        $thread = $row->teamcomment_id;
-      } else {
-        $thread = $row->teamcomment_parent_id;
-      }
       $data = [
         'teamcomment_username' => $row->teamcomment_username,
         'teamcomment_ip' => $row->teamcomment_ip,
@@ -172,21 +175,21 @@ class TeamCommentsPage extends ContextSource {
         'teamcomment_parent_id' => $row->teamcomment_parent_id,
         'teamcomment_deleted' => $row->teamcomment_deleted,
         'teamcomment_date_lastedited' => $row->teamcomment_date_lastedited,
-        'thread' => $thread,
         'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp )
       ];
 
-      $teamcomments[] = new TeamComment( $this, $this->getContext(), $data );
+      $teamcomments[$row->teamcomment_id] = new TeamComment( $this, $this->getContext(), $data );
     }
 
     $teamcommentThreads = [];
 
     foreach ( $teamcomments as $teamcomment ) {
-      if ( $teamcomment->parentID == 0 ) {
-        $teamcommentThreads[$teamcomment->id] = [ $teamcomment ];
-      } else {
-        $teamcommentThreads[$teamcomment->parentID][] = $teamcomment;
+      $threadid = TeamCommentsPage::findThreadId($teamcomment, $teamcomments);
+
+      if(!array_key_exists($threadid, $teamcommentThreads)) {
+        $teamcommentThreads[$threadid] = [];
       }
+      $teamcommentThreads[$threadid][] = $teamcomment;
     }
 
     return $teamcommentThreads;

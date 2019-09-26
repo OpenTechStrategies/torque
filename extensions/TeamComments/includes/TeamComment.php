@@ -25,14 +25,6 @@ class TeamComment extends ContextSource {
   public $userID = 0;
   public $deleted = false;
 
-  /**
-   * TeamComment ID of the thread this teamcomment is in
-   * this is the ID of the parent teamcomment if there is one,
-   * or this teamcomment if there is not
-   * Used for sorting
-   */
-  public $thread = null;
-
   public $timestamp = null;
 
   /**
@@ -55,7 +47,6 @@ class TeamComment extends ContextSource {
     $this->userID = (int)$data['teamcomment_user_id'];
     $this->id = (int)$data['teamcomment_id'];
     $this->parentID = (int)$data['teamcomment_parent_id'];
-    $this->thread = $data['thread'];
     $this->timestamp = $data['timestamp'];
     $this->deleted = $data['teamcomment_deleted'];
 
@@ -93,11 +84,6 @@ class TeamComment extends ContextSource {
 
     $row = $res->fetchObject();
 
-    if ( $row->teamcomment_parent_id == 0 ) {
-      $thread = $row->teamcomment_id;
-    } else {
-      $thread = $row->teamcomment_parent_id;
-    }
     $data = [
       'teamcomment_username' => $row->teamcomment_username,
       'teamcomment_ip' => $row->teamcomment_ip,
@@ -108,7 +94,6 @@ class TeamComment extends ContextSource {
       'teamcomment_parent_id' => $row->teamcomment_parent_id,
       'teamcomment_deleted' => $row->teamcomment_deleted,
       'teamcomment_date_lastedited' => $row->teamcomment_date_lastedited,
-      'thread' => $thread,
       'timestamp' => wfTimestamp( TS_UNIX, $row->timestamp )
     ];
 
@@ -226,11 +211,6 @@ class TeamComment extends ContextSource {
     // Add a log entry.
     self::log( 'add', $user, $page->id, $teamcommentId, $text );
 
-    if ( $parentID == 0 ) {
-      $thread = $id;
-    } else {
-      $thread = $parentID;
-    }
     $data = [
       'teamcomment_username' => $user->getName(),
       'teamcomment_ip' => $context->getRequest()->getIP(),
@@ -239,7 +219,6 @@ class TeamComment extends ContextSource {
       'teamcomment_user_id' => $user->getId(),
       'teamcomment_id' => $id,
       'teamcomment_parent_id' => $parentID,
-      'thread' => $thread,
       'timestamp' => strtotime( $teamcommentDate )
     ];
 
@@ -409,19 +388,15 @@ class TeamComment extends ContextSource {
 
     // Reply Link (does not appear on child teamcomments)
     $replyRow = '';
-    if ( $userObj->isAllowed( 'teamcomment' ) ) {
-      if ( $this->parentID == 0 ) {
-        if ( $replyRow ) {
-          $replyRow .= wfMessage( 'pipe-separator' )->plain();
-        }
-        $replyRow .= " | <a href=\"#end\" rel=\"nofollow\" class=\"teamcomments-reply-to\" data-teamcomment-id=\"{$this->id}\"" .
-          " data-teamcomments-safe-replyon=\"" . htmlspecialchars( $TeamCommentPostDate, ENT_QUOTES ) . "\"" .
-          " data-teamcomments-safe-username=\"" . htmlspecialchars( $TeamCommentReplyTo, ENT_QUOTES ) . "\"" .
-          " data-teamcomments-user-gender=\"" .  htmlspecialchars( $TeamCommentReplyToGender ) .  '"' .
-          '>' .
-          wfMessage( 'teamcomments-reply' )->plain() . '</a>';
-      }
+    if ( $replyRow ) {
+      $replyRow .= wfMessage( 'pipe-separator' )->plain();
     }
+    $replyRow .= " | <a href=\"#end\" rel=\"nofollow\" class=\"teamcomments-reply-to\" data-teamcomment-id=\"{$this->id}\"" .
+      " data-teamcomments-safe-replyon=\"" . htmlspecialchars( $TeamCommentPostDate, ENT_QUOTES ) . "\"" .
+      " data-teamcomments-safe-username=\"" . htmlspecialchars( $TeamCommentReplyTo, ENT_QUOTES ) . "\"" .
+      " data-teamcomments-user-gender=\"" .  htmlspecialchars( $TeamCommentReplyToGender ) .  '"' .
+      '>' .
+      wfMessage( 'teamcomments-reply' )->plain() . '</a>';
 
     if ( $this->parentID == 0 ) {
       $teamcomment_class = 'f-message';
