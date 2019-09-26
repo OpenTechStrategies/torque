@@ -44,7 +44,7 @@
   },
   "APIModules": {
     "teamcommentdelete": "TeamCommentDeleteAPI",
-    "teamcommentlatestid": "TeamCommentLatestIdAPI",
+    "teamcommentnumnew": "TeamCommentNumNewAPI",
     "teamcommentlist": "TeamCommentListAPI",
     "teamcommentedit": "TeamCommentEditAPI",
     "teamcommentsubmit": "TeamCommentSubmitAPI"
@@ -62,7 +62,7 @@
     "TeamCommentsLogFormatter": "includes/TeamCommentsLogFormatter.php",
     "TeamCommentsHooks": "includes/TeamCommentsHooks.php",
     "TeamCommentDeleteAPI": "includes/api/TeamCommentDeleteAPI.php",
-    "TeamCommentLatestIdAPI": "includes/api/TeamCommentLatestIdAPI.php",
+    "TeamCommentNumNewAPI": "includes/api/TeamCommentNumNewAPI.php",
     "TeamCommentListAPI": "includes/api/TeamCommentListAPI.php",
     "TeamCommentEditAPI": "includes/api/TeamCommentEditAPI.php",
     "TeamCommentSubmitAPI": "includes/api/TeamCommentSubmitAPI.php"

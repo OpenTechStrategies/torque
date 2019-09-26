@@ -8,7 +8,7 @@ class TeamCommentListAPI extends ApiBase {
 
     $output = '';
     if ( $this->getMain()->getVal( 'showForm' ) ) {
-      $output .= $teamcommentsPage->displayOrderForm();
+      $output .= $teamcommentsPage->displayHeader();
     }
     $output .= $teamcommentsPage->display();
     if ( $this->getMain()->getVal( 'showForm' ) ) {

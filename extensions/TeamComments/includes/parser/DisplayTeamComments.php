@@ -59,7 +59,9 @@ class DisplayTeamComments {
     $teamcommentsPage = new TeamCommentsPage( $title->getArticleID(), $context );
     $teamcommentsPage->allow = $allow;
 
-    $output = '<div class="teamcomments-body">';
+    $output = '<div class="teamcomments-body" data-latestid="' .
+      $teamcommentsPage->getLatestTeamCommentID() .
+      '">';
 
     if ( $wgTeamCommentsSortDescending ) { // form before teamcomments
       $output .= '<a id="end" rel="nofollow"></a>';
@@ -70,7 +72,7 @@ class DisplayTeamComments {
       }
     }
 
-    $output .= $teamcommentsPage->displayOrderForm();
+    $output .= $teamcommentsPage->displayHeader();
 
     $output .= '<div id="allteamcomments">' . $teamcommentsPage->display() . '</div>';
 

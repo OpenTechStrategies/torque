@@ -111,6 +111,20 @@ class TeamCommentsPage extends ContextSource {
   }
 
   /**
+   * Get number of comments since a given id
+   */
+  function getNumCommentsSinceID($latestID)  {
+    $dbr = wfGetDB( DB_REPLICA );
+    $s = $dbr->select(
+      'teamcomments',
+      [ 'teamcomment_id' ],
+      [ 'teamComment_page_id' => $this->id, 'teamcomment_id > '. $latestID]
+    );
+
+    return $s->numRows();
+  }
+
+  /**
    * Fetches all teamcomments, called by display().
    *
    * @return array Array containing every possible bit of information about
@@ -409,23 +423,16 @@ class TeamCommentsPage extends ContextSource {
     return $output;
   }
 
-  /**
-   * Displays the "Sort by X" form and a link to auto-refresh teamcomments
-   *
-   * @return string HTML
-   */
-  function displayOrderForm() {
-    $output = '
-<h1>Comments</h1>
-<div>
-<div id="spy" class="c-spy">
-<a href="javascript:void(0)">' .
-wfMessage( 'teamcomments-auto-refresher-enable' )->plain() .
-'</a>
-</div>
-<div class="visualClear"></div>
-</div>
-<br />' . "\n";
+  function displayHeader() {
+    $output = '<h1>Comments</h1>';
+    $output .= '<div class="teamcomments-refresh-banner-container" style="display:none;">';
+    $output .= '<div class="teamcomments-refresh-banner">' .
+      '<span id="teamcomments-number-of-comments">0</span> '.
+      wfMessage('teamcomments-banner') .
+      ' (<a href="javascript:void(0);" rel="nofollow" class="teamcomments-banner-refresh">'.
+      wfMessage('teamcomments-refresh') .
+      '</a>)</div></div>';
+
 
     return $output;
   }

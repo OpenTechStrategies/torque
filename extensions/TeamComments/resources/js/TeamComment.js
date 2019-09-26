@@ -10,8 +10,6 @@
     timer: '', // has to have an initial value...
     updateDelay: 7000,
     LatestTeamCommentID: '',
-    CurLatestTeamCommentID: '',
-    pause: 0,
 
     /**
      * This function is called whenever a user clicks on the "Delete TeamComment"
@@ -135,69 +133,33 @@
       }
     },
 
-    /**
-     * Toggle teamcomment auto-refreshing on or off
-     *
-     * @param {boolean} status
-     */
-    toggleLiveTeamComments: function ( status ) {
-      var msg;
-
-      if ( status ) {
-        TeamComment.pause = 0;
-      } else {
-        TeamComment.pause = 1;
-      }
-      if ( status ) {
-        msg = mw.msg( 'teamcomments-auto-refresher-pause' );
-      } else {
-        msg = mw.msg( 'teamcomments-auto-refresher-enable' );
-      }
-
-      $( 'body' ).on( 'click', 'div#spy a', function () {
-        TeamComment.toggleLiveTeamComments( ( status ) ? 0 : 1 );
-      } );
-      $( 'div#spy a' ).css( 'font-size', '10px' ).text( msg );
-
-      if ( !TeamComment.pause ) {
-        TeamComment.LatestTeamCommentID = document.teamcommentForm.lastTeamCommentId.value;
-        TeamComment.timer = setTimeout(
-          function () { TeamComment.checkUpdate(); },
-          TeamComment.updateDelay
-        );
-      }
-    },
-
     checkUpdate: function () {
       var pageID;
 
-      if ( TeamComment.isBusy ) {
+      if ( TeamComment.isBusy || TeamComment.updateStarted ) {
         return;
       }
       pageID = document.teamcommentForm.pageId.value;
 
       $.ajax( {
         url: mw.config.get( 'wgScriptPath' ) + '/api.php',
-        data: { action: 'teamcommentlatestid', format: 'json', pageID: pageID },
+        data: { action: 'teamcommentnumnew', format: 'json', pageID: pageID, latestID: TeamComment.LatestTeamCommentID },
         cache: false
       } ).done( function ( response ) {
-        if ( response.teamcommentlatestid.id ) {
-          // Get last new ID
-          TeamComment.CurLatestTeamCommentID = response.teamcommentlatestid.id;
-          if ( TeamComment.CurLatestTeamCommentID !== TeamComment.LatestTeamCommentID ) {
-            TeamComment.viewTeamComments( document.teamcommentForm.pageId.value, 1, document.teamcommentForm.cpage.value );
-            TeamComment.LatestTeamCommentID = TeamComment.CurLatestTeamCommentID;
+        if ( response.teamcommentnumnew.numnew ) {
+          if(response.teamcommentnumnew.numnew > 0) {
+            var banner = $(".teamcomments-refresh-banner-container");
+            banner.find("#teamcomments-number-of-comments").html(response.teamcommentnumnew.numnew);
+            banner.fadeIn();
           }
         }
 
         TeamComment.isBusy = false;
-        if ( !TeamComment.pause ) {
-          clearTimeout( TeamComment.timer );
-          TeamComment.timer = setTimeout(
-            function () { TeamComment.checkUpdate(); },
-            TeamComment.updateDelay
-          );
-        }
+        clearTimeout( TeamComment.timer );
+        TeamComment.timer = setTimeout(
+          function () { TeamComment.checkUpdate(); },
+          TeamComment.updateDelay
+        );
       } );
 
       TeamComment.isBusy = true;
@@ -237,13 +199,11 @@
     // has been called (i.e. so that "Delete teamcomment", reply, etc. links
     // continue working after you've submitted a teamcomment yourself)
 
+    TeamComment.LatestTeamCommentID = $('.teamcomments-body').data('latestid');
+    TeamComment.checkUpdate();
+
     // "Sort by X" feature
     $( 'body' )
-      // TeamComment auto-refresher
-      .on( 'click', 'div#spy a', function () {
-        TeamComment.toggleLiveTeamComments( 1 );
-      } )
-
       // "Delete TeamComment" links
       .on( 'click', 'a.teamcomment-delete-link', function () {
         TeamComment.deleteTeamComment( $( this ).data( 'teamcomment-id' ) );
@@ -257,6 +217,11 @@
       // "Save the Edit" links
       .on( 'click', 'button.teamcomment-save-button', function () {
         TeamComment.saveEditTeamComment($(this ));
+      } )
+
+      // Refresh page link
+      .on( 'click', 'a.teamcomments-banner-refresh', function () {
+        location.reload();
       } )
 
       // Reply links
