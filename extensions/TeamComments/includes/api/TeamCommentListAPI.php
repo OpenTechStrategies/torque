@@ -17,6 +17,7 @@ class TeamCommentListAPI extends ApiBase {
 
     $result = $this->getResult();
     $result->addValue( $this->getModuleName(), 'html', $output );
+    $result->addValue( $this->getModuleName(), 'latestCommentID', $teamcommentsPage->getLatestTeamCommentID() );
     return true;
   }
 

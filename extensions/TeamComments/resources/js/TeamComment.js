@@ -83,6 +83,7 @@
         cache: false
       } ).done( function ( response ) {
         document.getElementById( 'allteamcomments' ).innerHTML = response.teamcommentlist.html;
+        TeamComment.LatestTeamCommentID = response.teamcommentlist.latestCommentID;
         TeamComment.submitted = 0;
         if ( end ) {
           window.location.hash = 'end';
