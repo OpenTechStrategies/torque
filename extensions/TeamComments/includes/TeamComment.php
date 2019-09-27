@@ -318,17 +318,16 @@ class TeamComment extends ContextSource {
   /**
    * Show the HTML for this teamcomment
    *
-   * @param array $anonList Map of IP addresses to names like anon#1, anon#2
    * @return string HTML
    */
-  function display( $anonList ) {
+  function display() {
     if ( $this->parentID == 0 ) {
       $container_class = 'full';
     } else {
       $container_class = 'reply';
     }
 
-    return $this->showTeamComment( false, $container_class, $anonList );
+    return $this->showTeamComment( false, $container_class);
   }
 
   /**
@@ -336,10 +335,9 @@ class TeamComment extends ContextSource {
    *
    * @param bool $hide If true, teamcomment is returned but hidden (display:none)
    * @param string $containerClass
-   * @param array $anonList
    * @return string
    */
-  function showTeamComment( $hide = false, $containerClass, $anonList ) {
+  function showTeamComment( $hide = false, $containerClass) {
     global $wgExtensionAssetsPath, $wgLang, $wgUser;
 
     $style = '';
@@ -347,22 +345,15 @@ class TeamComment extends ContextSource {
       $style = " style='display:none;'";
     }
 
-    if ( $this->userID != 0 ) {
-      $title = Title::makeTitle( NS_USER, $this->username );
+    $title = Title::makeTitle( NS_USER, $this->username );
 
-      $teamcommentPoster = '<a href="' . htmlspecialchars( $title->getFullURL() ) .
-        '" rel="nofollow">' . $this->username . '</a>';
+    $teamcommentPoster = '<a href="' . htmlspecialchars( $title->getFullURL() ) .
+      '" rel="nofollow">' . $this->username . '</a>';
 
-      $TeamCommentReplyTo = $this->username;
+    $TeamCommentReplyTo = $this->username;
 
-      $user = User::newFromId( $this->userID );
-      $TeamCommentReplyToGender = $user->getOption( 'gender', 'unknown' );
-    } else {
-      $anonMsg = $this->msg( 'teamcomments-anon-name' )->inContentLanguage()->plain();
-      $teamcommentPoster = $anonMsg . ' #' . $anonList[$this->username];
-      $TeamCommentReplyTo = $anonMsg;
-      $TeamCommentReplyToGender = 'unknown'; // Undisclosed gender as anon user
-    }
+    $user = User::newFromId( $this->userID );
+    $TeamCommentReplyToGender = $user->getOption( 'gender', 'unknown' );
 
     $TeamCommentPostDate = wfMessage(
         'teamcomments-commentedat',
@@ -386,17 +377,16 @@ class TeamComment extends ContextSource {
         $this->msg( 'teamcomments-edit-link' )->plain() . '</a></span>';
     }
 
-    // Reply Link (does not appear on child teamcomments)
-    $replyRow = '';
-    if ( $replyRow ) {
-      $replyRow .= wfMessage( 'pipe-separator' )->plain();
+    if ($this->getUser()->isLoggedIn()) {
+      $replyRow = " | <a href=\"#end\" rel=\"nofollow\" class=\"teamcomments-reply-to\" data-teamcomment-id=\"{$this->id}\"" .
+        " data-teamcomments-safe-replyon=\"" . htmlspecialchars( $TeamCommentPostDate, ENT_QUOTES ) . "\"" .
+        " data-teamcomments-safe-username=\"" . htmlspecialchars( $TeamCommentReplyTo, ENT_QUOTES ) . "\"" .
+        " data-teamcomments-user-gender=\"" .  htmlspecialchars( $TeamCommentReplyToGender ) .  '"' .
+        '>' .
+        wfMessage( 'teamcomments-reply' )->plain() . '</a>';
+    } else {
+      $replyRow = '';
     }
-    $replyRow .= " | <a href=\"#end\" rel=\"nofollow\" class=\"teamcomments-reply-to\" data-teamcomment-id=\"{$this->id}\"" .
-      " data-teamcomments-safe-replyon=\"" . htmlspecialchars( $TeamCommentPostDate, ENT_QUOTES ) . "\"" .
-      " data-teamcomments-safe-username=\"" . htmlspecialchars( $TeamCommentReplyTo, ENT_QUOTES ) . "\"" .
-      " data-teamcomments-user-gender=\"" .  htmlspecialchars( $TeamCommentReplyToGender ) .  '"' .
-      '>' .
-      wfMessage( 'teamcomments-reply' )->plain() . '</a>';
 
     if ( $this->parentID == 0 ) {
       $teamcomment_class = 'f-message';

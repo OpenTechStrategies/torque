@@ -9,6 +9,7 @@ class TeamCommentSubmitAPI extends ApiBase {
     // forgeries (CSRF)
     if (
       $user->isBlocked() ||
+      !$user->isLoggedIn() ||
       !$user->isAllowed( 'teamcomment' ) ||
       wfReadOnly()
     ) {

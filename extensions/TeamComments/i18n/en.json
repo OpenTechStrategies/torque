@@ -44,6 +44,7 @@
   "teamcomments-edit-link": "Edit",
   "teamcomments-edit-save": "Save",
   "teamcomments-anon-name": "Anonymous user",
+  "teamcomments-anon-message-login-required": "{{SITENAME}} requires you to be logged in to comment. Please <a href=\"$1\">register</a> or <a href=\"$2\">log in</a>. It is free.",
   "teamcomments-anon-message": "{{SITENAME}} welcomes <b>all comments</b>. If you do not want to be anonymous, <a href=\"$1\">register</a> or <a href=\"$2\">log in</a>. It is free.",
   "teamcomments-links-are-forbidden": "External links in comments are forbidden!",
   "teamcomments-is-spam": "Submitted text of the comment was interpreted as spam.",

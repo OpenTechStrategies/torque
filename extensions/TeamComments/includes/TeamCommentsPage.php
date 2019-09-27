@@ -348,38 +348,6 @@ class TeamCommentsPage extends ContextSource {
   }
 
   /**
-   * Get this list of anon teamcommenters in the given list of teamcomments,
-   * and return a mapped array of IP adressess to the number anon poster
-   * (so anon posters can be called Anon#1, Anon#2, etc
-   *
-   * @return array
-   */
-  function getAnonList() {
-    $counter = 1;
-    $bucket = [];
-
-    $teamcommentThreads = $this->teamcomments;
-
-    $teamcomments = []; // convert 2nd threads array to a simple list of teamcomments
-    foreach ( $teamcommentThreads as $thread ) {
-      $teamcomments = array_merge( $teamcomments, $thread );
-    }
-    usort( $teamcomments, [ 'TeamCommentFunctions', 'sortTime' ] );
-
-    foreach ( $teamcomments as $teamcomment ) {
-      if (
-        !array_key_exists( $teamcomment->username, $bucket ) &&
-        $teamcomment->userID == 0
-      ) {
-        $bucket[$teamcomment->username] = $counter;
-        $counter++;
-      }
-    }
-
-    return $bucket;
-  }
-
-  /**
    * Convert an array of teamcomment threads into an array of pages (arrays) of teamcomment threads
    * @param $teamcomments
    * @return array
@@ -414,11 +382,9 @@ class TeamCommentsPage extends ContextSource {
       $output .= $pager;
       $output .= '<a id="cfirst" name="cfirst" rel="nofollow"></a>';
 
-      $anonList = $this->getAnonList();
-
       foreach ( $currentPage as $thread ) {
         foreach ( $thread as $teamcomment ) {
-          $output .= $teamcomment->display( $anonList );
+          $output .= $teamcomment->display();
         }
       }
       $output .= $pager;
@@ -471,15 +437,17 @@ class TeamCommentsPage extends ContextSource {
           $login_title = SpecialPage::getTitleFor( 'Userlogin' );
           $register_title = SpecialPage::getTitleFor( 'Userlogin', 'signup' );
           $output .= '<div class="c-form-message">' . wfMessage(
-              'teamcomments-anon-message',
+              'teamcomments-anon-message-login-required',
               htmlspecialchars( $register_title->getFullURL() ),
               htmlspecialchars( $login_title->getFullURL() )
             )->text() . '</div>' . "\n";
         }
 
-        $output .= '<textarea name="teamcommentText" id="teamcomment" rows="5" cols="64"></textarea>' . "\n";
-        $output .= '<div class="c-form-button"><input type="button" value="' .
-          wfMessage( 'teamcomments-post' )->plain() . '" class="site-button" /></div>' . "\n";
+        if ( $this->getUser()->isLoggedIn() ) {
+          $output .= '<textarea name="teamcommentText" id="teamcomment" rows="5" cols="64"></textarea>' . "\n";
+          $output .= '<div class="c-form-button"><input type="button" value="' .
+            wfMessage( 'teamcomments-post' )->plain() . '" class="site-button" /></div>' . "\n";
+        }
       }
       $output .= '<input type="hidden" name="action" value="purge" />' . "\n";
       $output .= '<input type="hidden" name="pageId" value="' . $this->id . '" />' . "\n";
