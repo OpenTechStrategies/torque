@@ -198,6 +198,19 @@
       document.getElementById( 'replyto' ).innerHTML = '';
       document.teamcommentForm.teamcommentParentId.value = '';
       $("#teamcomment").val('');
+    },
+
+    highlightComment: function () {
+      var hash = window.location.hash;
+
+      if(hash && hash.startsWith("#teamcomment")) {
+        if(TeamComment.highlightedComment) {
+          TeamComment.highlightedComment.removeClass("teamcomment-highlighted");
+        }
+
+        TeamComment.highlightedComment = $(hash);
+        TeamComment.highlightedComment.addClass("teamcomment-highlighted");
+      }
     }
   };
 
@@ -262,6 +275,8 @@
           $( this ).data( 'cpage' )
         );
       } );
-  } );
 
+    $(window).on( 'hashchange', TeamComment.highlightComment);
+    TeamComment.highlightComment();
+  } );
 }( jQuery, mediaWiki ) );

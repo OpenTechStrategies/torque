@@ -17,6 +17,12 @@
   display:inline;
 }
 
+.teamcomment-highlighted {
+  border:1px solid #666666;
+  background-color:#FFFFEE;
+  padding:-1
+}
+
 .mw-body-content .teamcomments-body h1 {
   padding-top:0px;
   margin-top:0px;
