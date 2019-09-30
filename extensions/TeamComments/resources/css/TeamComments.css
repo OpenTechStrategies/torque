@@ -106,9 +106,9 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
   display:none;
 }
 
-.teamcomment-editarea textarea {
+.teamcomments-body textarea {
   width: 530px;
-  height: 150px;
+  height: 300px;
 }
 
 .c-form-title {
