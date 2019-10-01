@@ -12,25 +12,6 @@ class TeamCommentsPage extends ContextSource {
   public $id = 0;
 
   /**
-   * @var Integer: maximum amount of threads of teamcomments shown per page before pagination is enabled;
-   */
-  public $limit = 50;
-
-  /**
-   * @TODO document
-   *
-   * @var int
-   */
-  public $pagerLimit = 9;
-
-  /**
-   * The current page of teamcomments we are paged to
-   *
-   * @var int
-   */
-  public $currentPagerPage = 0;
-
-  /**
    * List of users allowed to teamcomment. Empty string - any user can teamcomment
    *
    * @var string
@@ -38,25 +19,9 @@ class TeamCommentsPage extends ContextSource {
   public $allow = '';
 
   /**
-   * @TODO document
-   *
-   * @var string
-   */
-  public $pageQuery = 'cpage';
-
-  /**
    * @var Title: title object for this page
    */
   public $title = null;
-
-  /**
-   * List of lists of teamcomments on this page.
-   * Each list is a separate 'thread' of teamcomments, with the parent teamcomment first, and any replies following
-   * Not populated until display() is called
-   *
-   * @var array
-   */
-  public $teamcomments = [];
 
   /**
    * Constructor
@@ -67,26 +32,6 @@ class TeamCommentsPage extends ContextSource {
     $this->id = $pageID;
     $this->setContext( $context );
     $this->title = Title::newFromID( $pageID );
-  }
-
-  /**
-   * Gets the total amount of teamcomments on this page
-   *
-   * @return int
-   */
-  function countTotal() {
-    $dbr = wfGetDB( DB_REPLICA );
-    $count = 0;
-    $s = $dbr->selectRow(
-      'teamcomments',
-      [ 'COUNT(*) AS TeamCommentCount' ],
-      [ 'teamcomment_page_id' => $this->id ],
-      __METHOD__
-    );
-    if ( $s !== false ) {
-      $count = $s->TeamCommentCount;
-    }
-    return $count;
   }
 
   /**
@@ -196,167 +141,6 @@ class TeamCommentsPage extends ContextSource {
   }
 
   /**
-   * @return int The page we are currently paged to
-   * not used for any API calls
-   */
-  function getCurrentPagerPage() {
-    if ( $this->currentPagerPage == 0 ) {
-      $this->currentPagerPage = $this->getRequest()->getInt( $this->pageQuery, 1 );
-
-      if ( $this->currentPagerPage < 1 ) {
-        $this->currentPagerPage = 1;
-      }
-    }
-
-    return $this->currentPagerPage;
-  }
-
-  /**
-   * Display pager for the current page.
-   *
-   * @param int $pagerCurrent Page we are currently paged to
-   * @param int $pagesCount The maximum page number
-   *
-   * @return string the links for paging through pages of teamcomments
-   */
-  function displayPager( $pagerCurrent, $pagesCount ) {
-    // Middle is used to "center" pages around the current page.
-    $pager_middle = ceil( $this->pagerLimit / 2 );
-    // first is the first page listed by this pager piece (re quantity)
-    $pagerFirst = $pagerCurrent - $pager_middle + 1;
-    // last is the last page listed by this pager piece (re quantity)
-    $pagerLast = $pagerCurrent + $this->pagerLimit - $pager_middle;
-
-    // Prepare for generation loop.
-    $i = $pagerFirst;
-    if ( $pagerLast > $pagesCount ) {
-      // Adjust "center" if at end of query.
-      $i = $i + ( $pagesCount - $pagerLast );
-      $pagerLast = $pagesCount;
-    }
-    if ( $i <= 0 ) {
-      // Adjust "center" if at start of query.
-      $pagerLast = $pagerLast + ( 1 - $i );
-      $i = 1;
-    }
-
-    $output = '';
-    if ( $pagesCount > 1 ) {
-      $output .= '<ul class="c-pager">';
-      $pagerEllipsis = '<li class="c-pager-item c-pager-ellipsis"><span>...</span></li>';
-
-      // Whether to display the "Previous page" link
-      if ( $pagerCurrent > 1 ) {
-        $output .= '<li class="c-pager-item c-pager-previous">' .
-          Html::rawElement(
-            'a',
-            [
-              'rel' => 'nofollow',
-              'class' => 'c-pager-link',
-              'href' => '#cfirst',
-              'data-' . $this->pageQuery => ( $pagerCurrent - 1 ),
-            ],
-            '&lt;'
-          ) .
-          '</li>';
-      }
-
-      // Whether to display the "First page" link
-      if ( $i > 1 ) {
-        $output .= '<li class="c-pager-item c-pager-first">' .
-          Html::rawElement(
-            'a',
-            [
-              'rel' => 'nofollow',
-              'class' => 'c-pager-link',
-              'href' => '#cfirst',
-              'data-' . $this->pageQuery => 1,
-            ],
-            1
-          ) .
-          '</li>';
-      }
-
-      // When there is more than one page, create the pager list.
-      if ( $i != $pagesCount ) {
-        if ( $i > 2 ) {
-          $output .= $pagerEllipsis;
-        }
-
-        // Now generate the actual pager piece.
-        for ( ; $i <= $pagerLast && $i <= $pagesCount; $i++ ) {
-          if ( $i == $pagerCurrent ) {
-            $output .= '<li class="c-pager-item c-pager-current"><span>' .
-              $i . '</span></li>';
-          } else {
-            $output .= '<li class="c-pager-item">' .
-              Html::rawElement(
-                'a',
-                [
-                  'rel' => 'nofollow',
-                  'class' => 'c-pager-link',
-                  'href' => '#cfirst',
-                  'data-' . $this->pageQuery => $i,
-                ],
-                $i
-              ) .
-              '</li>';
-          }
-        }
-
-        if ( $i < $pagesCount ) {
-          $output .= $pagerEllipsis;
-        }
-      }
-
-      // Whether to display the "Last page" link
-      if ( $pagesCount > ( $i - 1 ) ) {
-        $output .= '<li class="c-pager-item c-pager-last">' .
-          Html::rawElement(
-            'a',
-            [
-              'rel' => 'nofollow',
-              'class' => 'c-pager-link',
-              'href' => '#cfirst',
-              'data-' . $this->pageQuery => $pagesCount,
-            ],
-            $pagesCount
-          ) .
-          '</li>';
-      }
-
-      // Whether to display the "Next page" link
-      if ( $pagerCurrent < $pagesCount ) {
-        $output .= '<li class="c-pager-item c-pager-next">' .
-          Html::rawElement(
-            'a',
-            [
-              'rel' => 'nofollow',
-              'class' => 'c-pager-link',
-              'href' => '#cfirst',
-              'data-' . $this->pageQuery => ( $pagerCurrent + 1 ),
-            ],
-            '&gt;'
-          ) .
-          '</li>';
-      }
-
-      $output .= '</ul>';
-    }
-
-    return $output;
-  }
-
-  /**
-   * Convert an array of teamcomment threads into an array of pages (arrays) of teamcomment threads
-   * @param $teamcomments
-   * @return array
-   */
-  function page( $teamcomments ) {
-    return array_chunk( $teamcomments, $this->limit );
-  }
-
-  /**
    * Display all the teamcomments for the current page.
    * CSS and JS is loaded in TeamCommentsHooks.php
    */
@@ -367,27 +151,12 @@ class TeamCommentsPage extends ContextSource {
 
     $this->teamcomments = $teamcommentThreads;
 
-    $teamcommentPages = $this->page( $teamcommentThreads );
-    $currentPageNum = $this->getCurrentPagerPage();
-    $numPages = count( $teamcommentPages );
-    // Suppress random E_NOTICE about "Undefined offset: 0", which seems to
-    // be breaking ProblemReports (at least on my local devbox, not sure
-    // about prod). --Jack Phoenix, 13 July 2015
-    Wikimedia\suppressWarnings();
-    $currentPage = $teamcommentPages[$currentPageNum - 1];
-    Wikimedia\restoreWarnings();
+    $output .= '<a id="cfirst" name="cfirst" rel="nofollow"></a>';
 
-    if ( $currentPage ) {
-      $pager = $this->displayPager( $currentPageNum, $numPages );
-      $output .= $pager;
-      $output .= '<a id="cfirst" name="cfirst" rel="nofollow"></a>';
-
-      foreach ( $currentPage as $thread ) {
-        foreach ( $thread as $teamcomment ) {
-          $output .= $teamcomment->display();
-        }
+    foreach ( $teamcommentThreads as $thread ) {
+      foreach ( $thread as $teamcomment ) {
+        $output .= $teamcomment->display();
       }
-      $output .= $pager;
     }
 
     return $output;
@@ -469,7 +238,6 @@ class TeamCommentsPage extends ContextSource {
       $output .= '<input type="hidden" name="teamcommentid" />' . "\n";
       $output .= '<input type="hidden" name="lastTeamCommentId" value="' . $this->getLatestTeamCommentID() . '" />' . "\n";
       $output .= '<input type="hidden" name="teamcommentParentId" />' . "\n";
-      $output .= '<input type="hidden" name="' . $this->pageQuery . '" value="' . $this->getCurrentPagerPage() . '" />' . "\n";
       $output .= Html::hidden( 'token', $this->getUser()->getEditToken() );
     }
     $output .= '</form>' . "\n";

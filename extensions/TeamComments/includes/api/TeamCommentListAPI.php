@@ -4,7 +4,6 @@ class TeamCommentListAPI extends ApiBase {
 
   public function execute() {
     $teamcommentsPage = new TeamCommentsPage( $this->getMain()->getVal( 'pageID' ), RequestContext::getMain() );
-    $teamcommentsPage->currentPagerPage = $this->getMain()->getVal( 'pagerPage' );
 
     $output = '';
     if ( $this->getMain()->getVal( 'showForm' ) ) {
@@ -24,10 +23,6 @@ class TeamCommentListAPI extends ApiBase {
   public function getAllowedParams() {
     return [
       'pageID' => [
-        ApiBase::PARAM_REQUIRED => true,
-        ApiBase::PARAM_TYPE => 'integer'
-      ],
-      'pagerPage' => [
         ApiBase::PARAM_REQUIRED => true,
         ApiBase::PARAM_TYPE => 'integer'
       ],

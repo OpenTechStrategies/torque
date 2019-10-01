@@ -71,15 +71,13 @@
     /**
      * @param {number} pageID Page ID
      * @param {boolean} end Scroll to bottom after?
-     * @param {number} cpage TeamComment page number (used for pagination)
      */
-    viewTeamComments: function ( pageID, end, cpage ) {
-      document.teamcommentForm.cpage.value = cpage;
+    viewTeamComments: function ( pageID, end ) {
       document.getElementById( 'allteamcomments' ).innerHTML = mw.msg( 'teamcomments-loading' ) + '<br /><br />';
 
       $.ajax( {
         url: mw.config.get( 'wgScriptPath' ) + '/api.php',
-        data: { action: 'teamcommentlist', format: 'json', pageID: pageID, pagerPage: cpage },
+        data: { action: 'teamcommentlist', format: 'json', pageID: pageID },
         cache: false
       } ).done( function ( response ) {
         document.getElementById( 'allteamcomments' ).innerHTML = response.teamcommentlist.html;
@@ -120,7 +118,7 @@
           if ( response.teamcommentsubmit && response.teamcommentsubmit.ok ) {
             document.teamcommentForm.teamcommentText.value = '';
             end = 1;
-            TeamComment.viewTeamComments( document.teamcommentForm.pageId.value, end, document.teamcommentForm.cpage.value );
+            TeamComment.viewTeamComments( document.teamcommentForm.pageId.value, end );
           } else {
             // eslint-disable-next-line no-alert
             window.alert( response.error.info );
@@ -242,7 +240,7 @@
 
       // Refresh page link
       .on( 'click', 'a.teamcomments-banner-refresh', function () {
-        TeamComment.viewTeamComments(mw.config.get( 'wgArticleId' ), 0, document.teamcommentForm.cpage.value);
+        TeamComment.viewTeamComments(mw.config.get( 'wgArticleId' ), 0);
       } )
 
       // Reply links
@@ -264,18 +262,6 @@
       .on( 'click', 'div.c-form-button input[type="button"]', function () {
         TeamComment.submit();
       } )
-
-      // Change page
-      .on( 'click', 'li.c-pager-item a.c-pager-link', function () {
-        var teamcommentsBody = $( this ).parents( 'div.teamcomments-body:first' );
-
-        TeamComment.viewTeamComments(
-          mw.config.get( 'wgArticleId' ), // or we could use $( 'input[name="pid"]' ).val(), too
-          0,
-          $( this ).data( 'cpage' )
-        );
-      } );
-
     $(window).on('beforeunload', function() {
       if(document.teamcommentForm.teamcommentText.value != '') {
         return true;
