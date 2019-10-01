@@ -347,7 +347,7 @@ class TeamComment extends ContextSource {
 
     $title = Title::makeTitle( NS_USER, $this->username );
 
-    $teamcommentPoster = '<a href="' . htmlspecialchars( $title->getFullURL() ) .
+    $teamcommentPoster = '<a class="username" href="' . htmlspecialchars( $title->getFullURL() ) .
       '" rel="nofollow">' . $this->username . '</a>';
 
     $TeamCommentReplyTo = $this->username;
@@ -378,7 +378,7 @@ class TeamComment extends ContextSource {
     }
 
     if ($this->getUser()->isLoggedIn()) {
-      $replyRow = " | <a href=\"#end\" rel=\"nofollow\" class=\"teamcomments-reply-to\" data-teamcomment-id=\"{$this->id}\"" .
+      $replyRow = "<a href=\"#end\" rel=\"nofollow\" class=\"teamcomments-reply-to\" data-teamcomment-id=\"{$this->id}\"" .
         " data-teamcomments-safe-replyon=\"" . htmlspecialchars( $TeamCommentPostDate, ENT_QUOTES ) . "\"" .
         " data-teamcomments-safe-username=\"" . htmlspecialchars( $TeamCommentReplyTo, ENT_QUOTES ) . "\"" .
         " data-teamcomments-user-gender=\"" .  htmlspecialchars( $TeamCommentReplyToGender ) .  '"' .
@@ -408,6 +408,12 @@ class TeamComment extends ContextSource {
         $wgLang->userTime($this->dateLastEdited, $wgUser)
       )->parse();
     }
+    if ( $this->page->title ) { // for some reason doesn't always exist
+      $output .= " (";
+      $output .= '<a href="' . htmlspecialchars( $this->page->title->getFullURL() ) . "#teamcomment-{$this->id}\" rel=\"nofollow\">" .
+        $this->msg( 'teamcomments-permalink' )->plain() . '</a>';
+      $output .= ")";
+    }
     $output .= '</div>' . "\n";
     Wikimedia\restoreWarnings();
 
@@ -424,10 +430,6 @@ class TeamComment extends ContextSource {
     $output .= '</div>';
 
     $output .= '<div class="c-actions">' . "\n";
-    if ( $this->page->title ) { // for some reason doesn't always exist
-      $output .= '<a href="' . htmlspecialchars( $this->page->title->getFullURL() ) . "#teamcomment-{$this->id}\" rel=\"nofollow\">" .
-      $this->msg( 'teamcomments-permalink' )->plain() . '</a> ';
-    }
     if ( $replyRow || $dlt ) {
       $output .= "{$replyRow} ${edt} {$dlt}" . "\n";
     }

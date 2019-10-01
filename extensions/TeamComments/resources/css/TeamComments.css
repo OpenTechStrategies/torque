@@ -56,7 +56,7 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
   margin: 0px 0px 6px 0px;
 }
 
-.c-user a {
+.c-user a.username {
   font-size: 14px;
   text-decoration: none;
 }
