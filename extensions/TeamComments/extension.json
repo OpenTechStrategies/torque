@@ -104,7 +104,8 @@
   "config": {
     "TeamCommentsEnabled": true,
     "TeamCommentsSortDescending": false,
-    "TeamCommentsInRecentChanges": false
+    "TeamCommentsInRecentChanges": false,
+    "TeamCommentsCheatSheetLocation": false
   },
   "manifest_version": 1
 }

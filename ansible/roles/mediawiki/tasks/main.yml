@@ -159,9 +159,13 @@
     line: "require_once \"$IP/extensions/Favorites/Favorites.php\"; "
 
 - name: Enable TeamComments
-  lineinfile:
+  tags: testing
+  blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    line: "wfLoadExtension('TeamComments');"
+    marker: "## {mark} ANSIBLE TEAMCOMMENTS CONFIG"
+    block: |
+      wfLoadExtension('TeamComments');
+      $wgTeamCommentsCheatSheetLocation = "Wiki_Markup_Cheat_Sheet";
 
 - name: Enable Uploading
   blockinfile:
@@ -231,6 +235,22 @@
 - name: Transfer board group css
   file:
     path: "{{ mediawiki_install_directory }}/Group-board.css"
+    state: absent
+
+- name: Transfer wiki cheat sheet
+  tags: testing
+  copy:
+    src: Wiki_Markup_Cheat_Sheet
+    dest: "{{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
+
+- name: Install wiki cheat sheet
+  tags: testing
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b Wiki_Markup_Cheat_Sheet < {{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
+
+- name: Transfer wiki cheat sheet
+  tags: testing
+  file:
+    path: "{{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
     state: absent
 
 # This should come near the end to make sure that all the database updates

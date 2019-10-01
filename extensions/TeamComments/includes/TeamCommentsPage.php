@@ -413,6 +413,7 @@ class TeamCommentsPage extends ContextSource {
    * @return string HTML output
    */
   function displayForm() {
+    global $wgTeamCommentsCheatSheetLocation;
     $output = '<form action="" method="post" name="teamcommentForm">' . "\n";
 
     if ( $this->allow ) {
@@ -430,7 +431,21 @@ class TeamCommentsPage extends ContextSource {
       // and maybe there's a list of users who should be allowed to post
       // teamcomments
       if ( $this->getUser()->isBlocked() == false && ( $this->allow == '' || $pos !== false ) ) {
-        $output .= '<div class="c-form-title">' . wfMessage( 'teamcomments-submit' )->plain() . '</div>' . "\n";
+        $output .= '<div class="c-form-title">';
+        $output .= wfMessage( 'teamcomments-submit' )->plain();
+
+        #$output .= $this->getOutput()->parse("[[Wiki_Markup_Cheat_Sheet|" . wfMessage('teamcomments-cheatsheet')->plain() . "]]");
+
+        #$output .= wfExpandUrl("http://www.google.com");
+        #$output .= wfExpandUrl("Wiki_Markup_Cheat_Sheet");
+        if($wgTeamCommentsCheatSheetLocation) {
+          $output .= " (<a href='";
+          $output .= $wgTeamCommentsCheatSheetLocation;
+          $output .= "'>";
+          $output .= wfMessage('teamcomments-cheatsheet')->plain();
+          $output .= "</a>)";
+        }
+        $output .= "</div>\n";
         $output .= '<div id="replyto" class="c-form-reply-to"></div>' . "\n";
         // Show a message to anons, prompting them to register or log in
         if ( !$this->getUser()->isLoggedIn() ) {
