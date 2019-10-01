@@ -88,6 +88,7 @@
         if ( end ) {
           window.location.hash = 'end';
         }
+        $(".teamcomments-refresh-banner-container").hide();
       } );
     },
 
@@ -241,7 +242,7 @@
 
       // Refresh page link
       .on( 'click', 'a.teamcomments-banner-refresh', function () {
-        location.reload();
+        TeamComment.viewTeamComments(mw.config.get( 'wgArticleId' ), 0, document.teamcommentForm.cpage.value);
       } )
 
       // Reply links
