@@ -276,6 +276,11 @@
         );
       } );
 
+    $(window).on('beforeunload', function() {
+      if(document.teamcommentForm.teamcommentText.value != '') {
+        return true;
+      }
+    });
     $(window).on( 'hashchange', TeamComment.highlightComment);
     TeamComment.highlightComment();
   } );
