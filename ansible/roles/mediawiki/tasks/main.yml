@@ -221,17 +221,14 @@
     line: $wgGroupPermissions['board']['read'] = true;
 
 - name: Transfer board group css
-  tags: testing
   copy:
     src: Group-board.css
     dest: "{{ mediawiki_install_directory }}/Group-board.css"
 
 - name: Install board group css
-  tags: testing
   raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-board.css < {{ mediawiki_install_directory }}/Group-board.css"
 
 - name: Transfer board group css
-  tags: testing
   file:
     path: "{{ mediawiki_install_directory }}/Group-board.css"
     state: absent
