@@ -12,7 +12,7 @@ class DisplayTeamComments {
    * @return string HTML
    */
   public static function getParserHandler( $input, $args, $parser ) {
-    global $wgTeamCommentsSortDescending, $wgTeamCommentsEnabled;
+    global $wgTeamCommentsEnabled;
 
     if(! $wgTeamCommentsEnabled) {
       return "";
@@ -32,7 +32,6 @@ class DisplayTeamComments {
     // Add required CSS & JS via ResourceLoader
     $po->addModuleStyles( 'ext.teamcomments.css' );
     $po->addModules( 'ext.teamcomments.js' );
-    $po->addJsConfigVars( [ 'wgTeamCommentsSortDescending' => $wgTeamCommentsSortDescending ] );
 
     // Parse arguments
     // The preg_match() lines here are to support the old-style way of
@@ -63,29 +62,18 @@ class DisplayTeamComments {
       $teamcommentsPage->getLatestTeamCommentID() .
       '">';
 
-    if ( $wgTeamCommentsSortDescending ) { // form before teamcomments
-      $output .= '<a id="end" rel="nofollow"></a>';
-      if ( !wfReadOnly() ) {
-        $output .= $teamcommentsPage->displayForm();
-      } else {
-        $output .= wfMessage( 'teamcomments-db-locked' )->parse();
-      }
-    }
-
     $output .= $teamcommentsPage->displayHeader();
 
     $output .= '<div id="allteamcomments">' . $teamcommentsPage->display() . '</div>';
 
     // If the database is in read-only mode, display a message informing the
     // user about that, otherwise allow them to teamcomment
-    if ( !$wgTeamCommentsSortDescending ) { // form after teamcomments
-      if ( !wfReadOnly() ) {
-        $output .= $teamcommentsPage->displayForm();
-      } else {
-        $output .= wfMessage( 'teamcomments-db-locked' )->parse();
-      }
-      $output .= '<a id="end" rel="nofollow"></a>';
+    if ( !wfReadOnly() ) {
+      $output .= $teamcommentsPage->displayForm();
+    } else {
+      $output .= wfMessage( 'teamcomments-db-locked' )->parse();
     }
+    $output .= '<a id="end" rel="nofollow"></a>';
 
     $output .= '</div>'; // div.teamcomments-body
 

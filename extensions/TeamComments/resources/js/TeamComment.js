@@ -119,9 +119,6 @@
           if ( response.teamcommentsubmit && response.teamcommentsubmit.ok ) {
             document.teamcommentForm.teamcommentText.value = '';
             end = 1;
-            if ( mw.config.get( 'wgTeamCommentsSortDescending' ) ) {
-              end = 0;
-            }
             TeamComment.viewTeamComments( document.teamcommentForm.pageId.value, end, document.teamcommentForm.cpage.value );
           } else {
             // eslint-disable-next-line no-alert
