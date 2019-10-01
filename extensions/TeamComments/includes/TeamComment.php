@@ -217,6 +217,8 @@ class TeamComment extends ContextSource {
       'teamcomment_text' => $text,
       'teamcomment_date' => $teamcommentDate,
       'teamcomment_user_id' => $user->getId(),
+      'teamcomment_date_lastedited' => null,
+      'teamcomment_deleted' => false,
       'teamcomment_id' => $id,
       'teamcomment_parent_id' => $parentID,
       'timestamp' => strtotime( $teamcommentDate )
