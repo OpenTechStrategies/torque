@@ -103,7 +103,6 @@
   },
   "config": {
     "TeamCommentsEnabled": true,
-    "TeamCommentsSortDescending": false,
     "TeamCommentsInRecentChanges": false,
     "TeamCommentsCheatSheetLocation": false
   },
