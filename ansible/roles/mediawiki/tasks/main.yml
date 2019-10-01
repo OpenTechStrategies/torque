@@ -241,10 +241,6 @@
 - name: Run mediawiki updates
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/update.php"
 
-# Set up group css
-- name: Set up group css
-  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-board.css"
-
 # Handle Apache changes
 - name: Symlink to webserver directory
   become: true
