@@ -1,5 +1,5 @@
 <?php
-class WildcardHooks {
+class PickSomeHooks {
 
   public static function onSidebarBeforeOutput(Skin $skin, &$bar) {
     if (!$skin->getUser()->isLoggedIn()) {
@@ -11,34 +11,34 @@ class WildcardHooks {
       $page_url = $skin->getTitle()->getFullText();
     }
 
-    $wildcard_links = [];
+    $picksome_links = [];
 
-    if(WildcardSession::isEnabled()) {
-      $wildcard_links[] = [
+    if(PickSomeSession::isEnabled()) {
+      $picksome_links[] = [
         "text" => "Stop Picking",
-        "href" => SpecialPage::getTitleFor('Wildcard')->getLocalUrl(
+        "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl(
           ['cmd' => 'stop', 'returnto' => $page_url]
         )
       ];
     } else {
-      $wildcard_links[] = [
+      $picksome_links[] = [
         "text" => "Start Picking",
-        "href" => SpecialPage::getTitleFor('Wildcard')->getLocalUrl(
+        "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl(
           ['cmd' => 'start', 'returnto' => $page_url]
         )
       ];
     }
 
-    $wildcard_links[] = [
+    $picksome_links[] = [
       "text" => "Everyone's Picks",
-      "href" => SpecialPage::getTitleFor('Wildcard')->getLocalUrl()
+      "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl()
     ];
 
-    $bar["Wildcard"] = $wildcard_links;
+    $bar["PickSome"] = $picksome_links;
   }
 
   public static function siteNoticeAfter( &$siteNotice, $skin ) {
-    if(!WildcardSession::isEnabled()) {
+    if(!PickSomeSession::isEnabled()) {
       return true;
     }
 
@@ -58,7 +58,7 @@ class WildcardHooks {
 
     $dbw = wfGetDB(DB_MASTER);
     $res = $dbw->select(
-      'Wildcard',
+      'PickSome',
       ['page_id'],
       'user_id = ' . $skin->getUser()->getId()
     );
@@ -73,20 +73,21 @@ class WildcardHooks {
       $selected_pages[$row->page_id] = WikiPage::newFromID($row->page_id);
     }
 
-    $siteNotice .= self::renderWildcardBox($title, $selected_pages, $page_id);
+    $siteNotice .= self::renderPickSomeBox($title, $selected_pages, $page_id);
     return true;
   }
 
   # Rendering via string concatenation is not ideal, but how to
   # delegate to the mediawiki templating system deserves more
   # discussion.
-  public static function renderWildcardBox($title, $selected_pages, $page_id) {
+  public static function renderPickSomeBox($title, $selected_pages, $page_id) {
+    global $wgPickSomeNumberOfPicks;
     $html = "";
     $html .= "<div style='border:1px solid black;padding:10px;text-align:left;margin-top:10px;background-color:#F2F2F2'>";
     $html .= "<h2 style='margin-top:0px;border-bottom:0px'>";
-    $html .= "<span style='text-decoration:underline'>Wildcard Choices</span>";
+    $html .= "<span style='text-decoration:underline'>PickSome Choices</span>";
     $html .= "<span style='font-size:80%'> (<a href='";
-    $html .= SpecialPage::getTitleFor('Wildcard')->getLocalUrl(
+    $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
       ['cmd' => 'stop',  'returnto' => $title->getFullText()]
     );
     $html .= "'>Stop Picking</a>)</span>";
@@ -96,9 +97,9 @@ class WildcardHooks {
 
     $html .= "<ul>";
     if(count($selected_pages) > 0) {
-      $html .= "<li>My Picks (" . count($selected_pages) . "/2)";
+      $html .= "<li>My Picks (" . count($selected_pages) . "/" . $wgPickSomeNumberOfPicks . ")";
       $html .= "<ul>";
-      if(count($selected_pages) == 2 && !array_key_exists($page_id, $selected_pages)) {
+      if(count($selected_pages) >= $wgPickSomeNumberOfPicks && !array_key_exists($page_id, $selected_pages)) {
         $html .= "<li style='font-style:italic'>To pick the current page, remove one below";
       }
       foreach($selected_pages as $selected_page_id => $selected_page) {
@@ -113,7 +114,7 @@ class WildcardHooks {
           $html .= "</a>";
         }
         $html .= " (<a href='";
-        $html .= SpecialPage::getTitleFor('Wildcard')->getLocalUrl(
+        $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
           ['cmd' => 'remove', 'page' => $selected_page_id, 'returnto' => $page_id]
         );
         $html .= "'>Unpick</a>)";
@@ -121,16 +122,16 @@ class WildcardHooks {
       }
       $html .= "</ul>";
     }
-    if (!(array_key_exists($page_id, $selected_pages)) && !(count($selected_pages) > 1)) {
+    if (!(array_key_exists($page_id, $selected_pages)) && !(count($selected_pages) >= $wgPickSomeNumberOfPicks)) {
       $html .= "<li><a rel='nofollow' href='";
-      $html .= SpecialPage::getTitleFor('Wildcard')->getLocalUrl(
+      $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
         ['cmd' => 'pick', 'page' => $page_id]
       );
       $html .= "'>Pick this page</a>";
       $html .= " [" . $title->getPrefixedText() . "]";
     }
     $html .= "<li><a href='";
-    $html .= SpecialPage::getTitleFor('Wildcard')->getLocalUrl();
+    $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl();
     $html .= "'>View Everyone's Picks</a>";
     $html .= "</ul>";
 
@@ -140,7 +141,7 @@ class WildcardHooks {
   }
 
   public static function onLoadExtensionSchemaUpdates( $updater ) {
-    $updater->addExtensionTable("Wildcard", __DIR__ . "/../sql/wildcard.sql");
+    $updater->addExtensionTable("PickSome", __DIR__ . "/../sql/picksome.sql");
   }
 }
 ?>

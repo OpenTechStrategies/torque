@@ -22,9 +22,9 @@ particular use case can be seen in the
 
 # Extensions
 
-## Wildcard
+## PickSome
 
-Look in [the wildcard extension](extensions/Wildcard/) for
+Look in [the picksome extension](extensions/PickSome/) for
 information.
 
 ## TeamComments

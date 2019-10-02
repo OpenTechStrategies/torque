@@ -1,0 +1,45 @@
+{
+	"name": "PickSome",
+	"version": "0.0.1",
+	"author": [
+		"Open Tech Strategies"
+	],
+	"license-name": "GPL-2.0-or-later",
+	"url": "https://github.com/OpenTechStrategies/torque",
+	"descriptionmsg": "Specialized Extension to pick some pages for purposes of voting",
+	"type": "specialpages",
+	"requires": {
+		"MediaWiki": ">= 1.31.0"
+	},
+	"SpecialPages": {
+		"PickSome": "PickSome"
+	},
+	"AutoloadClasses": {
+		"PickSome": "includes/specials/PickSome.php",
+    "PickSomeHooks": "includes/PickSomeHooks.php",
+    "PickSomeGlobalTemplate": "includes/templates/PickSomeGlobalTemplate.php",
+    "PickSomeSession": "includes/PickSomeSession.php"
+	},
+	"ResourceModules": {
+		"ext.comments.css": {
+			"styles": "resources/css/PickSome.css"
+		},
+		"ext.comments.js": {
+			"scripts": "resources/js/PickSome.js",
+			"dependencies": [ "mediawiki.api" ]
+		}
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "",
+		"remoteExtPath": "Comments"
+	},
+	"Hooks": {
+		"LoadExtensionSchemaUpdates": "PickSomeHooks::onLoadExtensionSchemaUpdates",
+    "SiteNoticeAfter": "PickSomeHooks::siteNoticeAfter",
+    "SidebarBeforeOutput": "PickSomeHooks::onSidebarBeforeOutput"
+	},
+  "config": {
+    "PickSomeNumberOfPicks": 2
+  },
+	"manifest_version": 1
+}

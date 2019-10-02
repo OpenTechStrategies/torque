@@ -2,38 +2,38 @@
 
 use MediaWiki\Session\SessionManager;
 
-class WildcardSession {
+class PickSomeSession {
 	public static function touchSession() {
 		$session = SessionManager::getGlobalSession();
-		$collection = $session['wsWildcard'];
+		$collection = $session['wsPickSome'];
 		$collection['timestamp'] = wfTimestampNow();
-		$session['wsWildcard'] = $collection;
+		$session['wsPickSome'] = $collection;
 	}
 
 	public static function enable() {
 		$session = SessionManager::getGlobalSession();
 		$session->persist();
 
-		$session['wsWildcard']['enabled'] = true;
+		$session['wsPickSome']['enabled'] = true;
 		self::touchSession();
 	}
 
 	public static function disable() {
 		$session = SessionManager::getGlobalSession();
 
-		if ( !isset( $session['wsWildcard'] ) ) {
+		if ( !isset( $session['wsPickSome'] ) ) {
 			return;
 		}
-		$session['wsWildcard']['enabled'] = false;
+		$session['wsPickSome']['enabled'] = false;
 		self::touchSession();
 	}
 
 	public static function isEnabled() {
 		$session = SessionManager::getGlobalSession();
 
-		return isset( $session['wsWildcard'] ) &&
-			isset( $session['wsWildcard']['enabled'] ) &&
-			$session['wsWildcard']['enabled'];
+		return isset( $session['wsPickSome'] ) &&
+			isset( $session['wsPickSome']['enabled'] ) &&
+			$session['wsPickSome']['enabled'];
 	}
 }
 

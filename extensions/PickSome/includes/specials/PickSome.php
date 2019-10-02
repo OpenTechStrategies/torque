@@ -1,9 +1,9 @@
 <?php
 
-class Wildcard extends SpecialPage {
+class PickSome extends SpecialPage {
 
   public function __construct() {
-    parent::__construct( 'Wildcard' );
+    parent::__construct( 'PickSome' );
   }
 
   public function execute( $subPage ) {
@@ -17,7 +17,7 @@ class Wildcard extends SpecialPage {
           );
         return;
       case 'start':
-        WildcardSession::enable();
+        PickSomeSession::enable();
         $this->
           getOutput()->
           redirect(
@@ -25,7 +25,7 @@ class Wildcard extends SpecialPage {
           );
         return;
       case 'stop':
-        WildcardSession::disable();
+        PickSomeSession::disable();
         $this->
           getOutput()->
           redirect(
@@ -41,15 +41,15 @@ class Wildcard extends SpecialPage {
           );
         return;
     }
-    $this->renderWildcardPage();
+    $this->renderPickSomePage();
   }
 
-  private function renderWildcardPage() {
+  private function renderPickSomePage() {
     $out = $this->getOutput();
 
     $this->setHeaders();
-    $out->setPageTitle("Wildcard Global List");
-    $template = new WildcardGlobalTemplate();
+    $out->setPageTitle("PickSome Global List");
+    $template = new PickSomeGlobalTemplate();
     $template->set('users_picked_pages', $this->usersPickedPages());
     $template->set('picked_pages', $this->allPickedPages());
     $out->addTemplate($template);
@@ -63,7 +63,7 @@ class Wildcard extends SpecialPage {
       !$this->alreadyPickedTwoPages($user_id, $dbw)) {
 
       $dbw->insert(
-        "Wildcard",
+        "PickSome",
         [
           "page_id" => $page,
           "user_id" => $user_id
@@ -75,7 +75,7 @@ class Wildcard extends SpecialPage {
     return
       ($dbw->numRows(
         $dbw->select(
-          "Wildcard",
+          "PickSome",
           ["page_id"],
           [
             "page_id" => $this->getRequest()->getVal('page'),
@@ -85,13 +85,14 @@ class Wildcard extends SpecialPage {
   }
 
   private function alreadyPickedTwoPages($user_id, $dbw) {
-    return (count($this->usersPickedPages()) > 1);
+    global $wgPickSomeNumberOfPicks;
+    return (count($this->usersPickedPages()) >= $wgPickSomeNumberOfPicks);
   }
 
   private function removePickFromDb() {
     $dbw = wfGetDB(DB_MASTER);
     $dbw->delete(
-      "Wildcard",
+      "PickSome",
       [
         "page_id" => $this->getRequest()->getVal('page'),
         "user_id" => $this->getUser()->getId()
@@ -100,7 +101,7 @@ class Wildcard extends SpecialPage {
 
   private function allPickedPages() {
     $dbw = wfGetDB(DB_MASTER);
-    $res = $dbw->select("Wildcard", ["page_id", "user_id"]);
+    $res = $dbw->select("PickSome", ["page_id", "user_id"]);
     $picked_pages = [];
     foreach($res as $row) {
       $page_id = $row->page_id;
@@ -117,7 +118,7 @@ class Wildcard extends SpecialPage {
   private function usersPickedPages() {
     $dbw = wfGetDB(DB_MASTER);
     $res = $dbw->select(
-      "Wildcard",
+      "PickSome",
       ["page_id"],
       ["user_id" => $this->getUser()->getId()]);
     $picked_pages = [];

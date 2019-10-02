@@ -1,6 +1,6 @@
 <?php
 
-class WildcardGlobalTemplate extends QuickTemplate {
+class PickSomeGlobalTemplate extends QuickTemplate {
   public function execute() {
   ?>
   <h2>My Picks</h2>
