@@ -89,14 +89,10 @@ class ViewSimpleSimpleFavorites {
 
 		$this->out->setPageTitle ( wfMessage ( 'simplefavoritelist' ) );
 
-		$this->viewFavList ( $this->user, $this->out, $this->request );
-	}
-	private function viewFavList($user, $output, $request) {
-
 		$uid = $this->user->getId ();
-		$output->setPageTitle ( wfMessage ( 'simplefavoritelist' ) );
+		$this->out->setPageTitle ( wfMessage ( 'simplefavoritelist' ) );
 
-		$this->showNormalForm ( $output, $user );
+	  $this->out->addHTML ( $this->buildSimpleFavoriteList ( $this->user ) );
 
 		$dbr = wfGetDB ( DB_REPLICA, 'simplefavoritelist' );
 		// $recentchanges = $dbr->tableName( 'recentchanges' );
@@ -112,95 +108,6 @@ class ViewSimpleSimpleFavorites {
 			$this->out->addWikiMsg ( 'nosimplefavoritelist' );
 			return;
 		}
-	}
-
-	/**
-	 * Check the edit token from a form submission
-	 *
-	 * @param $request WebRequest
-	 * @param $user User
-	 * @return bool
-	 */
-	private function checkToken($request, $user) {
-		return $user->matchEditToken ( $request->getVal ( 'token' ), 'simplefavorite' );
-	}
-
-	/**
-	 * Extract a list of titles from a blob of text, returning
-	 * (prefixed) strings; unfavoritable titles are ignored
-	 *
-	 * @param $list mixed
-	 * @return array
-	 */
-	private function extractTitles($list) {
-		$titles = array ();
-		if (! is_array ( $list )) {
-			$list = explode ( "\n", trim ( $list ) );
-			if (! is_array ( $list ))
-				return array ();
-		}
-		foreach ( $list as $text ) {
-			$text = trim ( $text );
-			if (strlen ( $text ) > 0) {
-				$title = Title::newFromText ( $text );
-				// if( $title instanceof Title && $title->isFavoritable() )
-				$titles [] = $title->getPrefixedText ();
-			}
-		}
-		return array_unique ( $titles );
-	}
-
-	/**
-	 * Print out a list of linked titles
-	 *
-	 * $titles can be an array of strings or Title objects; the former
-	 * is preferred, since Titles are very memory-heavy
-	 *
-	 * @param $titles An
-	 *        	array of strings, or Title objects
-	 * @param $output OutputPage
-	 */
-	private function showTitles($titles, $output) {
-		$talk = wfMessage ( 'talkpagelinktext' )->text ();
-		// Do a batch existence check
-		$batch = new LinkBatch ();
-		foreach ( $titles as $title ) {
-			if (! $title instanceof Title)
-				$title = Title::newFromText ( $title );
-			// if( $title instanceof Title ) {
-			// 	$batch->addObj( $title );
-			// 	if ( $title->canHaveTalkPage() ) {
-			// 		$batch->addObj( $title->getTalkPage() );
-			// 	}
-			// }
-		}
-		$batch->execute ();
-		// Print out the list
-		$output->addHTML ( "<ul>\n" );
-		foreach ( $titles as $title ) {
-			if (! $title instanceof Title)
-				$title = Title::newFromText ( $title );
-			if ($title instanceof Title) {
-				$output->addHTML ( "<li>" . Linker::link ( $title ) .
-				"</li>\n" );
-			}
-		}
-		$output->addHTML ( "</ul>\n" );
-	}
-
-	/**
-	 * Count the number of titles on a user's simplefavoritelist, excluding talk pages
-	 *
-	 * @param $user User
-	 * @return int
-	 */
-	private function countSimpleFavoritelist($user) {
-		$dbr = wfGetDB ( DB_MASTER );
-		$res = $dbr->select ( 'simplefavoritelist', 'COUNT(fl_user) AS count', array (
-				'fl_user' => $user->getId ()
-		), __METHOD__ );
-		$row = $dbr->fetchObject ( $res );
-		return ceil ( $row->count ); // Paranoia
 	}
 
 	/**
@@ -240,55 +147,7 @@ class ViewSimpleSimpleFavorites {
 		return $titles;
 	}
 
-
-	/**
-	 * Remove a list of titles from a user's simplefavoritelist
-	 *
-	 * $titles can be an array of strings or Title objects; the former
-	 * is preferred, since Titles are very memory-heavy
-	 *
-	 * @param $titles An
-	 *        	array of strings, or Title objects
-	 * @param $user User
-	 */
-	private function unsimplefavoriteTitles($titles, $user) {
-		$dbw = wfGetDB ( DB_MASTER );
-
-		foreach ( $titles as $title ) {
-
-			if (! $title instanceof Title)
-				$title = Title::newFromText ( $title );
-			if ($title instanceof Title) {
-
-				$dbw->delete ( 'simplefavoritelist', array (
-						'fl_user' => $user->getId (),
-						'fl_namespace' => ($title->getNamespace () | 1),
-						'fl_title' => $title->getDBkey ()
-				), __METHOD__ );
-				$article = new Article ( $title );
-				Hooks::run ( 'UnsimplefavoriteArticleComplete', array (
-						&$user,
-						&$article
-				) );
-			}
-		}
-	}
-
-	/**
-	 * Show the standard simplefavoritelist editing form
-	 *
-	 * @param $output OutputPage
-	 * @param $user User
-	 */
-	private function showNormalForm($output, $user) {
-
-		if (($count = $this->countSimpleFavoritelist ( $user )) > 0) {
-			$self = SpecialPage::getTitleFor ( 'SimpleFavoritelist' );
-			$output->addHTML ( $this->buildRemoveList ( $user ) );
-		}
-	}
-
-	private function buildRemoveList($user) {
+	private function buildSimpleFavoriteList($user) {
 		$list = "";
 		$tocLength = 0;
 		foreach ( $this->getSimpleFavoritelistInfo ( $user ) as $namespace => $pages ) {
@@ -298,16 +157,12 @@ class ViewSimpleSimpleFavorites {
 			$list .= "<ul>\n";
 			foreach ( $pages as $dbkey => $redirect ) {
 				$title = Title::makeTitleSafe ( $namespace, $dbkey );
-				$list .= $this->buildRemoveLine ( $title );
+		    $link = Linker::link ( $title );
+		    $list .= "<li>" . $link . "</li>\n";
 			}
 			$list .= "</ul>\n";
 		}
 
 		return $list;
-	}
-
-	private function buildRemoveLine($title) {
-		$link = Linker::link ( $title );
-		return "<li>" . $link . "</li>\n";
 	}
 }
