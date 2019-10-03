@@ -20,15 +20,6 @@
     "PickSomeGlobalTemplate": "includes/templates/PickSomeGlobalTemplate.php",
     "PickSomeSession": "includes/PickSomeSession.php"
 	},
-	"ResourceModules": {
-		"ext.comments.css": {
-			"styles": "resources/css/PickSome.css"
-		},
-		"ext.comments.js": {
-			"scripts": "resources/js/PickSome.js",
-			"dependencies": [ "mediawiki.api" ]
-		}
-	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "",
 		"remoteExtPath": "Comments"
