@@ -1,11 +1,11 @@
 <?php
 
 /**
- * API module to allow users to favorite a page
+ * API module to allow users to simplefavorite a page
  *
  * @ingroup API
  */
-class ApiFavorite extends ApiBase {
+class ApiSimpleFavorite extends ApiBase {
 
 	public function __construct( $main, $action ) {
 		parent::__construct( $main, $action );
@@ -14,7 +14,7 @@ class ApiFavorite extends ApiBase {
 	public function execute() {
 		$user = $this->getUser();
 		if ( !$user->isLoggedIn() ) {
-			$this->dieUsage( 'You must be logged-in to have a favoritelist', 'notloggedin' );
+			$this->dieUsage( 'You must be logged-in to have a simplefavoritelist', 'notloggedin' );
 		}
 
 		$params = $this->extractRequestParams();
@@ -26,16 +26,16 @@ class ApiFavorite extends ApiBase {
 
 		$res = array( 'title' => $title->getPrefixedText() );
 
-		if ( $params['unfavorite'] ) {
-			$res['unfavorited'] = '';
-			$res['message'] = $this->msg( 'removedfavoritetext', $title->getPrefixedText() )->title( $title )->parseAsBlock();
-			$success = new FavoriteAction('unfavorite',$title);
-			//$success = UnfavoriteAction::doUnfavorite( $title, $user );
+		if ( $params['unsimplefavorite'] ) {
+			$res['unsimplefavorited'] = '';
+			$res['message'] = $this->msg( 'removedsimplefavoritetext', $title->getPrefixedText() )->title( $title )->parseAsBlock();
+			$success = new SimpleFavoriteAction('unsimplefavorite',$title);
+			//$success = UnsimplefavoriteAction::doUnsimplefavorite( $title, $user );
 		} else {
-			$res['favorited'] = '';
-			$res['message'] = $this->msg( 'addedfavoritetext', $title->getPrefixedText() )->title( $title )->parseAsBlock();
-			$success = new FavoriteAction('favorite',$title);
-			//$success = FavAction::doFavorite( $title, $user );
+			$res['simplefavorited'] = '';
+			$res['message'] = $this->msg( 'addedsimplefavoritetext', $title->getPrefixedText() )->title( $title )->parseAsBlock();
+			$success = new SimpleFavoriteAction('simplefavorite',$title);
+			//$success = FavAction::doSimpleFavorite( $title, $user );
 		}
 		if ( !$success ) {
 			$this->dieUsageMsg( 'hookaborted' );
@@ -54,11 +54,11 @@ class ApiFavorite extends ApiBase {
 
 	// since this makes changes the database, we should use this, but I just can't get it to work.
  	//public function needsToken() {
- 	//	return 'favorite';
+ 	//	return 'simplefavorite';
  	//}
 
 	//public function getTokenSalt() {
-	//	return 'favorite';
+	//	return 'simplefavorite';
 	//}
 
 	public function getAllowedParams() {
@@ -67,7 +67,7 @@ class ApiFavorite extends ApiBase {
 				ApiBase::PARAM_TYPE => 'string',
 				ApiBase::PARAM_REQUIRED => true
 			),
-			'unfavorite' => false,
+			'unsimplefavorite' => false,
  			//'token' => array(
  			//	ApiBase::PARAM_TYPE => 'string',
  			//	ApiBase::PARAM_REQUIRED => true
@@ -77,41 +77,41 @@ class ApiFavorite extends ApiBase {
 
 	public function getParamDescription() {
 		return array(
-			'title' => 'The page to (un)favorite',
-			'unfavorite' => 'If set the page will be unfavorited rather than favorited',
+			'title' => 'The page to (un)simplefavorite',
+			'unsimplefavorite' => 'If set the page will be unsimplefavorited rather than simplefavorited',
 			'token' => 'A token previously acquired via prop=info',
 		);
 	}
 
 	public function getDescription() {
-		return 'Add or remove a page from/to the current user\'s favoritelist';
+		return 'Add or remove a page from/to the current user\'s simplefavoritelist';
 	}
 
 	public function getExamples() {
 		return array(
-			'api.php?action=favorite&title=Main_Page' => 'Favorite the page "Main Page"',
-			'api.php?action=favorite&title=Main_Page&unfavorite=' => 'Unfavorite the page "Main Page"',
+			'api.php?action=simplefavorite&title=Main_Page' => 'SimpleFavorite the page "Main Page"',
+			'api.php?action=simplefavorite&title=Main_Page&unsimplefavorite=' => 'Unsimplefavorite the page "Main Page"',
 		);
 	}
 
 	public function getHelpUrls() {
-		return 'https://www.mediawiki.org/wiki/Special:MyLanguage/Extension:Favorites';
+		return 'https://www.mediawiki.org/wiki/Special:MyLanguage/Extension:SimpleFavorites';
 	}
 
 	public static function getTokenFav() {
 		global $wgUser;
 
-		return $wgUser->getEditToken( 'favorite' );
+		return $wgUser->getEditToken( 'simplefavorite' );
 	}
 	public static function getTokenUnfav() {
 		global $wgUser;
 
-		return $wgUser->getEditToken( 'unfavorite' );
+		return $wgUser->getEditToken( 'unsimplefavorite' );
 	}
 
 	public static function injectTokenFunction( &$list ) {
-		$list['favorite'] = array( __CLASS__, 'getTokenFav' );
-		$list['unfavorite'] = array( __CLASS__, 'getTokenUnfav' );
+		$list['simplefavorite'] = array( __CLASS__, 'getTokenFav' );
+		$list['unsimplefavorite'] = array( __CLASS__, 'getTokenUnfav' );
 		return true; // Hooks must return bool
 	}
 }

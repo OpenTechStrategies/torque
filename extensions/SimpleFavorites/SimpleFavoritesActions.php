@@ -1,6 +1,6 @@
 <?php
 
-class FavoriteAction {
+class SimpleFavoriteAction {
 
 	function __construct($action,$title,$article = null) {
 		$user = User::newFromSession();
@@ -11,12 +11,12 @@ class FavoriteAction {
 			$output = false;
 		}
 		
-		if ($action == 'favorite') {
-			$result = $this->doFavorite($title, $user);
-			$message = 'addedfavoritetext';
+		if ($action == 'simplefavorite') {
+			$result = $this->doSimpleFavorite($title, $user);
+			$message = 'addedsimplefavoritetext';
 		} else {
-			$result = $this->doUnfavorite($title, $user);
-			$message = 'removedfavoritetext';
+			$result = $this->doUnsimplefavorite($title, $user);
+			$message = 'removedsimplefavoritetext';
 		}
 		
 		if ($result == true) {
@@ -29,7 +29,7 @@ class FavoriteAction {
 		} else {
 			if ($output) {
 				// don't do this if we are calling from the API
-				$output->addWikiMsg( 'favoriteerrortext', $title->getPrefixedText() );
+				$output->addWikiMsg( 'simplefavoriteerrortext', $title->getPrefixedText() );
 			}
 			return false;
 		}
@@ -37,10 +37,10 @@ class FavoriteAction {
 		
 	}
 	
-	function doFavorite( Title $title, User $user  ) {
+	function doSimpleFavorite( Title $title, User $user  ) {
 		$success = false;
 		$dbw = wfGetDB( DB_MASTER );
-		$dbw->insert( 'favoritelist',
+		$dbw->insert( 'simplefavoritelist',
 				array(
 						'fl_user' => $user->getId(),
 						'fl_namespace' => MWNamespace::getSubject($title->getNamespace()),
@@ -54,11 +54,11 @@ class FavoriteAction {
 		return $success;
 	}
 	
-	function doUnfavorite( Title $title, User $user  ) {
+	function doUnsimplefavorite( Title $title, User $user  ) {
 		$success = false;
 		
 		$dbw = wfGetDB( DB_MASTER );
-		$dbw->delete( 'favoritelist',
+		$dbw->delete( 'simplefavoritelist',
 				array(
 						'fl_user' => $user->getId(),
 						'fl_namespace' => MWNamespace::getSubject($title->getNamespace()),

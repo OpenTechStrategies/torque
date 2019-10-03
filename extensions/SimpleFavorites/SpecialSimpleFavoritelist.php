@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * @ingroup SpecialPage Favoritelist
+ * @ingroup SpecialPage SimpleFavoritelist
  */
 
 /**
@@ -10,19 +10,19 @@
  * @param $par Parameter
  *        	passed to the page
  */
-class SpecialFavoritelist extends SpecialPage {
+class SpecialSimpleFavoritelist extends SpecialPage {
 
 	function __construct() {
-		parent::__construct ( 'Favoritelist' );
+		parent::__construct ( 'SimpleFavoritelist' );
 	}
 	function execute($par) {
 		$context = $this->getContext();
-		$vwfav = new ViewFavorites ($context);
+		$vwfav = new ViewSimpleSimpleFavorites ($context);
 
 		$this->setHeaders ();
 		$param = $this->getRequest()->getText ( 'param' );
 
-		$vwfav->wfSpecialFavoritelist ( $par );
+		$vwfav->wfSpecialSimpleFavoritelist ( $par );
 	}
 
 	protected function getGroupName() {
@@ -30,7 +30,7 @@ class SpecialFavoritelist extends SpecialPage {
 	}
 }
 
-class ViewFavorites {
+class ViewSimpleSimpleFavorites {
 
 	private $context;
 	private $user;
@@ -46,20 +46,20 @@ class ViewFavorites {
 		$this->user = $this->context->getUser();
 	}
 
-	function wfSpecialFavoritelist($par) {
+	function wfSpecialSimpleFavoritelist($par) {
 
 		global $wgFeedClasses;
 
 		// Add feed links
-		$flToken = $this->user->getOption ( 'favoritelisttoken' );
+		$flToken = $this->user->getOption ( 'simplefavoritelisttoken' );
 		if (! $flToken) {
 			$flToken = sha1 ( mt_rand () . microtime ( true ) );
-			$this->user->setOption ( 'favoritelisttoken', $flToken );
+			$this->user->setOption ( 'simplefavoritelisttoken', $flToken );
 			$this->user->saveSettings ();
 		}
 
 		$apiParams = array (
-				'action' => 'feedfavoritelist',
+				'action' => 'feedsimplefavoritelist',
 				'allrev' => 'allrev',
 				'flowner' => $this->user->getName (),
 				'fltoken' => $flToken
@@ -74,42 +74,42 @@ class ViewFavorites {
 			$this->out->addFeedLink ( $format, $url );
 		}
 
-		$specialTitle = SpecialPage::getTitleFor ( 'Favoritelist' );
+		$specialTitle = SpecialPage::getTitleFor ( 'SimpleFavoritelist' );
 		$this->out->setRobotPolicy ( 'noindex,nofollow' );
 
-		// Anons don't get a favoritelist
+		// Anons don't get a simplefavoritelist
 		if ($this->user->isAnon ()) {
-			$this->out->setPageTitle ( wfMessage ( 'favoritenologin' ) );
+			$this->out->setPageTitle ( wfMessage ( 'simplefavoritenologin' ) );
 			$llink = Linker::linkKnown ( SpecialPage::getTitleFor ( 'Userlogin' ), wfMessage ( 'loginreqlink' )->text (), array (), array (
 					'returnto' => $specialTitle->getPrefixedText ()
 			) );
-			$this->out->addHTML ( wfMessage ( 'favoritelistanontext', $llink )->text () );
+			$this->out->addHTML ( wfMessage ( 'simplefavoritelistanontext', $llink )->text () );
 			return;
 		}
 
-		$this->out->setPageTitle ( wfMessage ( 'favoritelist' ) );
+		$this->out->setPageTitle ( wfMessage ( 'simplefavoritelist' ) );
 
 		$this->viewFavList ( $this->user, $this->out, $this->request );
 	}
 	private function viewFavList($user, $output, $request) {
 
 		$uid = $this->user->getId ();
-		$output->setPageTitle ( wfMessage ( 'favoritelist' ) );
+		$output->setPageTitle ( wfMessage ( 'simplefavoritelist' ) );
 
 		$this->showNormalForm ( $output, $user );
 
-		$dbr = wfGetDB ( DB_REPLICA, 'favoritelist' );
+		$dbr = wfGetDB ( DB_REPLICA, 'simplefavoritelist' );
 		// $recentchanges = $dbr->tableName( 'recentchanges' );
 
-		$favoritelistCount = $dbr->selectField ( 'favoritelist', 'COUNT(fl_user)', array (
+		$simplefavoritelistCount = $dbr->selectField ( 'simplefavoritelist', 'COUNT(fl_user)', array (
 				'fl_user' => $uid
 		), __METHOD__ );
 		// Adjust for page X, talk:page X, which are both stored separately,
 		// but treated together
-		// $nitems = floor($favoritelistCount / 2);
-		$nitems = $favoritelistCount;
+		// $nitems = floor($simplefavoritelistCount / 2);
+		$nitems = $simplefavoritelistCount;
 		if ($nitems == 0) {
-			$this->out->addWikiMsg ( 'nofavoritelist' );
+			$this->out->addWikiMsg ( 'nosimplefavoritelist' );
 			return;
 		}
 	}
@@ -122,7 +122,7 @@ class ViewFavorites {
 	 * @return bool
 	 */
 	private function checkToken($request, $user) {
-		return $user->matchEditToken ( $request->getVal ( 'token' ), 'favorite' );
+		return $user->matchEditToken ( $request->getVal ( 'token' ), 'simplefavorite' );
 	}
 
 	/**
@@ -189,14 +189,14 @@ class ViewFavorites {
 	}
 
 	/**
-	 * Count the number of titles on a user's favoritelist, excluding talk pages
+	 * Count the number of titles on a user's simplefavoritelist, excluding talk pages
 	 *
 	 * @param $user User
 	 * @return int
 	 */
-	private function countFavoritelist($user) {
+	private function countSimpleFavoritelist($user) {
 		$dbr = wfGetDB ( DB_MASTER );
-		$res = $dbr->select ( 'favoritelist', 'COUNT(fl_user) AS count', array (
+		$res = $dbr->select ( 'simplefavoritelist', 'COUNT(fl_user) AS count', array (
 				'fl_user' => $user->getId ()
 		), __METHOD__ );
 		$row = $dbr->fetchObject ( $res );
@@ -204,20 +204,20 @@ class ViewFavorites {
 	}
 
 	/**
-	 * Get a list of titles on a user's favoritelist, excluding talk pages,
+	 * Get a list of titles on a user's simplefavoritelist, excluding talk pages,
 	 * and return as a two-dimensional array with namespace, title and
 	 * redirect status
 	 *
 	 * @param $user User
 	 * @return array
 	 */
-	private function getFavoritelistInfo($user) {
+	private function getSimpleFavoritelistInfo($user) {
 		$titles = array ();
 		$dbr = wfGetDB ( DB_MASTER );
 		$uid = intval ( $user->getId () );
-		list ( $favoritelist, $page ) = $dbr->tableNamesN ( 'favoritelist', 'page' );
+		list ( $simplefavoritelist, $page ) = $dbr->tableNamesN ( 'simplefavoritelist', 'page' );
 		$sql = "SELECT fl_namespace, fl_title, page_id, page_len, page_is_redirect
-			FROM {$favoritelist} LEFT JOIN {$page} ON ( fl_namespace = page_namespace
+			FROM {$simplefavoritelist} LEFT JOIN {$page} ON ( fl_namespace = page_namespace
 			AND fl_title = page_title ) WHERE fl_user = {$uid}";
 		$res = $dbr->query ( $sql, __METHOD__ );
 		if ($res && $dbr->numRows ( $res ) > 0) {
@@ -242,7 +242,7 @@ class ViewFavorites {
 
 
 	/**
-	 * Remove a list of titles from a user's favoritelist
+	 * Remove a list of titles from a user's simplefavoritelist
 	 *
 	 * $titles can be an array of strings or Title objects; the former
 	 * is preferred, since Titles are very memory-heavy
@@ -251,7 +251,7 @@ class ViewFavorites {
 	 *        	array of strings, or Title objects
 	 * @param $user User
 	 */
-	private function unfavoriteTitles($titles, $user) {
+	private function unsimplefavoriteTitles($titles, $user) {
 		$dbw = wfGetDB ( DB_MASTER );
 
 		foreach ( $titles as $title ) {
@@ -260,13 +260,13 @@ class ViewFavorites {
 				$title = Title::newFromText ( $title );
 			if ($title instanceof Title) {
 
-				$dbw->delete ( 'favoritelist', array (
+				$dbw->delete ( 'simplefavoritelist', array (
 						'fl_user' => $user->getId (),
 						'fl_namespace' => ($title->getNamespace () | 1),
 						'fl_title' => $title->getDBkey ()
 				), __METHOD__ );
 				$article = new Article ( $title );
-				Hooks::run ( 'UnfavoriteArticleComplete', array (
+				Hooks::run ( 'UnsimplefavoriteArticleComplete', array (
 						&$user,
 						&$article
 				) );
@@ -275,15 +275,15 @@ class ViewFavorites {
 	}
 
 	/**
-	 * Show the standard favoritelist editing form
+	 * Show the standard simplefavoritelist editing form
 	 *
 	 * @param $output OutputPage
 	 * @param $user User
 	 */
 	private function showNormalForm($output, $user) {
 
-		if (($count = $this->countFavoritelist ( $user )) > 0) {
-			$self = SpecialPage::getTitleFor ( 'Favoritelist' );
+		if (($count = $this->countSimpleFavoritelist ( $user )) > 0) {
+			$self = SpecialPage::getTitleFor ( 'SimpleFavoritelist' );
 			$output->addHTML ( $this->buildRemoveList ( $user ) );
 		}
 	}
@@ -291,9 +291,9 @@ class ViewFavorites {
 	private function buildRemoveList($user) {
 		$list = "";
 		$tocLength = 0;
-		foreach ( $this->getFavoritelistInfo ( $user ) as $namespace => $pages ) {
+		foreach ( $this->getSimpleFavoritelistInfo ( $user ) as $namespace => $pages ) {
 			$tocLength ++;
-			$anchor = "editfavoritelist-ns" . $namespace;
+			$anchor = "editsimplefavoritelist-ns" . $namespace;
 
 			$list .= "<ul>\n";
 			foreach ( $pages as $dbkey => $redirect ) {

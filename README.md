@@ -40,10 +40,10 @@ but aren't limited to:
 * Removal of scoring, profile picture, voting, ignoring
 * Adding more nesting
 
-## Favorites
+## SimpleFavorites
 
 This extension was forked from
-[the main mediawiki extension](https://www.mediawiki.org/wiki/Extension:Favorites)
+[the main mediawiki extension](https://www.mediawiki.org/wiki/Extension:SimpleFavorites)
 and then updated to have uses more specific to the needs of torque.  Those include,
 but aren't limited to:
 

@@ -1,8 +1,8 @@
 
-/* Favorite/Unfavorite Icon Styling */
+/* SimpleFavorite/Unsimplefavorite Icon Styling */
 
-#ca-unfavorite.icon a,
-#ca-favorite.icon a {
+#ca-unsimplefavorite.icon a,
+#ca-simplefavorite.icon a {
 margin: 0;
 margin-right: -2px;
 padding: 0;
@@ -16,23 +16,23 @@ height: 0;
 overflow: hidden;
  
 }
-#ca-favorite.icon a {
+#ca-simplefavorite.icon a {
  background-image: url(../images/fav-icons.png);
  background-position: 0px 60%;
 }
-#ca-unfavorite.icon a {
+#ca-unsimplefavorite.icon a {
  background-image: url(../images/fav-icons.png);
  background-position: -22px 60%;
 }
-#ca-favorite.icon a:hover {
+#ca-simplefavorite.icon a:hover {
  background-image: url(../images/fav-icons.png);
  background-position: -22px 60%;
 }
-#ca-unfavorite.icon a:hover {
+#ca-unsimplefavorite.icon a:hover {
  background-image: url(../images/fav-icons.png);
  background-position: 0px 60%;
 }
-#ca-unfavorite.icon a span,
-#ca-favorite.icon a span {
+#ca-unsimplefavorite.icon a span,
+#ca-simplefavorite.icon a span {
  display: none;
 }

@@ -1,21 +1,21 @@
 /*
- * Animate favorite/unfavorite links to use asynchronous API requests to
- * favorite pages, rather than navigating to a different URI.
+ * Animate simplefavorite/unsimplefavorite links to use asynchronous API requests to
+ * simplefavorite pages, rather than navigating to a different URI.
  */
 ( function ( mw, $ ) {
 	
-	// The name of the page to favorite or unfavorite.
+	// The name of the page to simplefavorite or unsimplefavorite.
 	var title = mw.config.get( 'wgRelevantPageName' );
 
 	/**
 	 * Update the link text, link href attribute and (if applicable)
 	 * "loading" class.
 	 *
-	 * @param $link {jQuery} Anchor tag of (un)favorite link.
-	 * @param action {String} One of 'favorite', 'unfavorite'.
+	 * @param $link {jQuery} Anchor tag of (un)simplefavorite link.
+	 * @param action {String} One of 'simplefavorite', 'unsimplefavorite'.
 	 * @param state {String} [optional] 'idle' or 'loading'. Default is 'idle'.
 	 */
-	function updateFavoriteLink( $link, action, state ) {
+	function updateSimpleFavoriteLink( $link, action, state ) {
 		var msgKey, $li, otherAction;
 
 		// A valid but empty jQuery object shouldn't throw a TypeError
@@ -24,17 +24,17 @@
 		}
 
 		// Invalid actions shouldn't silently turn the page in an unrecoverable state
-		if ( action !== 'favorite' && action !== 'unfavorite' ) {
+		if ( action !== 'simplefavorite' && action !== 'unsimplefavorite' ) {
 			throw new Error( 'Invalid action' );
 		}
 
-		// message keys 'favorite', 'favoriteing', 'unfavorite' or 'unfavoriteing'.
+		// message keys 'simplefavorite', 'simplefavoriteing', 'unsimplefavorite' or 'unsimplefavoriteing'.
 		msgKey = state === 'loading' ? action + 'ing' : action;
-		otherAction = action === 'favorite' ? 'unfavorite' : 'favorite';
+		otherAction = action === 'simplefavorite' ? 'unsimplefavorite' : 'simplefavorite';
 		$li = $link.closest( 'li' );
 
 		if ( state === undefined ) {
-			$li.trigger( 'favoritepage.mw', otherAction );
+			$li.trigger( 'simplefavoritepage.mw', otherAction );
 		}
 
 		$link
@@ -95,9 +95,9 @@
 	}
 
 	$( function () {
-		var $links = $( '.mw-favoritelink a, a.mw-favoritelink, ' +
-			'#ca-favorite a, #ca-unfavorite a, #mw-unfavorite-link1, ' +
-			'#mw-unfavorite-link2, #mw-favorite-link2, #mw-favorite-link1' );
+		var $links = $( '.mw-simplefavoritelink a, a.mw-simplefavoritelink, ' +
+			'#ca-simplefavorite a, #ca-unsimplefavorite a, #mw-unsimplefavorite-link1, ' +
+			'#mw-unsimplefavorite-link2, #mw-simplefavorite-link2, #mw-simplefavorite-link1' );
 
 		// Allowing people to add inline animated links is a little scary
 		$links = $links.filter( ':not( #bodyContent *, #content * )' );
@@ -110,7 +110,7 @@
 
 			action = mwUriGetAction( this.href );
 
-			if ( action !== 'favorite' && action !== 'unfavorite' ) {
+			if ( action !== 'simplefavorite' && action !== 'unsimplefavorite' ) {
 				// Could not extract target action from link url,
 				// let native browsing handle it further
 				return true;
@@ -124,26 +124,26 @@
 				return;
 			}
 
-			updateFavoriteLink( $link, action, 'loading' );
+			updateSimpleFavoriteLink( $link, action, 'loading' );
 			api = new mw.Api();
 
 			api[action]( title )
 			
-				.done( function ( favoriteResponse ) {
+				.done( function ( simplefavoriteResponse ) {
 					
-					var otherAction = action === 'favorite' ? 'unfavorite' : 'favorite';
-					mw.notify( $.parseHTML( favoriteResponse.favorite.message ), {
-						tag: 'favorite-self'
+					var otherAction = action === 'simplefavorite' ? 'unsimplefavorite' : 'simplefavorite';
+					mw.notify( $.parseHTML( simplefavoriteResponse.simplefavorite.message ), {
+						tag: 'simplefavorite-self'
 					} );
 
 					// Set link to opposite
-					updateFavoriteLink( $link, otherAction );
+					updateSimpleFavoriteLink( $link, otherAction );
 
 				} )
 				.fail( function () {
 					var cleanTitle, msg, link;
 					// Reset link to non-loading mode
-					updateFavoriteLink( $link, action );
+					updateSimpleFavoriteLink( $link, action );
 
 					// Format error message
 					cleanTitle = title.replace( /_/g, ' ' );
@@ -153,10 +153,10 @@
 							title: cleanTitle
 						}, cleanTitle
 					);
-					msg = mw.message( 'favoriteerrortext', link );
+					msg = mw.message( 'simplefavoriteerrortext', link );
 
 					// Report to user about the error
-					mw.notify( msg, { tag: 'favorite-self' } );
+					mw.notify( msg, { tag: 'simplefavorite-self' } );
 				} );
 		} );
 	} );

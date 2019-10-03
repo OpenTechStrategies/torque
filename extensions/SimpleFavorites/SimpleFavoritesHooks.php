@@ -1,18 +1,18 @@
 <?php
 
-class FavoritesHooks {
+class SimpleFavoritesHooks {
 	public static function onSkinTemplateNavigation(&$sktemplate, &$links) {
-		$favClass = new Favorites;
-		$favClass->favoritesLinks($sktemplate, $links);
+		$favClass = new SimpleFavorites;
+		$favClass->simplefavoritesLinks($sktemplate, $links);
 	}
 	
 	
 	public static function onUnknownAction( $action, Page $article ) {
-		if ($action == 'favorite' || $action == 'unfavorite') {
+		if ($action == 'simplefavorite' || $action == 'unsimplefavorite') {
 			// do something
 			$title = $article->getTitle();
 	
-			$doAction = new FavoriteAction($action,$title,$article);
+			$doAction = new SimpleFavoriteAction($action,$title,$article);
 	
 			return false;
 		} else {
@@ -22,20 +22,20 @@ class FavoritesHooks {
 	}
 	
 	public static function onBeforePageDisplay( OutputPage &$out, Skin &$skin ) {
-		$out->addModules( 'ext.favorites' );
-		$out->addModules( 'ext.favorites.style' );
+		$out->addModules( 'ext.simplefavorites' );
+		$out->addModules( 'ext.simplefavorites.style' );
 	}
 	
 	public static function onLoadExtensionSchemaUpdates( $updater = null ) {
 		if ( $updater === null ) { // <= 1.16 support
 			global $wgExtNewTables, $wgExtModifiedFields;
 			$wgExtNewTables[] = array(
-					'favoritelist',
-					dirname( __FILE__ ) . '/favorites.sql'
+					'simplefavoritelist',
+					dirname( __FILE__ ) . '/simplefavorites.sql'
 			);
 		} else { // >= 1.17 support
-			$updater->addExtensionUpdate( array( 'addTable', 'favoritelist',
-					dirname( __FILE__ ) . '/favorites.sql', true ) );
+			$updater->addExtensionUpdate( array( 'addTable', 'simplefavoritelist',
+					dirname( __FILE__ ) . '/simplefavorites.sql', true ) );
 		}
 		return true;
 	}
@@ -48,7 +48,7 @@ class FavoritesHooks {
 		$newtitle = $nt->getDBkey();
 	
 		if ( $oldnamespace != $newnamespace || $oldtitle != $newtitle ) {
-			Favorites::duplicateEntries( $title, $nt );
+			SimpleFavorites::duplicateEntries( $title, $nt );
 		}
 		return true;
 	}
@@ -56,7 +56,7 @@ class FavoritesHooks {
 
 	public static function onArticleDeleteComplete(&$article, &$user, $reason, $id ){
 		$dbw = wfGetDB( DB_MASTER );
-		$dbw->delete( 'favoritelist', array(
+		$dbw->delete( 'simplefavoritelist', array(
 				'fl_namespace' => $article->mTitle->getNamespace(),
 				'fl_title' => $article->mTitle->getDBKey() ),
 				__METHOD__ );
@@ -67,8 +67,8 @@ class FavoritesHooks {
 		global $wgUser;
 	
 		if ( $wgUser->isLoggedIn() ) {
-			$url[] = array( 'text' => wfMessage( 'myfavoritelist' )->text(),
-					'href' => SpecialPage::getTitleFor( 'Favoritelist' )->getLocalURL() );
+			$url[] = array( 'text' => wfMessage( 'mysimplefavoritelist' )->text(),
+					'href' => SpecialPage::getTitleFor( 'SimpleFavoritelist' )->getLocalURL() );
 			$personal_urls = wfArrayInsertAfter( $personal_urls, $url, 'watchlist' );
 		}
 	

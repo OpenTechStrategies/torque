@@ -115,9 +115,9 @@
     src: "{{ playbook_dir }}/../extensions/PickSome"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
-- name: Install Favorites
+- name: Install SimpleFavorites
   copy:
-    src: "{{ playbook_dir }}/../extensions/Favorites"
+    src: "{{ playbook_dir }}/../extensions/SimpleFavorites"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install TeamComments
@@ -153,10 +153,10 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     line: "wfLoadExtension('PickSome');"
 
-- name: Enable Favorites
+- name: Enable SimpleFavorites
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    line: "require_once \"$IP/extensions/Favorites/Favorites.php\"; "
+    line: "require_once \"$IP/extensions/SimpleFavorites/SimpleFavorites.php\"; "
 
 - name: Enable TeamComments
   tags: testing

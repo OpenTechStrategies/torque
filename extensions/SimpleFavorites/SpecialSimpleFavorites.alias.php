@@ -1,6 +1,6 @@
 <?php
 /**
- * Aliases for Favorites
+ * Aliases for SimpleFavorites
  *
  * @file
  * @ingroup Extensions
@@ -12,12 +12,12 @@ $specialPageAliases = array();
  * @author Jeremy Lemley
  */
 $specialPageAliases['en'] = array(
-	'Favoritelist' => array( 'Favoritelist', 'My Favorites' ),
+	'SimpleFavoritelist' => array( 'SimpleFavoritelist', 'My SimpleFavorites' ),
 );
 
 /** German
  * @author Tim Koester
  */
 $specialPageAliases['de'] = array(
-	'Favoritelist' => array( 'FavoritenListe', 'Favoriten' ),
+	'SimpleFavoritelist' => array( 'FavoritenListe', 'Favoriten' ),
 );
