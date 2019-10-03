@@ -23,7 +23,7 @@ class SimpleFavoritesHooks {
 	
 	public static function onBeforePageDisplay( OutputPage &$out, Skin &$skin ) {
 		$out->addModules( 'ext.simplefavorites' );
-		$out->addModules( 'ext.simplefavorites.style' );
+		$out->addModuleStyles( 'ext.simplefavorites.style' );
 	}
 	
 	public static function onLoadExtensionSchemaUpdates( $updater = null ) {

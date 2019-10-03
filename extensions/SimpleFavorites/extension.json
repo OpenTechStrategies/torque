@@ -1,0 +1,70 @@
+{
+  "name": "Simple Favorites",
+  "version": "0.0.1",
+  "author": [
+		"Jeremy Lemley",
+    "Open Tech Strategies, LLC"
+  ],
+  "license-name": "GPL-2.0-or-later",
+  "url": "https://github.com/OpenTechStrategies/torque",
+  "descriptionmsg": "simplefavorites-desc",
+	"type": "specialpages",
+  "requires": {
+    "MediaWiki": ">= 1.31.0"
+  },
+  "APIModules": {
+    "simplefavorite": "ApiSimpleFavorite"
+  },
+  "MessagesDirs": {
+    "SimpleFavorites": [
+      "i18n"
+    ]
+  },
+  "AutoloadClasses": {
+    "SimpleFavorites": "SimpleFavorites_body.php",
+    "SimpleFavoriteAction": "SimpleFavoritesActions.php",
+    "SpecialSimpleFavoritelist": "SpecialSimpleFavoritelist.php",
+    "ViewSimpleFavorites": "SpecialSimpleFavoritelist.php",
+    "SimpleFavoritesHooks": "SimpleFavoritesHooks.php",
+    "ApiSimpleFavorite": "api/ApiSimpleFavorite.php"
+  },
+  "ResourceModules": {
+    "ext.simplefavorites.style": {
+		  "styles": "modules/simplefavorites.css"
+    },
+    "ext.simplefavorites": {
+		  "scripts": ["modules/page.simplefavorite.ajax.js", "modules/simplefavorites.js"],
+		  "dependencies": ["mediawiki.api", "mediawiki.RegExp", "user.tokens"],
+	    "messages": [
+				"simplefavoriteerrortext",
+				"tooltip-ca-simplefavorite",
+				"tooltip-ca-unsimplefavorite",
+				"simplefavoriteing",
+				"unsimplefavoriteing",
+				"simplefavoritethispage",
+				"unsimplefavoritethispage",
+				"simplefavorite",
+				"unsimplefavorite",
+				"addedsimplefavoritetext",
+				"removedsimplefavoritetext"
+		  ]
+    }
+  },
+  "ResourceFileModulePaths": {
+    "localBasePath": "",
+    "remoteExtPath": "SimpleFavorites"
+  },
+  "Hooks": {
+    "SkinTemplateNavigation": "SimpleFavoritesHooks::onSkinTemplateNavigation",
+    "UnknownAction": "SimpleFavoritesHooks::onUnknownAction",
+    "BeforePageDisplay": "SimpleFavoritesHooks::onBeforePageDisplay",
+    "TitleMoveComplete": "SimpleFavoritesHooks::onTitleMoveComplete",
+    "ArticleDeleteComplete": "SimpleFavoritesHooks::onArticleDeleteComplete",
+    "PersonalUrls": "SimpleFavoritesHooks::onPersonalUrls",
+    "LoadExtensionSchemaUpdates": "SimpleFavoritesHooks::onLoadExtensionSchemaUpdates"
+  },
+  "SpecialPages": {
+    "SimpleFavoritelist": "SpecialSimpleFavoritelist"
+  },
+  "manifest_version": 1
+}

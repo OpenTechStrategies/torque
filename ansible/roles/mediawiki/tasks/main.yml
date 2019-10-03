@@ -156,7 +156,7 @@
 - name: Enable SimpleFavorites
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    line: "require_once \"$IP/extensions/SimpleFavorites/SimpleFavorites.php\"; "
+    line: "wfLoadExtension('SimpleFavorites');"
 
 - name: Enable TeamComments
   tags: testing
