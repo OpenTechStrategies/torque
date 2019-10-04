@@ -203,16 +203,12 @@ class TeamCommentsPage extends ContextSource {
         $output .= '<div class="c-form-title">';
         $output .= wfMessage( 'teamcomments-submit' )->plain();
 
-        #$output .= $this->getOutput()->parse("[[Wiki_Markup_Cheat_Sheet|" . wfMessage('teamcomments-cheatsheet')->plain() . "]]");
-
-        #$output .= wfExpandUrl("http://www.google.com");
-        #$output .= wfExpandUrl("Wiki_Markup_Cheat_Sheet");
         if($wgTeamCommentsCheatSheetLocation) {
-          $output .= " (<a href='";
+          $output .= " <span class='c-cheatsheet'>(<a href='";
           $output .= $wgTeamCommentsCheatSheetLocation;
           $output .= "'>";
           $output .= wfMessage('teamcomments-cheatsheet')->plain();
-          $output .= "</a>)";
+          $output .= "</a>)</span>";
         }
         $output .= "</div>\n";
         $output .= '<div id="replyto" class="c-form-reply-to"></div>' . "\n";
