@@ -181,14 +181,6 @@
       } ).appendTo( '#replyto' );
       $( '#replyto' ).append( ') <br />' );
 
-      var quotedText = "<blockquote>\n";
-      quotedText += "   '''" + replyon + ", " + poster + " said:'''\n\n";
-      for (quotedLine of $("#teamcomment-" + parentId).find("textarea").val().split("\n")) {
-        quotedText += "   " + quotedLine + "\n";
-      }
-      quotedText += "\n</blockquote>";
-      $("#teamcomment").val(quotedText);
-
       document.teamcommentForm.teamcommentParentId.value = parentId;
     },
 
