@@ -17,22 +17,12 @@
   display:inline;
 }
 
-.teamcomment-highlighted {
-  border:1px solid #666666;
-  background-color:#FFFFEE;
-  padding:-1
-}
-
 .mw-body-content .teamcomments-body h1 {
   padding-top:0px;
   margin-top:0px;
 }
 
 .full {
-}
-
-.reply {
-  margin-left: 40px !important;
 }
 
 .c-item {
@@ -42,6 +32,17 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
   padding: 0px 0px 10px 0px;*/
   padding: 0px 0px 15px 0px;
   margin: 0px 0px 5px 0px;
+  border:1px solid #CCCCCC;
+  background-color:#F8F8F8;
+}
+
+.teamcomment-highlighted {
+  border:1px solid #666666;
+  background-color:#FFFFEE;
+}
+
+.reply {
+  margin-left: 40px !important;
 }
 
 .c-container {
