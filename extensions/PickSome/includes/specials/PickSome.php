@@ -48,7 +48,7 @@ class PickSome extends SpecialPage {
     $out = $this->getOutput();
 
     $this->setHeaders();
-    $out->setPageTitle("PickSome Global List");
+    $out->setPageTitle(wfMessage("picksome-global-list"));
     $template = new PickSomeGlobalTemplate();
     $template->set('users_picked_pages', $this->usersPickedPages());
     $template->set('picked_pages', $this->allPickedPages());

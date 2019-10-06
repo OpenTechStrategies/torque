@@ -1,0 +1,19 @@
+{
+  "@metadata": {
+    "authors": [
+      "Open Tech Strategies"
+    ]
+  },
+  "picksome-desc": "Specialized Extension to pick some pages for purposes of voting",
+  "picksome-all": "Everyone's Picks",
+  "picksome-choices": "PickSome Choices",
+  "picksome-my-picks": "My Picks",
+  "picksome-unpick": "Unpick",
+  "picksome-no-picks": "No Picks",
+  "picksome-current": "Current Page",
+  "picksome-view-all": "View Everyone's Picks",
+  "picksome-global-list": "PickSome Global List",
+  "picksome-remove-below": "To pick the current page, remove one below",
+  "picksome-stop": "Stop Picking",
+  "picksome-start": "Start Picking"
+}

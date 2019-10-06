@@ -15,14 +15,14 @@ class PickSomeHooks {
 
     if(PickSomeSession::isEnabled()) {
       $picksome_links[] = [
-        "text" => "Stop Picking",
+        "msg" => "picksome-stop",
         "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl(
           ['cmd' => 'stop', 'returnto' => $page_url]
         )
       ];
     } else {
       $picksome_links[] = [
-        "text" => "Start Picking",
+        "msg" => "picksome-start",
         "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl(
           ['cmd' => 'start', 'returnto' => $page_url]
         )
@@ -30,7 +30,7 @@ class PickSomeHooks {
     }
 
     $picksome_links[] = [
-      "text" => "Everyone's Picks",
+      "msg" => "picksome-all",
       "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl()
     ];
 
@@ -85,27 +85,27 @@ class PickSomeHooks {
     $html = "";
     $html .= "<div style='border:1px solid black;padding:10px;text-align:left;margin-top:10px;background-color:#F2F2F2'>";
     $html .= "<h2 style='margin-top:0px;border-bottom:0px'>";
-    $html .= "<span style='text-decoration:underline'>PickSome Choices</span>";
+    $html .= "<span style='text-decoration:underline'>" . wfMessage("picksome-choices") . "</span>";
     $html .= "<span style='font-size:80%'> (<a href='";
     $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
       ['cmd' => 'stop',  'returnto' => $title->getFullText()]
     );
-    $html .= "'>Stop Picking</a>)</span>";
+    $html .= "'>" . wfMessage("picksome-stop") . "</a>)</span>";
     $html .= "</h2>";
 
     $page_already_selected = false;
 
     $html .= "<ul>";
     if(count($selected_pages) > 0) {
-      $html .= "<li>My Picks (" . count($selected_pages) . "/" . $wgPickSomeNumberOfPicks . ")";
+      $html .= "<li>" . wfMessage("picksome-my-picks") . " (" . count($selected_pages) . "/" . $wgPickSomeNumberOfPicks . ")";
       $html .= "<ul>";
       if(count($selected_pages) >= $wgPickSomeNumberOfPicks && !array_key_exists($page_id, $selected_pages)) {
-        $html .= "<li style='font-style:italic'>To pick the current page, remove one below";
+        $html .= "<li style='font-style:italic'>" . wfMessage("picksome-remove-below");
       }
       foreach($selected_pages as $selected_page_id => $selected_page) {
         $html .= "<li>";
         if($page_id == $selected_page_id) {
-          $html .= "<span style='font-style:italic'>(Current Page)</span> ";
+          $html .= "<span style='font-style:italic'>(" . wfMessage("picksome-current") . ")</span> ";
         } else {
           $html .= "<a href='" . $selected_page->getTitle()->getLocalUrl() . "'>";
         }
@@ -117,7 +117,7 @@ class PickSomeHooks {
         $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
           ['cmd' => 'remove', 'page' => $selected_page_id, 'returnto' => $page_id]
         );
-        $html .= "'>Unpick</a>)";
+        $html .= "'>" . wfMessage("picksome-unpick") . "</a>)";
         $html .= "\n";
       }
       $html .= "</ul>";
@@ -132,7 +132,7 @@ class PickSomeHooks {
     }
     $html .= "<li><a href='";
     $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl();
-    $html .= "'>View Everyone's Picks</a>";
+    $html .= "'>" . wfMessage("picksome-view-all") . "</a>";
     $html .= "</ul>";
 
     $html .= "</div>";

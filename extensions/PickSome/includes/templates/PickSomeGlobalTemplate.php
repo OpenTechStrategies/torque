@@ -3,10 +3,10 @@
 class PickSomeGlobalTemplate extends QuickTemplate {
   public function execute() {
   ?>
-  <h2>My Picks</h2>
+    <h2><?php echo wfMessage("picksome-my-picks"); ?></h2>
   <?php
     if(count($this->data['users_picked_pages']) == 0) {
-      echo "No picks";
+      echo wfMessage("picksome-no-picks");
     } else {
   ?>
       <ul>
@@ -21,7 +21,7 @@ class PickSomeGlobalTemplate extends QuickTemplate {
     }
   ?>
   </ul>
-  <h2>Everyone's Picks</h2>
+  <h2><?php echo wfMessage("picksome-all"); ?></h2>
   <ul>
   <?php
     foreach($this->data['picked_pages'] as $picked_page) {
