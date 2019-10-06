@@ -151,7 +151,10 @@
 - name: Enable PickSome
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    line: "wfLoadExtension('PickSome');"
+    marker: "## {mark} ANSIBLE PICKSOME CONFIG"
+    block: |
+      wfLoadExtension('PickSome');
+      $wgPickSomePageRegex = "/\(\\d*\)$/";
 
 - name: Enable SimpleFavorites
   lineinfile:

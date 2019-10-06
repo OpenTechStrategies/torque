@@ -38,6 +38,8 @@ class PickSomeHooks {
   }
 
   public static function siteNoticeAfter( &$siteNotice, $skin ) {
+    global $wgPickSomePageRegex;
+
     if(!PickSomeSession::isEnabled()) {
       return true;
     }
@@ -48,7 +50,7 @@ class PickSomeHooks {
       return true;
     }
 
-    if (!preg_match("/\(\\d*\)$/", $title->getPrefixedText())) {
+    if ($wgPickSomePageRegex && !preg_match($wgPickSomePageRegex, $title->getPrefixedText())) {
       return true;
     }
 

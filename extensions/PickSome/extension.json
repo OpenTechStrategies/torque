@@ -35,7 +35,8 @@
     "SidebarBeforeOutput": "PickSomeHooks::onSidebarBeforeOutput"
 	},
   "config": {
-    "PickSomeNumberOfPicks": 2
+    "PickSomeNumberOfPicks": 2,
+    "PickSomePageRegex": false
   },
 	"manifest_version": 1
 }
