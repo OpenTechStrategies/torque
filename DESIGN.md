@@ -62,6 +62,48 @@ members can see it, and that particular expert reviewer themselves can
 see it (but other expert reviewers cannot), and all Foundation staff
 can see it.
 
+## Generating PDF books from sets of articles
+
+Currently, book creation in torque is done through a now-obsolete
+system that is what Wikipedia itself formerly used: the
+[Collection](ansible/thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz)
+extension.  It depends on (among other things) mwlib, which uses
+Python 2.x not 3.x.  Wikipedia itself has temporarily disabled its
+Book Creator, which formerly used this extension, and posted a
+[timeline](https://www.mediawiki.org/wiki/Reading/Web/PDF_Functionality)
+about the disablement and the hoped-for future restoration of book
+creation.
+
+This [History
+section](https://en.wikipedia.org/wiki/Wikipedia:Books#History) gives
+a nice overview of the current state of the onion.  Basically,
+single-page PDF generation in mediawiki took a detour through the
+now-also-obsolete [Electron](https://www.mediawiki.org/wiki/Electron)
+before settling on [Proton](https://www.mediawiki.org/wiki/Proton),
+which is now handling single-article PDFs on Wikipedia.org.  However,
+as yet there's no code hooking Proton into some kind of article
+collection system so that one can generate a book consisting of
+multiple articles.  The [Talk page for
+Proton](https://www.mediawiki.org/wiki/Talk:Proton) gives more
+information, also referring to the German company PediaPress's efforts
+to make a new book service called "Collector".  According the History
+page that effort is closed source, and according to the Talk page the
+effort is running behind schedule, though apparently they have a test
+service up at https://pediapress.com/collector.
+
+User [Steelpillow](https://en.wikipedia.org/wiki/User:Steelpillow),
+who seems to know a lot about this topic, suggests the [Talk page for
+Reading/Web/PDF_Functionality](https://www.mediawiki.org/wiki/Talk:Reading/Web/PDF_Functionality)
+as a source of more information.
+
+Meanwhile, there is an independent thing happening at
+http://mediawiki2latex.wmflabs.org/.  It converts wiki pages to LaTeX
+and PDF, and works with any website running MediaWiki, especially
+Wikipedia and Wikibooks.  It's FOSS and written in Haskell, but WMF
+doesn't support Haskell, so this is unlikely to become an official
+Wikipedia solution although it might be interesting for torque's
+purposes.
+
 ## Reference
 
 These requirements are
