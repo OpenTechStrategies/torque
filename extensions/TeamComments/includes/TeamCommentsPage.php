@@ -224,7 +224,9 @@ class TeamCommentsPage extends ContextSource {
         }
 
         if ( $this->getUser()->isLoggedIn() ) {
+          $output .= '<label><span class="teamcomments-hiddenlabel">Comment</span>' . "\n";
           $output .= '<textarea name="teamcommentText" id="teamcomment"></textarea>' . "\n";
+          $output .= "</label>\n";
           $output .= '<div class="c-form-button"><input type="button" value="' .
             wfMessage( 'teamcomments-post' )->plain() . '" class="site-button" /></div>' . "\n";
         }

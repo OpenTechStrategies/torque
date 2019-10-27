@@ -17,6 +17,17 @@
   display:inline;
 }
 
+/* We hide like this so it still is accessible */
+.teamcomments-hiddenlabel {
+  clip: rect(0 0 0 0);
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+}
+
 .mw-body-content .teamcomments-body h1 {
   padding-top:0px;
   margin-top:0px;

@@ -427,7 +427,9 @@ class TeamComment extends ContextSource {
     # We always have a (hidden) edit area because it contains the raw text of the comment,
     # useful for commenting as well.  But we use this for editing as well.
     $output .= '<div class="teamcomment-editarea" data-teamcomment-id="' .  $this->id . '">';
-    $output .= '<pre><textarea>' . $this->text . '</textarea></pre>';
+    $output .= '<pre><label><span class="teamcomments-hiddenlabel">Comment</span>';
+    $output .= '<textarea name="comment">' . $this->text . '</textarea>';
+    $output .= '</label></pre>';
     $output .= '<br><button class="teamcomment-save-button">' . $this->msg('teamcomments-edit-save') . '</button>';
     $output .= '</div>';
 
