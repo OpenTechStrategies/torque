@@ -62,6 +62,30 @@ members can see it, and that particular expert reviewer themselves can
 see it (but other expert reviewers cannot), and all Foundation staff
 can see it.
 
+## Authentication, Authorization, and Okta
+
+Setting up permissions for those who have logged in via Okta could
+happen like this:
+
+1. Individual (or group) is enabled for the Torque app in the 
+   Okta applications section.
+2. Someone uses Okta to log in for the account in question.
+3. SAML plugin generates a user in MediaWiki matching that login.
+4. LfC staff member logs in as admin to MediaWiki, assigning that
+   person to a group (e.g., Board Member) in the user admin screen.
+5. Further logins by that person will show up with Board Member
+   preferences.
+
+If we are able to assign users to a group in Okta correctly, and that
+information travels to Torque correctly, this becomes even easier:
+
+1. Individual (or group) is enabled in Torque app in Okta
+   applications section, with appropriate group set.
+2. Logins by that person will show up with Board member preferences.
+
+We don't yet (as of 2019-11-04) know which scenario we'll have;
+ideally the second one, but we could work with the first if needed.
+
 ## Generating PDF books from sets of articles
 
 Currently, book creation in torque is done through a now-obsolete
