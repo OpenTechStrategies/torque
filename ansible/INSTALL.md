@@ -14,7 +14,7 @@ At this time, certain things are assumed and can later be configured.
 * apache uses /var/www/html for it's root directory
 * The installed system is Debian or Ubuntu
 * lfc is the name of the wiki, so http://domain.tld/lfc/ is the location of the wiki
-* All three groups are installed on the same machine
+* All four groups are installed on the same machine
   * mediawiki config assumes that mysql and mwlib are running locally
 
 # Setting up your system
@@ -42,8 +42,8 @@ $ cp hosts.rempte.tmpl hosts
 $ edit hosts
 ```
 
-You'll see three groups, for mediawiki, mysql, and mwlib.  This is so you
-the three services can be broken apart later for dockerization as needed.
+You'll see four groups, for mediawiki, mysql, simplesaml, and mwlib.  This is so you
+the four services can be broken apart later for dockerization as needed.
 
 You may have as many hosts as you like within the groups.  You should have
 SSH access to those hosts with your current user, either via keys or ssh-agent.
