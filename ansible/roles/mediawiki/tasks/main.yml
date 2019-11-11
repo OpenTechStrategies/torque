@@ -63,6 +63,7 @@
     src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0.tar.gz"
     dest: "{{ mediawiki_install_directory }}/"
     remote_src: yes
+    creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/"
 
 - name: Enable PHP modules
   become: true
