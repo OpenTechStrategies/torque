@@ -29,3 +29,20 @@ mediawiki_mwlib_password: __MEDIAWIKI_MWLIB_PASSWORD__
 # and how it passes arguments around, and we made the decision
 # to omit the slash in the supervisor template.
 mwlib_install_directory: __INSTALLATION_DIRECTORY__
+
+# Directory to install simplesaml
+simplesaml_install_directory: __INSTALLATION_DIRECTORY__
+
+# Salt for simplesaml, you can create easily via:
+# LC_CTYPE=C tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1 2>/dev/null;echo
+simplesaml_salt: __SALT__
+
+# The metadata declaration, in the form of key => location.  The METADATA_NAME should
+# correspond to the single sign on url you have set up in okta, which will be of the form
+# http://<installationbox>/simplesaml/module.php/saml/sp/saml2-acs.php/__METADATA_NAME__
+#
+# Then the URL here should be the metadata url you receive from okta when looking at
+# your application settings for "Identity Provider metadata"
+#
+# See https://developer.okta.com/code/php/simplesamlphp/ for more information
+simplesaml_okta_metadata_location: "'__METADATA_NAME__' => '__URL__'"

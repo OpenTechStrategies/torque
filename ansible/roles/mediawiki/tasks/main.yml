@@ -63,6 +63,7 @@
     src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0.tar.gz"
     dest: "{{ mediawiki_install_directory }}/"
     remote_src: yes
+    creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/"
 
 - name: Enable PHP modules
   become: true
@@ -105,6 +106,16 @@
     src: thirdparty/extensions/EmbedVideo-v2.8.0.zip
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
+- name: Install PluggableAuth
+  unarchive:
+    src: thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Install SimpleSAML extension
+  unarchive:
+    src: thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
 - name: Install Collection
   unarchive:
     src: thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz
@@ -134,6 +145,33 @@
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     line: "wfLoadExtension('EmbedVideo-v2.8.0');"
+
+- name: Enable PluggableAuth
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE PLUGABLE AUTH CONFIG"
+    block: |
+      wfLoadExtension( 'PluggableAuth' );
+      $wgPluggableAuth_EnableAutoLogin = true;
+      $wgPluggableAuth_EnableLocalLogin = true;
+      $wgPluggableAuth_EnableLocalProperties = false;
+      $wgPluggableAuth_ButtonLabel = "Log In With Okta";
+      $wgInvalidUsernameCharacters = "";
+
+- name: Enable SimpleSAMLphp extension
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE SIMPLE SAML PHP CONFIG"
+    block: |
+      wfLoadExtension( 'SimpleSAMLphp' );
+      $wgSimpleSAMLphp_InstallDir = '{{ simplesaml_install_directory }}/simplesamlphp-1.17.6';
+      $wgSimpleSAMLphp_AuthSourceId = 'ots';
+      $wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
+      $wgSimpleSAMLphp_EmailAttribute = 'email';
+      $wgSimpleSAMLphp_UsernameAttribute = 'email';
+      $wgSimpleSAMLphp_AttributeProcessorFactories = [
+        "MediaWiki\\Extension\\SimpleSAMLphp\\AttributeProcessor\\SyncAllGroups::factory"
+      ];
 
 - name: Enable Collection
   blockinfile:

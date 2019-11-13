@@ -4,6 +4,10 @@
   roles:
   - mysql
 
+- hosts: simplesaml
+  roles:
+  - simplesaml
+
 - hosts: mediawiki
   roles:
   - mediawiki
