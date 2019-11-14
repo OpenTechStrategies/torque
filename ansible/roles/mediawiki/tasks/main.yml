@@ -192,7 +192,22 @@
     marker: "## {mark} ANSIBLE PICKSOME CONFIG"
     block: |
       wfLoadExtension('PickSome');
-      $wgPickSomePageRegex = "/\(\\d*\)$/";
+      $wgPickSomePage = function($title) {
+        $eligibleWildcardsTitle = Title::newFromText("EligibleWildcards");
+        if($eligibleWildcardsTitle->exists()) {
+          $page = new WikiPage($eligibleWildcardsTitle);
+          $valid_pages = [];
+          preg_match_all("/\\[\\[([^\\]]*)\\]\\]/", $page->getContent()->getText(), $valid_pages);
+          foreach($valid_pages[1] as $valid_page) {
+            if($title->equals(Title::newFromText($valid_page))) {
+              return true;
+            }
+          }
+          return false;
+        } else {
+          return false;
+        }
+      };
 
 - name: Enable SimpleFavorites
   lineinfile:
