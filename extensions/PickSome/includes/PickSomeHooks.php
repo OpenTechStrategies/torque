@@ -63,6 +63,7 @@ class PickSomeHooks {
 
     $page_id = $skin->getWikiPage()->getId();
     $selected_pages = [];
+    $page_already_selected = false;
     foreach($res as $row) {
       if($row->page_id == $page_id) {
         $page_already_selected = true;
