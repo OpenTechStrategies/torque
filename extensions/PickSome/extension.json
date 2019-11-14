@@ -36,7 +36,7 @@
 	},
   "config": {
     "PickSomeNumberOfPicks": 2,
-    "PickSomePageRegex": false
+    "PickSomePage": false
   },
 	"manifest_version": 1
 }

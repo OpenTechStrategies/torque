@@ -15,14 +15,16 @@ wfLoadExtension('PickSome');
 ## Usage
 
 For logged in users, can enable PickSome by clicking "Start Picking" on the
-sidebar menu.  Then each valid page (see `$wgPickSomePageRegex` below) will have
+sidebar menu.  Then each valid page (see `$wgPickSomePage` below) will have
 a special banner that allows the user to pick this page.  They can pick up to
 `<N>` proposals.  All picked proposals will be viewable on the Special:PickSome page.
 
 ## Parameters
 
 * `$wgPickSomeNumberOfPicks` - The number of picks (defaulted to 2) each user can choose
-* `$wgPickSomePageRegex` - Regex for titles of pages that are pickable
+* `$wgPickSomePage` - Determines if a page can be picked.
+  * If a string, matches as a regex for titles of pages that are pickable
+  * If a function, gets passed a Title and needs to return a boolean
 
 ## Internationalization
 

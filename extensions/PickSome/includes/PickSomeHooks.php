@@ -38,7 +38,7 @@ class PickSomeHooks {
   }
 
   public static function siteNoticeAfter( &$siteNotice, $skin ) {
-    global $wgPickSomePageRegex;
+    global $wgPickSomePage;
 
     if(!PickSomeSession::isEnabled()) {
       return true;
@@ -47,10 +47,6 @@ class PickSomeHooks {
     $title = $skin->getTitle();
 
     if (!$title->exists()) {
-      return true;
-    }
-
-    if ($wgPickSomePageRegex && !preg_match($wgPickSomePageRegex, $title->getPrefixedText())) {
       return true;
     }
 
@@ -73,6 +69,16 @@ class PickSomeHooks {
       }
 
       $selected_pages[$row->page_id] = WikiPage::newFromID($row->page_id);
+    }
+
+    // We want to make sure we show the pick box for an already picked page
+    // in case it is no longer valid, so that it can be unpicked
+    if ($wgPickSomePage && !$page_already_selected) {
+      if(is_string($wgPickSomePage) && !preg_match($wgPickSomePage, $title->getPrefixedText())) {
+        return true;
+      } else if(is_callable($wgPickSomePage) && !call_user_func($wgPickSomePage, $title)) {
+        return true;
+      }
     }
 
     $siteNotice .= self::renderPickSomeBox($title, $selected_pages, $page_id);
