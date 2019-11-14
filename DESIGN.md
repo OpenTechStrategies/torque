@@ -86,6 +86,34 @@ information travels to Torque correctly, this becomes even easier:
 We don't yet (as of 2019-11-04) know which scenario we'll have;
 ideally the second one, but we could work with the first if needed.
 
+## Automated deployment and content management
+
+Torque is deployed using [Ansible](https://www.ansible.com/), and some
+of what gets deployed is simply regular wiki content that is
+considered part of the Torque system (see
+[here](ansible/roles/mediawiki/files) for example).
+
+But because Torque is a wiki, there may be times when users edit those
+Torque-originated pages.  Now we have a problem: the next redeployment
+would overwrite the users' changes.  (The changes could be retrieved
+from the wiki's version control history, of course, but that's
+cumbersome -- someone has to know to go to look for them.)
+
+Ansible can detect whether the thing it's replacing is different from
+what it's trying to upload, but it has no way to know whether the
+reason for the difference is that there's a new version of that thing
+in Torque, or that a user edited the thing at the destination, or
+both.  A solution to this would be for Ansible to have a list of
+digital fingerprints of all past versions of each thing it uploads, so
+it can check what's currently at the destination against the list.  If
+what's there is on the list, then the destination can safely be
+replaced; otherwise, a user must have edited the destination, so the
+deployment process should issue a warning and not touch the
+destination.
+
+We haven't implemented that solution yet.  For now, those installing
+Torque should deal with such content conflicts manually.
+
 ## Generating PDF books from sets of articles
 
 Currently, book creation in torque is done through a now-obsolete
