@@ -176,6 +176,8 @@
     marker: "## {mark} ANSIBLE PICKSOME CONFIG"
     block: |
       wfLoadExtension('PickSome');
+      # This may not be performant and require caching if number of users/page hits
+      # becomes large.
       $wgPickSomePage = function($title) {
         $eligibleWildcardsTitle = Title::newFromText("EligibleWildcards");
         if($eligibleWildcardsTitle->exists()) {
