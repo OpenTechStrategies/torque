@@ -1,22 +1,5 @@
 ---
 
-- name: Add php key - Debian
-  become: true
-  apt_key:
-    url: https://packages.sury.org/php/apt.gpg
-    state: present
-  when: ansible_distribution == "Debian"
-
-- name: Add php reposotory - Debian
-  become: true
-  apt_repository:
-    # We hardcode the distrobution here because for some reason
-    # ansible's ansible_distribution_release wasn't working
-    repo: "deb https://packages.sury.org/php/ buster main"
-    state: present
-  register: php_ondrej_debian_repo
-  when: ansible_distribution == "Debian"
-
 - name: Add php repository - Ubuntu
   become: true
   apt_repository:
@@ -38,13 +21,10 @@
     - php-apcu
     - php-cli
     - php-intl
-    - php7.2-mbstring
-    - php7.3-mbstring
+    - php-mbstring
     - php-mysql
-    - php7.3-mysqli
-    - php7.3-pgsql
-    - php7.2-xml
-    - php7.3-xml
+    - php-mysqli
+    - php-xml
     - unzip
 
 - name: Setup installation directory

@@ -7,6 +7,8 @@
     #update_cache: yes # commented out for dev purposes
     state: present
   loop:
+    - apache2
+    - php
     - php-curl
 
 - name: Setup installation directory
