@@ -134,6 +134,10 @@
       wfLoadExtension( 'PluggableAuth' );
       $wgPluggableAuth_EnableAutoLogin = true;
       $wgPluggableAuth_EnableLocalLogin = true;
+      # We only potentially set to false if coming in from the web
+      if(array_key_exists('REQUEST_URI', $_SERVER)) {
+        $wgPluggableAuth_EnableLocalLogin = (substr($_SERVER['REQUEST_URI'], 0, 13) == "/lfc/api.php");
+      }
       $wgPluggableAuth_EnableLocalProperties = false;
       $wgPluggableAuth_ButtonLabel = "Log In With Okta";
       $wgInvalidUsernameCharacters = "";
@@ -195,7 +199,6 @@
     line: "wfLoadExtension('SimpleFavorites');"
 
 - name: Enable TeamComments
-  tags: testing
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     marker: "## {mark} ANSIBLE TEAMCOMMENTS CONFIG"
@@ -274,17 +277,14 @@
     state: absent
 
 - name: Transfer wiki cheat sheet
-  tags: testing
   copy:
     src: Wiki_Markup_Cheat_Sheet
     dest: "{{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
 
 - name: Install wiki cheat sheet
-  tags: testing
   raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b Wiki_Markup_Cheat_Sheet < {{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
 
 - name: Transfer wiki cheat sheet
-  tags: testing
   file:
     path: "{{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
     state: absent
