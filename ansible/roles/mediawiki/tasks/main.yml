@@ -258,10 +258,14 @@
 - name: Create csv2wiki user
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --bot --force --dbuser=wikiuser --dbpass=\"{{ db_password }}\" \"{{ mediawiki_mwlib_username }}\" \"{{ mediawiki_mwlib_password }}\""
 
-- name: Create board group
-  lineinfile:
+- name: Set Group Permissions
+  blockinfile:
+    marker: "## {mark} ANSIBLE GROUP PERMISSIONS CONFIG"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    line: $wgGroupPermissions['board']['read'] = true;
+    block: |
+      foreach($wgGroupPermissions['sysop'] as $key => $value) {
+        $wgGroupPermissions['LFC Torque'][$key] = $value;
+      }
 
 - name: Transfer LFC Logo
   copy:
