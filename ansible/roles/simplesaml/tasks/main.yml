@@ -58,7 +58,7 @@
   lineinfile:
     path: "{{ simplesaml_install_directory }}/simplesamlphp-1.17.6/saml-autoconfig.php"
     insertafter: '\$metadata_url_for = array\('
-    line: "{{ simplesaml_okta_metadata_location }}"
+    line: "'{{ simplesaml_okta_metadata_name }}' => '{{ simplesaml_okta_metadata_url }}'"
 
 - name: Change session type to db
   lineinfile:
