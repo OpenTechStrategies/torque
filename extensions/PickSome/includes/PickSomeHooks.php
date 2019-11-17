@@ -34,7 +34,7 @@ class PickSomeHooks {
       "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl()
     ];
 
-    $bar["PickSome"] = $picksome_links;
+    $bar[wfMessage("picksome-title")->text()] = $picksome_links;
   }
 
   public static function siteNoticeAfter( &$siteNotice, $skin ) {
@@ -99,7 +99,7 @@ class PickSomeHooks {
     $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
       ['cmd' => 'stop',  'returnto' => $title->getFullText()]
     );
-    $html .= "'>" . wfMessage("picksome-stop") . "</a>)</span>";
+    $html .= "'>" . wfMessage("picksome-close-window") . "</a>)</span>";
     $html .= "</h2>";
 
     $page_already_selected = false;

@@ -5,6 +5,7 @@
     ]
   },
   "picksome-desc": "Specialized Extension to pick some pages for purposes of voting",
+  "picksome-title": "PickSome",
   "picksome-all": "Everyone's Picks",
   "picksome-choices": "PickSome Choices",
   "picksome-my-picks": "My Picks",
@@ -15,5 +16,6 @@
   "picksome-global-list": "PickSome Global List",
   "picksome-remove-below": "To pick the current page, remove one below",
   "picksome-stop": "Stop Picking",
+  "picksome-close-window": "Close Window",
   "picksome-start": "Start Picking"
 }

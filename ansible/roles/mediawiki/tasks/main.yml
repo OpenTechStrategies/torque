@@ -195,6 +195,29 @@
         }
       };
 
+      $picksomeOverrideMessage = [
+        "picksome-all" => "Everyone's Wildcards",
+        "picksome-title" => "Wildcards",
+        "picksome-choices" => "Widcard Choices",
+        "picksome-my-picks" => "My Wildcards",
+        "picksome-unpick" => "Deselect",
+        "picksome-no-picks" => "No Wildcards",
+        "picksome-current" => "Current Page",
+        "picksome-view-all" => "View Everyone's Wildcards",
+        "picksome-global-list" => "Global Wildcard List",
+        "picksome-remove-below" => "To select the current page, remove one below",
+        "picksome-stop" => "Stop Selecting",
+        "picksome-close-window" => "Close Window",
+        "picksome-start" => "Start Selecting",
+      ];
+      $wgHooks['MessagesPreLoad'][] = function($title, &$message, $code) {
+        global $picksomeOverrideMessage;
+        if(array_key_exists(strtolower($title), $picksomeOverrideMessage)) {
+          $message = $picksomeOverrideMessage[strtolower($title)];
+        }
+      };
+
+
 - name: Enable SimpleFavorites
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
