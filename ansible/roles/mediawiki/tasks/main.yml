@@ -171,6 +171,7 @@
       $wgCollectionDisableDownloadSection = false;
 
 - name: Enable PickSome
+  tags: foo
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     marker: "## {mark} ANSIBLE PICKSOME CONFIG"
@@ -198,7 +199,7 @@
       $picksomeOverrideMessage = [
         "picksome-all" => "Everyone's Wildcards",
         "picksome-title" => "Wildcards",
-        "picksome-choices" => "Widcard Choices",
+        "picksome-choices" => "Wildcard Choices",
         "picksome-my-picks" => "My Wildcards",
         "picksome-unpick" => "Deselect",
         "picksome-no-picks" => "No Wildcards",
