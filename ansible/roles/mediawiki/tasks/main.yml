@@ -292,6 +292,7 @@
     block: |
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
         $wgGroupPermissions['LFC Torque'][$key] = $value;
+        $wgGroupPermissions['LFC Torque Admin'][$key] = $value;
       }
 
 - name: Transfer LFC Logo
