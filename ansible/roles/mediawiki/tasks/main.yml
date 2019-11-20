@@ -181,9 +181,9 @@
       # This may not be performant and require caching if number of users/page hits
       # becomes large.
       $wgPickSomePage = function($title) {
-        $eligibleWildcardsTitle = Title::newFromText("EligibleWildcards");
-        if($eligibleWildcardsTitle->exists()) {
-          $page = new WikiPage($eligibleWildcardsTitle);
+        $eligibleWildCardsTitle = Title::newFromText("Eligible Wild Cards");
+        if($eligibleWildCardsTitle->exists()) {
+          $page = new WikiPage($eligibleWildCardsTitle);
           $valid_pages = [];
           preg_match_all("/\\[\\[([^\\]]*)\\]\\]/", $page->getContent()->getText(), $valid_pages);
           foreach($valid_pages[1] as $valid_page) {
@@ -198,15 +198,15 @@
       };
 
       $picksomeOverrideMessage = [
-        "picksome-all" => "Everyone's Wildcards",
-        "picksome-title" => "Wildcards",
-        "picksome-choices" => "Wildcard Choices",
-        "picksome-my-picks" => "My Wildcards",
+        "picksome-all" => "Everyone's Wild Cards",
+        "picksome-title" => "Wild Cards",
+        "picksome-choices" => "Wild Card Choices",
+        "picksome-my-picks" => "My Wild Cards",
         "picksome-unpick" => "Deselect",
-        "picksome-no-picks" => "No Wildcards",
+        "picksome-no-picks" => "No Wild Cards",
         "picksome-current" => "Current Page",
-        "picksome-view-all" => "View Everyone's Wildcards",
-        "picksome-global-list" => "Global Wildcard List",
+        "picksome-view-all" => "View Everyone's Wild Cards",
+        "picksome-global-list" => "Global Wild Card List",
         "picksome-remove-below" => "To select the current page, remove one below",
         "picksome-stop" => "Stop Selecting",
         "picksome-close-window" => "Close Window",
