@@ -34,7 +34,9 @@ class PickSomeHooks {
       "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl()
     ];
 
-    $bar[wfMessage("picksome-title")->text()] = $picksome_links;
+    $bar['picksome-title'] = $picksome_links;
+
+    return true;
   }
 
   public static function siteNoticeAfter( &$siteNotice, $skin ) {

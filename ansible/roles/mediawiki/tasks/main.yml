@@ -157,25 +157,19 @@
         "MediaWiki\\Extension\\SimpleSAMLphp\\AttributeProcessor\\SyncAllGroups::factory"
       ];
 
-- name: Enable Collection
-  blockinfile:
-    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    marker: "## {mark} ANSIBLE COLLECTION CONFIG"
-    block: |
-      require_once "$IP/extensions/Collection/Collection.php";
-      $wgCollectionMWServeCredentials = "{{ mediawiki_mwlib_username }}:{{ mediawiki_mwlib_password }}";
-      $wgCollectionMWServeURL = "http://127.0.0.1:8899";
-      $wgCollectionMaxArticles = 250;
-      $wgEnableApi = true;
-      $wgCollectionFormats = array( 'rl' => 'PDF',);
-      $wgCollectionPortletFormats = [];
-      $wgCollectionDisableDownloadSection = false;
-
 - name: Enable PickSome
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     marker: "## {mark} ANSIBLE PICKSOME CONFIG"
     block: |
+      # While this next line should be taken care of in extenions, and indeed
+      # it is, because this extension is loaded via wfLoadExtension, and because
+      # Collection is loaded the old way, the sidebar before output is called
+      # preferring Collection, placing it higher on the siderbar than PickSome.
+      #
+      # This was requested to be changed, and the most straightforward way is
+      # to add it to the hook directly in LocalSettings
+      $wgHooks['SidebarBeforeOutput'][] = 'PickSomeHooks::onSidebarBeforeOutput';
       wfLoadExtension('PickSome');
       # This may not be performant and require caching if number of users/page hits
       # becomes large.
@@ -218,6 +212,22 @@
         }
       };
 
+# This actually needs to be installed after PickSome (above), because
+# we want the picksome sidebar to be loaded before the Collection sidebar
+# because of how mediawiki decides order of portlet.
+- name: Enable Collection
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE COLLECTION CONFIG"
+    block: |
+      require_once "$IP/extensions/Collection/Collection.php";
+      $wgCollectionMWServeCredentials = "{{ mediawiki_mwlib_username }}:{{ mediawiki_mwlib_password }}";
+      $wgCollectionMWServeURL = "http://127.0.0.1:8899";
+      $wgCollectionMaxArticles = 250;
+      $wgEnableApi = true;
+      $wgCollectionFormats = array( 'rl' => 'PDF',);
+      $wgCollectionPortletFormats = [];
+      $wgCollectionDisableDownloadSection = false;
 
 - name: Enable SimpleFavorites
   lineinfile:
