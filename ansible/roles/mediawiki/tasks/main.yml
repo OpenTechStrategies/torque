@@ -172,7 +172,6 @@
       $wgCollectionDisableDownloadSection = false;
 
 - name: Enable PickSome
-  tags: foo
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     marker: "## {mark} ANSIBLE PICKSOME CONFIG"
