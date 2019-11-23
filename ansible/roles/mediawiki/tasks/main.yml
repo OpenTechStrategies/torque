@@ -314,6 +314,15 @@
         $wgGroupPermissions['LFC Torque Admin'][$key] = $value;
       }
 
+      $wgGroupPermissions['bot']['protect'] = true;
+      $wgRestrictionLevels[] = 'generated';
+      $wgGroupPermissions['bot']['generated'] = true;
+
+      # This must go after the foreach block above because we don't want
+      # the permission to get added to the LFC Torque above
+      $wgGroupPermissions['LFC Torque Admin']['generated'] = true;
+      $wgGroupPermissions['sysop']['generated'] = true;
+
 - name: Transfer LFC Logo
   copy:
     src: LeverForChange_Logo.png
