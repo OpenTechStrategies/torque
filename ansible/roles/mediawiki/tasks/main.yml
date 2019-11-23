@@ -138,6 +138,16 @@
       if(array_key_exists('REQUEST_URI', $_SERVER)) {
         $wgPluggableAuth_EnableLocalLogin = (substr($_SERVER['REQUEST_URI'], 0, 13) == "/lfc/api.php");
       }
+
+      # We hijack at the top level if someone who knows what they are doing
+      # puts in a get arg before the first redirect even happens
+      if(array_key_exists('locallogin', $_GET)) {
+        setcookie('locallogin', $_GET['locallogin'], time() + 3600, '/');
+        $wgPluggableAuth_EnableLocalLogin = $_GET['locallogin'] == "on";
+      }
+      if(array_key_exists('locallogin', $_COOKIE)) {
+        $wgPluggableAuth_EnableLocalLogin = $_COOKIE['locallogin'] == "on";
+      }
       $wgPluggableAuth_EnableLocalProperties = false;
       $wgPluggableAuth_ButtonLabel = "Log In With Okta";
       $wgInvalidUsernameCharacters = "";
