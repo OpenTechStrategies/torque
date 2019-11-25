@@ -26,6 +26,15 @@ a special banner that allows the user to pick this page.  They can pick up to
   * If a string, matches as a regex for titles of pages that are pickable
   * If a function, gets passed a Title and needs to return a boolean
 
+## Rights
+
+* `'picksome"` - Only accounts who have the rights to use PickSome can access the interface.  Use the following to enable:
+
+```
+$wgGroupPermissions['*']['picksome'] = true;
+```
+
+
 ## Internationalization
 
 Currently only has support for English.

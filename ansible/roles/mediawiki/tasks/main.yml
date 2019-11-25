@@ -309,6 +309,10 @@
     marker: "## {mark} ANSIBLE GROUP PERMISSIONS CONFIG"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     block: |
+      $wgGroupPermissions['Board Members']['read'] = true;
+      $wgGroupPermissions['Pseudo Board Members']['read'] = true;
+      $wgGroupPermissions['Board Members']['picksome'] = true;
+      $wgGroupPermissions['Pseudo Board Members']['picksome'] = true;
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
         $wgGroupPermissions['LFC Torque'][$key] = $value;
         $wgGroupPermissions['LFC Torque Admin'][$key] = $value;
@@ -322,6 +326,8 @@
       # the permission to get added to the LFC Torque above
       $wgGroupPermissions['LFC Torque Admin']['generated'] = true;
       $wgGroupPermissions['sysop']['generated'] = true;
+      $wgGroupPermissions['LFC Torque Admin']['picksome'] = true;
+      $wgGroupPermissions['sysop']['picksome'] = true;
 
 - name: Transfer LFC Logo
   copy:

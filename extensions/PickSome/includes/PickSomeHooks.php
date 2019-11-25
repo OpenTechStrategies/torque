@@ -3,7 +3,11 @@ class PickSomeHooks {
 
   public static function onSidebarBeforeOutput(Skin $skin, &$bar) {
     if (!$skin->getUser()->isLoggedIn()) {
-      return false;
+      return true;
+    }
+
+    if (!$skin->getUser()->isAllowed("picksome")) {
+      return true;
     }
 
     $page_url = '';
@@ -43,6 +47,10 @@ class PickSomeHooks {
     global $wgPickSomePage;
 
     if(!PickSomeSession::isEnabled()) {
+      return true;
+    }
+
+    if (!$skin->getUser()->isAllowed("picksome")) {
       return true;
     }
 

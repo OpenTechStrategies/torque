@@ -7,6 +7,10 @@ class PickSome extends SpecialPage {
   }
 
   public function execute( $subPage ) {
+    if(!$this->getUser()->isAllowed('picksome')) {
+      throw new PermissionsError('picksome-all');
+    }
+
     switch ($this->getRequest()->getVal('cmd')) {
       case 'pick':
         $this->addPickToDb();

@@ -19,6 +19,9 @@
       "i18n"
     ]
   },
+  "AvailableRights": [
+    "picksome"
+  ],
 	"AutoloadClasses": {
 		"PickSome": "includes/specials/PickSome.php",
     "PickSomeHooks": "includes/PickSomeHooks.php",
