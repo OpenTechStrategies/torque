@@ -1,6 +1,9 @@
 <?php
 
 class PickSome extends SpecialPage {
+  public const READ = 0;
+  public const WRITE = 1;
+  public const ADMIN = 2;
 
   public function __construct() {
     parent::__construct( 'PickSome' );

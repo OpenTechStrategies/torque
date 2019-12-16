@@ -2,6 +2,8 @@
 class PickSomeHooks {
 
   public static function onSidebarBeforeOutput(Skin $skin, &$bar) {
+    global $wgPickSomePage;
+
     if (!$skin->getUser()->isLoggedIn()) {
       return true;
     }
@@ -16,21 +18,24 @@ class PickSomeHooks {
     }
 
     $picksome_links = [];
+    $title = $skin->getTitle();
 
-    if(PickSomeSession::isEnabled()) {
-      $picksome_links[] = [
-        "msg" => "picksome-stop",
-        "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl(
-          ['cmd' => 'stop', 'returnto' => $page_url]
-        )
-      ];
-    } else {
-      $picksome_links[] = [
-        "msg" => "picksome-start",
-        "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl(
-          ['cmd' => 'start', 'returnto' => $page_url]
-        )
-      ];
+    if (!($wgPickSomePage && is_callable($wgPickSomePage) && !call_user_func($wgPickSomePage, $title, PickSome::WRITE))) {
+      if(PickSomeSession::isEnabled()) {
+        $picksome_links[] = [
+          "msg" => "picksome-stop",
+          "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl(
+            ['cmd' => 'stop', 'returnto' => $page_url]
+          )
+        ];
+      } else {
+        $picksome_links[] = [
+          "msg" => "picksome-start",
+          "href" => SpecialPage::getTitleFor('PickSome')->getLocalUrl(
+            ['cmd' => 'start', 'returnto' => $page_url]
+          )
+        ];
+      }
     }
 
     $picksome_links[] = [
@@ -87,7 +92,7 @@ class PickSomeHooks {
     if ($wgPickSomePage && !$page_already_selected) {
       if(is_string($wgPickSomePage) && !preg_match($wgPickSomePage, $title->getPrefixedText())) {
         return true;
-      } else if(is_callable($wgPickSomePage) && !call_user_func($wgPickSomePage, $title)) {
+      } else if(is_callable($wgPickSomePage) && !call_user_func($wgPickSomePage, $title, PickSome::WRITE)) {
         return true;
       }
     }
