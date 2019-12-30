@@ -184,6 +184,9 @@
       # This may not be performant and require caching if number of users/page hits
       # becomes large.
       $wgPickSomePage = function($title) {
+        if($permission == PickSome::WRITE) {
+          return false;
+        }
         $eligibleWildCardsTitle = Title::newFromText("Eligible Wild Cards");
         if($eligibleWildCardsTitle->exists()) {
           $page = new WikiPage($eligibleWildCardsTitle);
