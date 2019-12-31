@@ -209,6 +209,7 @@
         "picksome-choices" => "Wild Card Choices",
         "picksome-my-picks" => "My Wild Cards",
         "picksome-unpick" => "Deselect",
+        "picksome-pick" => "Select this page",
         "picksome-no-picks" => "No Wild Cards",
         "picksome-current" => "Current Page",
         "picksome-view-all" => "View Everyone's Wild Cards",

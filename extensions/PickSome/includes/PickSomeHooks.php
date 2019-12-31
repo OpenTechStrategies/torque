@@ -145,7 +145,7 @@ class PickSomeHooks {
       $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
         ['cmd' => 'pick', 'page' => $page_id]
       );
-      $html .= "'>Pick this page</a>";
+      $html .= "'>" . wfMessage("picksome-pick") . "</a>";
       $html .= " [" . $title->getPrefixedText() . "]";
     }
     $html .= "<li><a href='";
