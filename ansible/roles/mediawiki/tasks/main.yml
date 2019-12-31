@@ -184,9 +184,6 @@
       # This may not be performant and require caching if number of users/page hits
       # becomes large.
       $wgPickSomePage = function($title) {
-        if($permission == PickSome::WRITE) {
-          return false;
-        }
         $eligibleWildCardsTitle = Title::newFromText("Eligible Wild Cards");
         if($eligibleWildCardsTitle->exists()) {
           $page = new WikiPage($eligibleWildCardsTitle);
@@ -319,19 +316,20 @@
       $wgGroupPermissions['Pseudo Board Members']['picksome'] = true;
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
         $wgGroupPermissions['LFC Torque'][$key] = $value;
-        $wgGroupPermissions['LFC Torque Admin'][$key] = $value;
       }
 
       $wgGroupPermissions['bot']['protect'] = true;
       $wgRestrictionLevels[] = 'generated';
       $wgGroupPermissions['bot']['generated'] = true;
 
-      # This must go after the foreach block above because we don't want
-      # the permission to get added to the LFC Torque above
-      $wgGroupPermissions['LFC Torque Admin']['generated'] = true;
+      # Permissions that we want sysops/admins to have that
+      # but not for staff go here
       $wgGroupPermissions['sysop']['generated'] = true;
-      $wgGroupPermissions['LFC Torque Admin']['picksome'] = true;
       $wgGroupPermissions['sysop']['picksome'] = true;
+      $wgGroupPermissions['sysop']['picksome-admin'] = true;
+      foreach($wgGroupPermissions['sysop'] as $key => $value) {
+        $wgGroupPermissions['LFC Torque Admin'][$key] = $value;
+      }
 
 - name: Transfer LFC Logo
   copy:
