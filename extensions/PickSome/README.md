@@ -22,16 +22,50 @@ a special banner that allows the user to pick this page.  They can pick up to
 ## Parameters
 
 * `$wgPickSomeNumberOfPicks` - The number of picks (defaulted to 2) each user can choose
-* `$wgPickSomePage` - Determines if a page can be picked.
+* `$wgPickSomePage` - Determines if a page can be removed or added.
   * If a string, matches as a regex for titles of pages that are pickable
-  * If a function, gets passed a Title and needs to return a boolean
+  * If a function, gets passed a Title and a permission (PickSome::ADD and PickSome::REMOVE) and needs to return a boolean
+
+As an example of a `$wgPickSomePage` function, the following would allow someone to not remove picks, and add only if the page is a linked page in a marker page ("Eligible Picks"):
+
+```
+$wgPickSomePage = function($title) {
+  if($permission == PickSome::REMOVE) {
+    return false;
+  }
+  $eligibleWildCardsTitle = Title::newFromText("Eligible Picks");
+  if($eligibleWildCardsTitle->exists()) {
+    $page = new WikiPage($eligibleWildCardsTitle);
+    $valid_pages = [];
+
+    // Links are surrounded by brackets
+    preg_match_all("/\\[\\[([^\\]]*)\\]\\]/", $page->getContent()->getText(), $valid_pages);
+
+    // Only add to list if it's a valid page on the wiki
+    foreach($valid_pages[1] as $valid_page) {
+      if($title->equals(Title::newFromText($valid_page))) {
+        return true;
+      }
+    }
+    return false;
+  } else {
+    return false;
+  }
+};
+
+```
 
 ## Rights
 
-* `'picksome"` - Only accounts who have the rights to use PickSome can access the interface.  Use the following to enable:
+* `'picksome'` - Accounts who have the rights to use PickSome can access the interface.:
+* `'picksome-write'` - Accounts that can add/remove choices (after clearing $wgPickSomePage) above.  Accounts that have `'picksome'` but not `'picksome-write`' will be able to view picks, but not make them
+* `'picksome-admin'` - Accounts that can remove other user picks (from the global pick page)
+
+To enable for everyone, the following to lines should be added:
 
 ```
 $wgGroupPermissions['*']['picksome'] = true;
+$wgGroupPermissions['*']['picksome-write'] = true;
 ```
 
 

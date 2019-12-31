@@ -1,9 +1,8 @@
 <?php
 
 class PickSome extends SpecialPage {
-  public const READ = 0;
-  public const WRITE = 1;
-  public const ADMIN = 2;
+  public const ADD = 0;
+  public const REMOVE = 1;
 
   public function __construct() {
     parent::__construct( 'PickSome' );
@@ -16,11 +15,15 @@ class PickSome extends SpecialPage {
 
     switch ($this->getRequest()->getVal('cmd')) {
       case 'pick':
+        $page_picked = WikiPage::newFromID($this->getRequest()->getVal('page'))->getTitle();
+        if(!$this->getUser()->isAllowed('picksome-write')) {
+          throw new PermissionsError('picksome-all');
+        }
         $this->addPickToDb();
         $this->
           getOutput()->
           redirect(
-            WikiPage::newFromID($this->getRequest()->getVal('page'))->getTitle()->getFullURL()
+            $page_picked->getFullURL()
           );
         return;
       case 'start':
@@ -39,7 +42,21 @@ class PickSome extends SpecialPage {
             Title::newFromText($this->getRequest()->getVal('returnto'))->getFullURL()
           );
         return;
+      case 'adminremove':
+        if(!$this->getUser()->isAllowed('picksome-admin')) {
+          throw new PermissionsError('picksome-all');
+        }
+        $this->adminremovePickFromDb();
+        $this->
+          getOutput()->
+          redirect(
+            SpecialPage::getTitleFor('PickSome')->getLocalUrl()
+          );
+        return;
       case 'remove':
+        if(!$this->getUser()->isAllowed('picksome-write')) {
+          throw new PermissionsError('picksome-all');
+        }
         $this->removePickFromDb();
         $this->
           getOutput()->
@@ -49,6 +66,29 @@ class PickSome extends SpecialPage {
         return;
     }
     $this->renderPickSomePage();
+  }
+
+  public static function canAdd($title) {
+    return PickSome::can($title, PickSome::ADD);
+  }
+
+  public static function canRemove($title) {
+    return PickSome::can($title, PickSome::REMOVE);
+  }
+
+  private static function can($title, $permission) {
+    global $wgPickSomePage;
+
+    if ($wgPickSomePage) {
+      if(is_string($wgPickSomePage) && !preg_match($wgPickSomePage, $title->getPrefixedText())) {
+        return false;
+      } else if(is_callable($wgPickSomePage) && !call_user_func($wgPickSomePage, $title, $permission)) {
+        return false;
+      }
+      // If it's not a string, and it's not callable, we'll default to true
+    }
+
+    return true;
   }
 
   private function renderPickSomePage() {
@@ -103,6 +143,16 @@ class PickSome extends SpecialPage {
       [
         "page_id" => $this->getRequest()->getVal('page'),
         "user_id" => $this->getUser()->getId()
+      ]);
+  }
+
+  private function adminremovePickFromDb() {
+    $dbw = wfGetDB(DB_MASTER);
+    $dbw->delete(
+      "PickSome",
+      [
+        "page_id" => $this->getRequest()->getVal('page'),
+        "user_id" => $this->getRequest()->getVal('user')
       ]);
   }
 

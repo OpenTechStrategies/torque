@@ -20,7 +20,7 @@ class PickSomeHooks {
     $picksome_links = [];
     $title = $skin->getTitle();
 
-    if (!($wgPickSomePage && is_callable($wgPickSomePage) && !call_user_func($wgPickSomePage, $title, PickSome::WRITE))) {
+    if ($skin->getUser()->isAllowed("picksome-write")) {
       if(PickSomeSession::isEnabled()) {
         $picksome_links[] = [
           "msg" => "picksome-stop",
@@ -55,7 +55,7 @@ class PickSomeHooks {
       return true;
     }
 
-    if (!$skin->getUser()->isAllowed("picksome")) {
+    if (!($skin->getUser()->isAllowed("picksome") && $skin->getUser()->isAllowed("picksome-write"))) {
       return true;
     }
 
@@ -76,35 +76,27 @@ class PickSomeHooks {
       'user_id = ' . $skin->getUser()->getId()
     );
 
+    $can_add = PickSome::canAdd($title);
+    $can_remove = PickSome::canRemove($title);
+
+    if(!($can_add || $can_remove)) {
+      return true;
+    }
+
     $page_id = $skin->getWikiPage()->getId();
     $selected_pages = [];
-    $page_already_selected = false;
     foreach($res as $row) {
-      if($row->page_id == $page_id) {
-        $page_already_selected = true;
-      }
-
       $selected_pages[$row->page_id] = WikiPage::newFromID($row->page_id);
     }
 
-    // We want to make sure we show the pick box for an already picked page
-    // in case it is no longer valid, so that it can be unpicked
-    if ($wgPickSomePage && !$page_already_selected) {
-      if(is_string($wgPickSomePage) && !preg_match($wgPickSomePage, $title->getPrefixedText())) {
-        return true;
-      } else if(is_callable($wgPickSomePage) && !call_user_func($wgPickSomePage, $title, PickSome::WRITE)) {
-        return true;
-      }
-    }
-
-    $siteNotice .= self::renderPickSomeBox($title, $selected_pages, $page_id);
+    $siteNotice .= self::renderPickSomeBox($title, $selected_pages, $page_id, $can_add, $can_remove);
     return true;
   }
 
   # Rendering via string concatenation is not ideal, but how to
   # delegate to the mediawiki templating system deserves more
   # discussion.
-  public static function renderPickSomeBox($title, $selected_pages, $page_id) {
+  public static function renderPickSomeBox($title, $selected_pages, $page_id, $can_add, $can_remove) {
     global $wgPickSomeNumberOfPicks;
     $html = "";
     $html .= "<div style='border:1px solid black;padding:10px;text-align:left;margin-top:10px;background-color:#F2F2F2'>";
@@ -137,16 +129,18 @@ class PickSomeHooks {
         if($page_id != $selected_page_id) {
           $html .= "</a>";
         }
-        $html .= " (<a href='";
-        $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
-          ['cmd' => 'remove', 'page' => $selected_page_id, 'returnto' => $page_id]
-        );
-        $html .= "'>" . wfMessage("picksome-unpick") . "</a>)";
-        $html .= "\n";
+        if($can_remove) {
+          $html .= " (<a href='";
+          $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
+            ['cmd' => 'remove', 'page' => $selected_page_id, 'returnto' => $page_id]
+          );
+          $html .= "'>" . wfMessage("picksome-unpick") . "</a>)";
+          $html .= "\n";
+        }
       }
       $html .= "</ul>";
     }
-    if (!(array_key_exists($page_id, $selected_pages)) && !(count($selected_pages) >= $wgPickSomeNumberOfPicks)) {
+    if (!(array_key_exists($page_id, $selected_pages)) && !(count($selected_pages) >= $wgPickSomeNumberOfPicks) && $can_add) {
       $html .= "<li><a rel='nofollow' href='";
       $html .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
         ['cmd' => 'pick', 'page' => $page_id]

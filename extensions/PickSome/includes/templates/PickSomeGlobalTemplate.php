@@ -2,6 +2,7 @@
 
 class PickSomeGlobalTemplate extends QuickTemplate {
   public function execute() {
+    global $wgUser;
   ?>
     <h2><?php echo wfMessage("picksome-my-picks"); ?></h2>
   <?php
@@ -33,10 +34,29 @@ class PickSomeGlobalTemplate extends QuickTemplate {
       $names = [];
       foreach($picked_page[1] as $user) {
         if($user->getRealName()) {
-          array_push($names, $user->getRealName());
+          $name = $user->getRealName();
         } else {
-          array_push($names, $user->getName());
+          $name = $user->getName();
         }
+
+        $adminremove = '';
+        if($wgUser->isAllowed("picksome-admin")) {
+          $adminremove = '[';
+          $adminremove .= "<a href='";
+          $adminremove .= SpecialPage::getTitleFor('PickSome')->getLocalUrl(
+            [
+              'cmd' => 'adminremove',
+              'page' => $picked_page[0]->getId(),
+              'user' => $user->getId()
+            ]
+          );
+          $adminremove .= "'>";
+          $adminremove .= wfMessage("picksome-unpick");
+          $adminremove .= "</a>";
+          $adminremove .= ']';
+        }
+
+        array_push($names, $name . $adminremove);
       }
       echo join(", ", $names);
       echo ")";
