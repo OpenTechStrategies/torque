@@ -86,6 +86,11 @@
     src: thirdparty/extensions/EmbedVideo-v2.8.0.zip
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
+- name: Patch EmbedVideo
+  patch:
+    src: EmbedVideoIframeTitle.patch
+    basedir: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/EmbedVideo-v2.8.0/"
+
 - name: Install PluggableAuth
   unarchive:
     src: thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz
