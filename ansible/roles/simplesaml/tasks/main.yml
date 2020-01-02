@@ -37,11 +37,22 @@
     regexp: "'secretsalt' => '.*',"
     line: "    'secretsalt' => '{{ simplesaml_salt }}',"
 
+- name: Enable protectindex
+  lineinfile:
+    path: "{{ simplesaml_install_directory }}/simplesamlphp-1.17.6/config/config.php"
+    regexp: "'admin.protectindexpage' => .*,"
+    line: "    'admin.protectindexpage' => true,"
+
 # We copy here instead of using template because the file came from a thirdparty source
 # so we want to be able to update without figuring out how we changed it.
 - name: Install okta autoconfig file
   copy:
     src: saml-autoconfig.php
+    dest: "{{ simplesaml_install_directory }}/simplesamlphp-1.17.6/"
+
+- name: Install admin noop file
+  copy:
+    src: noop-admin.php
     dest: "{{ simplesaml_install_directory }}/simplesamlphp-1.17.6/"
 
 - name: Install metadata idp remote
@@ -53,6 +64,11 @@
   lineinfile:
     path: "{{ simplesaml_install_directory }}/simplesamlphp-1.17.6/config/authsources.php"
     line: "require(dirname(__FILE__).'/../saml-autoconfig.php');"
+
+- name: Enable noop admin config
+  lineinfile:
+    path: "{{ simplesaml_install_directory }}/simplesamlphp-1.17.6/config/authsources.php"
+    line: "require(dirname(__FILE__).'/../noop-admin.php');"
 
 - name: Add okta account to autoconfig
   lineinfile:
