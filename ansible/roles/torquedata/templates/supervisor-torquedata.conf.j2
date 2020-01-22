@@ -1,0 +1,8 @@
+[program:torquedata]
+directory={{ torquedata_install_directory }}
+command=pipenv run flask run
+autostart=true
+autorestart=false
+redirect_stderr=true
+redirect_stdout=true
+environment=FLASK_APP=torquedata

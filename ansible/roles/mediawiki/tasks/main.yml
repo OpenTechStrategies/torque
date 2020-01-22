@@ -339,6 +339,18 @@
         $wgGroupPermissions['LFC Torque Admin'][$key] = $value;
       }
 
+- name: DEVELOPMENT - Install prototype api
+  tags: DEVELOPMENT
+  copy:
+    src: testapi.php
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/"
+
+- name: DEVELOPMENT - Enable prototype api
+  tags: DEVELOPMENT
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: include "testapi.php";
+
 - name: Transfer LFC Logo
   copy:
     src: LeverForChange_Logo.png

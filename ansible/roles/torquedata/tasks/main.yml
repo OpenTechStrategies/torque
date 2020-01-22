@@ -1,0 +1,50 @@
+---
+
+- name: install prerequisites
+  become: true
+  # See https://www.mediawiki.org/wiki/Manual:Installation_requirements
+  apt:
+    name: "{{ item }}"
+    #update_cache: yes # commented out for dev purposes
+    state: present
+  loop:
+    - pipenv
+
+- name: Setup installation directory
+  file:
+    path: "{{ torquedata_install_directory }}"
+    state: directory
+
+- name: Install TorqueData
+  copy:
+    src: "{{ playbook_dir }}/../torquedata/{{ item }}"
+    dest: "{{ torquedata_install_directory }}"
+  loop:
+    - Pipfile.lock
+    - torquedata
+
+- name: Install torquedata supervisor
+  become: true
+  template:
+    src: supervisor-torquedata.conf.j2
+    dest: /etc/supervisor/conf.d/torquedata.conf
+
+    #- name: Pipenv install
+    #  ignore_errors: true
+    #  command: "pipenv --venv"
+    #  args:
+    #    chdir: "{{ torquedata_install_directory }}"
+    #  register: pipenv_venv_check_cmd
+    #  changed_when:
+    #    - ('No virtualenv' not in pipenv_venv_check_cmd.stderr)
+
+- name: Run pipenv install
+  command: "pipenv install"
+  args:
+    chdir: "{{ torquedata_install_directory }}"
+
+- name: Restart supervisor for torquedata
+  become: true
+  supervisorctl:
+    name: 'torquedata:'
+    state: restarted

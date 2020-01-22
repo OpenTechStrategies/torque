@@ -15,3 +15,7 @@
 - hosts: mwlib
   roles:
   - mwlib
+
+- hosts: torquedata
+  roles:
+  - torquedata
