@@ -111,6 +111,11 @@
     src: "{{ playbook_dir }}/../extensions/PickSome"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
+- name: Install TorqueDataConnect
+  copy:
+    src: "{{ playbook_dir }}/../extensions/TorqueDataConnect"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
 - name: Install SimpleFavorites
   copy:
     src: "{{ playbook_dir }}/../extensions/SimpleFavorites"
@@ -250,6 +255,13 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     line: "wfLoadExtension('SimpleFavorites');"
 
+- name: Enable TorqueDataConnect
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE TORQUEDATACONNECT CONFIG"
+    block: |
+      wfLoadExtension('TorqueDataConnect');
+
 - name: Enable TeamComments
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
@@ -338,18 +350,6 @@
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
         $wgGroupPermissions['LFC Torque Admin'][$key] = $value;
       }
-
-- name: DEVELOPMENT - Install prototype api
-  tags: DEVELOPMENT
-  copy:
-    src: testapi.php
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/"
-
-- name: DEVELOPMENT - Enable prototype api
-  tags: DEVELOPMENT
-  lineinfile:
-    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    line: include "testapi.php";
 
 - name: Transfer LFC Logo
   copy:
