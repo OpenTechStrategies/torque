@@ -1,0 +1,30 @@
+{
+  "name": "TorqueDataConnect",
+  "version": "0.0.1",
+  "author": [
+    "Open Tech Strategies"
+  ],
+  "license-name": "GPL-2.0-or-later",
+  "url": "https://github.com/OpenTechStrategies/torque",
+  "descriptionmsg": "torquedataconnect-desc",
+  "type": "api",
+  "requires": {
+    "MediaWiki": ">= 1.31.0"
+  },
+  "MessagesDirs": {
+    "TorqueDataConnect": [
+      "i18n"
+    ]
+  },
+  "AutoloadClasses": {
+    "TorqueDataConnectApi": "include/api/TorqueDataConnectApi.php"
+  },
+  "Hooks": {
+  },
+  "APIModules": {
+    "torquedataconnect": "TorqueDataConnectApi"
+  },
+  "config": {
+  },
+  "manifest_version": 1
+}
