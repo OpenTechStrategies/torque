@@ -39,7 +39,8 @@ for row in reader:
     for field, col in zip(fields, cols):
         proposal[field] = row[col] if col != -1 else ""
 
-    data.append(proposal)
+    if proposal["Application Level"] != "Invalid":
+        data.append(proposal)
 
 app = Flask(__name__)
 
