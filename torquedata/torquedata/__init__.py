@@ -2,7 +2,14 @@ from flask import Flask
 
 import csv
 
-reader = csv.reader(open("./2019-processed.csv", encoding='utf-8'),  delimiter=',', quotechar='"')
+app = Flask(__name__)
+
+try:
+    app.config.from_object('config')
+except:
+    pass
+
+reader = csv.reader(open(app.config.get("SOURCE_DATA_LOCATION"), encoding='utf-8'),  delimiter=',', quotechar='"')
 data = []
 
 header = next(reader)
@@ -41,7 +48,5 @@ for row in reader:
 
     if proposal["Application Level"] != "Invalid":
         data.append(proposal)
-
-app = Flask(__name__)
 
 from torquedata import routes

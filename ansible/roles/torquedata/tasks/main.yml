@@ -48,3 +48,9 @@
   supervisorctl:
     name: 'torquedata:'
     state: restarted
+
+- name: Install torquedata configuration
+  become: true
+  template:
+    src: config.py.j2
+    dest: "{{ torquedata_install_directory }}"
