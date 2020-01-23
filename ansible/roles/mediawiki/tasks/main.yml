@@ -1,13 +1,13 @@
 ---
 
 - name: Add php repository - Ubuntu
-  become: true
+  become_user: root
   apt_repository:
     repo: ppa:ondrej/php
   when: ansible_distribution == 'Ubuntu'
 
 - name: install prerequisites
-  become: true
+  become_user: root
   # See https://www.mediawiki.org/wiki/Manual:Installation_requirements
   apt:
     name: "{{ item }}"
@@ -46,7 +46,7 @@
     creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/"
 
 - name: Enable PHP modules
-  become: true
+  become_user: root
   shell: phpenmod {{ item }}
   loop:
     - mbstring
@@ -57,7 +57,7 @@
   get_url:
     url: https://getcomposer.org/installer
     dest: "{{ mediawiki_install_directory }}/composer-setup.php"
-    checksum: "sha384:baf1608c33254d00611ac1705c1d9958c817a1a33bce370c0595974b342601bd80b92a3f46067da89e3b06bff421f182"
+    checksum: "sha384:c5b9b6d368201a9db6f74e2611495f369991b72d9c8cbd3ffbc63edff210eb73d46ffbfce88669ad33695ef77dc76976"
 
 - name: Make wiki bin directory
   file:
@@ -73,7 +73,7 @@
     state: absent
 
 - name: Install Composer globally
-  become: true
+  become_user: root
   shell: mv {{ mediawiki_install_directory }}/bin/composer /usr/local/bin/composer
 
 - name: Install MW with Composer
@@ -112,6 +112,7 @@
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install TorqueDataConnect
+  become_user: root
   copy:
     src: "{{ playbook_dir }}/../extensions/TorqueDataConnect"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
@@ -398,24 +399,21 @@
 
 # Handle Apache changes
 - name: Symlink to webserver directory
-  become: true
+  become_user: root
   file:
     state: link
-    owner: www-data
-    group: www-data
     src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
     path: /var/www/html/lfc
 
 - name: Set permissions on attachments directory
-  become: true
+  become_user: root
   file:
     path: "/var/www/html/lfc/images/"
     owner: www-data
     group: www-data
 
-
 - name: Restart Apache
-  become: true
+  become_user: root
   service:
     name: apache2
     state: restarted

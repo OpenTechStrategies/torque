@@ -1,7 +1,7 @@
 ---
 
 - name: install prerequisites
-  become: true
+  become_user: root
   apt:
     name: "{{ item }}"
     #update_cache: yes # commented out for dev purposes
@@ -23,7 +23,7 @@
     creates: "{{ simplesaml_install_directory }}/simplesamlphp-1.18.3/"
 
 - name: Symlink to webserver directory
-  become: true
+  become_user: root
   file:
     state: link
     owner: www-data

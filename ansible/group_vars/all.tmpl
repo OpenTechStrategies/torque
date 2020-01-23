@@ -1,4 +1,19 @@
 ---
+# We need to know what user we're deploying as, but the reason
+# here is complex.  At the base level, we need to know what
+# user torquedata should be running as.  But more than that,
+# we need to know who to 'become' in the ansible sense when
+# we're not becoming root.  The reason we have to specify
+# in a different variable than 'ansible_become_user', is
+# because that variable overrides task level declarations,
+# thereby overriding becoming root for tasks we need to.
+# So we store in a different variable and use at the top leve
+# in main.yml.
+depoloyment_user: __USERNAME__
+
+# The root password needed to install mysql users
+mysql_root_password: __PASSWORD__
+
 # When we get to production, we will need to either use
 # ansible vaults, or just override on the command line
 # when provisioning.

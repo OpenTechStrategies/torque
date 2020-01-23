@@ -1,5 +1,5 @@
 - name: install prerequisites
-  become: true
+  become_user: root
   apt:
     name: "{{ item }}"
     update_cache: yes
@@ -11,8 +11,9 @@
     - python-mysqldb # This is needed for ansible
 
 - name: Create database user
-  become: true
+  become_user: root
   mysql_user:
+    login_password: "{{ mysql_root_password }}"
     name: wikiuser
     password: "{{ db_password }}"
     state: present
