@@ -2,8 +2,10 @@ from torquedata import app, data
 
 import json
 
-@app.route('/')
-@app.route('/index')
+@app.route('/proposals')
+def proposals():
+    return json.dumps(list(data.values()))
 
-def index():
-    return json.dumps(data)
+@app.route('/proposals/<application_id>')
+def proposal(application_id):
+    return json.dumps(data[application_id])

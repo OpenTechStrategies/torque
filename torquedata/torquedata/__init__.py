@@ -10,7 +10,7 @@ except:
     pass
 
 reader = csv.reader(open(app.config.get("SOURCE_DATA_LOCATION"), encoding='utf-8'),  delimiter=',', quotechar='"')
-data = []
+data = {}
 
 header = next(reader)
 
@@ -47,6 +47,6 @@ for row in reader:
         proposal[field] = row[col] if col != -1 else ""
 
     if proposal["Application Level"] != "Invalid":
-        data.append(proposal)
+        data[proposal["Review Number"]] = proposal
 
 from torquedata import routes
