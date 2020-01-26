@@ -14,7 +14,8 @@ data = {}
 
 header = next(reader)
 
-fields = [
+# The next three json_* are temp placeholders until permissions are up and running
+json_fields = [
              "Organization Legal Name",
              "City",
              "State",
@@ -38,15 +39,21 @@ fields = [
              "Application Level",
              "Competition Domain",
         ]
-
-cols = [ header.index(field) if field in header else -1 for field in fields ]
+json_cols = [ header.index(field) if field in header else -1 for field in json_fields ] 
+json_proposals = {}
 
 for row in reader:
     proposal = {}
-    for field, col in zip(fields, cols):
-        proposal[field] = row[col] if col != -1 else ""
+    for field in header:
+        proposal[field] = row[header.index(field)]
+    data[proposal["Review Number"]] = proposal
 
-    if proposal["Application Level"] != "Invalid":
-        data[proposal["Review Number"]] = proposal
+    # Similar to above, placeholder while permissions getting written
+    json_proposal = {}
+    for json_field, json_col in zip(json_fields, json_cols):
+        json_proposal[json_field] = row[json_col] if json_col != -1 else ""
+
+    if json_proposal["Application Level"] != "Invalid":
+        json_proposals[json_proposal["Review Number"]] = json_proposal
 
 from torquedata import routes

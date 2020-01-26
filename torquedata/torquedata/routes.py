@@ -3,8 +3,7 @@ from jinja2 import Template
 
 import json
 
-#with open('mwiki.j2') as template_file: mwiki_template_str = template_file.read()
-mwiki_template_str = "{{ proposal['Review Number'] }}"
+with open('mwiki.j2') as template_file: mwiki_template_str = template_file.read()
 
 @app.route('/proposals')
 def proposals():

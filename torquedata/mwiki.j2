@@ -1,0 +1,423 @@
+{{ "{{Sidebar" }}
+
+title={{ proposal['Project Title'] }}|
+
+rank={{ proposal['Wise Head Overall Score Rank Normalized'] }}|
+
+wisehead_score={{ proposal['Wise Head Sum of Scores Normalized'] }}|
+
+number={{ proposal['Review Number'] }}|
+
+org={{ proposal['Organization Legal Name'] }}|
+
+country={{ proposal['Locality'] }}|
+
+locality={{ proposal['Country'] }}|
+
+first_name={{ proposal['Primary Contact First Name'] }}|
+
+last_name={{ proposal['Primary Contact Last Name'] }}|
+
+contact_title={{ proposal['Primary Contact Title'] }}|
+
+email={{ proposal['Primary Contact Email'] }}|
+
+legal_status={{ proposal['Organization Legal Status'] }}|
+
+video={{ proposal['Youtube Video'] }}|
+
+priority_population={{ proposal['Priority Populations'] }}|
+
+primary_subject_area={{ proposal['Primary Subject Area'] }}|
+
+current_solution_country_1={{ proposal['Location Of Current Solution Country'] }}|
+
+current_solution_country_2={{ proposal['Location Of Current Solution2 Country'] }}|
+
+current_solution_country_3={{ proposal['Location Of Current Solution3 Country'] }}|
+
+future_work_country={{ proposal['Location Of Future Work Country'] }}|
+
+sdg={{ proposal['Sustainable Development Goals'] }}|
+
+key_words={{ proposal['Key Words'] }}|
+
+annual_operating_budget={{ proposal['Annual Operating Budget'] }}|
+
+num_employees={{ proposal['Number of Employees'] }}|
+
+description={{ proposal['Project Description'] }}|
+
+{{ "}}" }}
+
+'''{{ proposal['Project Description'] }}'''
+= Executive Summary =
+<p style="padding-left: 30px;">{{ proposal['Executive Summary'] }}</p>
+
+<hr/>
+
+
+
+__TOC__
+= Problem and Solution =
+<div style="padding-left: 30px;">
+
+{{ proposal['Problem Statement'] }}
+
+{{ proposal['Demand to Address The Problem'] }}
+
+{{ proposal['Solution Overview'] }}
+
+</div>
+= Youtube Video =
+{{ proposal['Youtube Video'] }}
+
+<div class="noprint">{{ "{{#evu:" }}{{ proposal['Youtube Video'] }}{{ "}}" }}</div>
+= Team =
+== About Your Team ==
+<p style="padding-left: 30px;">{{ proposal['Why Your Team'] }}</p>
+== Case of Partnership ==
+<p style="padding-left: 30px;">{{ proposal['Case of Partnership'] }}</p>
+= Key Staff Biographies =
+<div style="padding-left: 30px;">
+
+'''{{ proposal['Key Staff #1: Firstname'] }} {{ proposal['Key Staff #1: Lastname'] }}, {{ proposal['Key Staff #1: Association'] }}'''
+
+{{ proposal['Key Staff #1: Biography'] }}
+
+'''{{ proposal['Key Staff #2: Firstname'] }} {{ proposal['Key Staff #2: Lastname'] }}, {{ proposal['Key Staff #2: Association'] }}'''
+
+{{ proposal['Key Staff #2: Biography'] }}
+
+'''{{ proposal['Key Staff #3: Firstname'] }} {{ proposal['Key Staff #3: Lastname'] }}, {{ proposal['Key Staff #3: Association'] }}'''
+
+{{ proposal['Key Staff #3: Biography'] }}
+
+</div>
+= Technical Process Description =
+<p style="padding-left: 30px;">{{ proposal['Technical Process Description'] }}</p>
+= Diversity Equity and Inclusion =
+<p style="padding-left: 30px;">{{ proposal['Diversity Equity and Inclusion'] }}</p>
+== Opportunities and Accommodations ==
+<p style="padding-left: 30px;">{{ proposal['Opportunities and Accommodations'] }}</p>
+= Theory of Change =
+<p style="padding-left: 30px;">{{ proposal['Theory of Change'] }}</p>
+== Barrier Assessment and Risk Mitigation ==
+<p style="padding-left: 30px;">{{ proposal['Barrier Assessment and Risk Mitigation'] }}</p>
+= Evidence of Effectiveness =
+<p style="padding-left: 30px;">{{ proposal['Evidence of Effectiveness'] }}</p>
+== Type of Evidence ==
+<p style="padding-left: 30px;">{{ proposal['Type of Evidence'] }}</p>
+== Solution Stage ==
+<p style="padding-left: 30px;">{{ proposal['Solution Stage'] }}</p>
+= Monitoring Evaluation and Learning =
+<p style="padding-left: 30px;">{{ proposal['Monitoring Evaluation and Learning'] }}</p>
+= Scaling =
+<p style="padding-left: 30px;">{{ proposal['Planning for Scale and Amplifying Impact'] }}</p>
+= Durability =
+<p style="padding-left: 30px;">{{ proposal['Durability of Impact'] }}</p>
+= Project Phases and Budget Summary =
+== Phase 1 ==
+<p style="padding-left: 30px;">
+
+'''Name:''' {{ proposal['Project Phase #1: Name'] }}<br />
+
+'''Duration:''' {{ proposal['Project Phase #1: Duration'] }}<br />
+
+'''Description:''' {{ proposal['Project Phase #1: Description'] }}<br />
+
+'''Budget Sub-Total:''' {{ proposal['Phase #1: Budget Sub-Total'] }}
+
+</p>
+== Phase 2 ==
+<p style="padding-left: 30px;">
+
+'''Name:''' {{ proposal['Project Phase #2: Name'] }}<br />
+
+'''Duration:''' {{ proposal['Project Phase #2: Duration'] }}<br />
+
+'''Description:''' {{ proposal['Project Phase #2: Description'] }}<br />
+
+'''Budget Sub-Total:''' {{ proposal['Phase #2: Budget Sub-Total'] }}
+
+</p>
+== Phase 3 ==
+<p style="padding-left: 30px;">
+
+'''Name:''' {{ proposal['Project Phase #3: Name'] }}<br />
+
+'''Duration:''' {{ proposal['Project Phase #3: Duration'] }}<br />
+
+'''Description:''' {{ proposal['Project Phase #3: Description'] }}<br />
+
+'''Budget Sub-Total:''' {{ proposal['Phase #3: Budget Sub-Total'] }}
+
+</p>
+== Other Resource Requirements ==
+<p style="padding-left: 30px;">{{ proposal['Other Resource Requirements'] }}</p>
+== Total Resource Requirements ==
+<p style="padding-left: 30px;">{{ proposal['Total Resource Requirements'] }}</p>
+= Budget Narrative, Financial Sustainability, and Funders =
+<p style="padding-left: 30px;">{{ proposal['Budget Narrative'] }}</p>
+== Financial Sustainability ==
+<p style="padding-left: 30px;">{{ proposal['Financial Sustainability'] }}</p>
+== Funders ==
+<p style="padding-left: 30px;">
+
+'''Funder 1:''' {{ proposal['Funder #1: Name'] }}<br />
+
+'''First Year of Funding:''' {{ proposal['Funder #1: First Year of Funding'] }}<br />
+
+'''Last Year of Funding:''' {{ proposal['Funder #1: Last Year of Funding'] }}<br />
+
+'''Amount, Funder, Project Title:''' {{ proposal['Funder #1: Amount of Funding'] }}
+
+</p>
+
+<br />
+
+<p style="padding-left: 30px;">
+
+'''Funder 2:''' {{ proposal['Funder #2: Name'] }}<br />
+
+'''First Year of Funding:''' {{ proposal['Funder #2: First Year of Funding'] }}<br />
+
+'''Last Year of Funding:''' {{ proposal['Funder #2: Last Year of Funding'] }}<br />
+
+'''Amount, Funder, Project Title:''' {{ proposal['Funder #2: Amount of Funding'] }}
+
+</p>
+
+<br />
+
+<p style="padding-left: 30px;">
+
+'''Funder 3:''' {{ proposal['Funder #3: Name'] }}<br />
+
+'''First Year of Funding:''' {{ proposal['Funder #3: First Year of Funding'] }}<br />
+
+'''Last Year of Funding:''' {{ proposal['Funder #3: Last Year of Funding'] }}<br />
+
+'''Amount, Funder, Project Title:''' {{ proposal['Funder #3: Amount of Funding'] }}
+
+</p>
+= Legal and Financial Data =
+<p style="padding-left: 30px;">
+
+'''Organization Legal Status:''' {{ proposal['Organization Legal Status'] }}<br />
+
+'''Identifier:''' {{ proposal['Identification Number of Principal Organization'] }}<br />
+
+'''Identification Number of Principal Organization EIN:''' {{ proposal['Identification Number of Principal Organization ein'] }}<br />
+
+'''Lobbying Activities:''' {{ proposal['Lobbying Activities'] }}<br />
+
+'''Human Subject Research:''' {{ proposal['Human Subject Research'] }}<br />
+
+'''Intellectual Property:''' {{ proposal['Intellectual Property'] }}<br />
+
+'''Charitable Purpose:''' {{ proposal['Charitable Purpose'] }}<br />
+
+'''Private Benefit:''' {{ proposal['Private Benefit'] }}<br />
+
+'''Annual Operating Budget:''' {{ proposal['Annual Operating Budget'] }}<br />
+
+'''Number of Employees:''' {{ proposal['Number of Employees'] }}
+
+</p>
+= Organization Contact Info =
+== Primary Contact ==
+<p style="padding-left: 30px;">
+
+{{ proposal['Primary Contact First Name'] }} {{ proposal['Primary Contact Last Name'] }} ({{ proposal['Primary Contact Title'] }})<br />
+
+{{ proposal['Primary Contact Phone'] }}<br />
+
+{{ proposal['Primary Contact Email'] }}
+
+</p>
+== Organization Information ==
+<p style="padding-left: 30px;">
+
+{{ proposal['Principal Organization Website or Social Media'] }}<br />
+
+{{ proposal['Project Website or Social Media Page'] }}<br />
+
+{{ proposal['Organization Legal Name'] }}<br />
+
+{{ proposal['Street Address'] }}<br />
+
+{{ proposal['City'] }}, {{ proposal['State'] }} {{ proposal['Zip Postal Code'] }} <br />
+
+{{ proposal['Country'] }}
+
+</p>
+= Coding (subject, population, location) =
+'''Organizational Area of Expertise:''' {{ proposal['Primary Area of Expertise'] }}
+
+'''Application Subject Area(s):''' {{ proposal['Primary Subject Area Category'] }}, {{ proposal['Primary Subject Area'] }}
+
+'''Key Words:''' {{ proposal['Key Words'] }}
+
+'''Priority Populations:'''
+
+<div style="padding-left: 30px;">{{ proposal['Priority Populations'] }}</div>
+
+'''Sustainable Development Goals:'''
+
+<div style="padding-left: 30px;">{{ proposal['Sustainable Development Goals'] }}</div>
+== Current Solution Location(s) ==
+== Country 1 ==
+<p style="padding-left: 30px;">
+
+'''Country:''' {{ proposal['Location Of Current Solution Country'] }}<br />
+
+'''State/Province:''' {{ proposal['Location Of Current Solution State'] }}<br />
+
+'''Locality:''' {{ proposal['Location Of Current Solution Locality'] }}
+
+</p>
+== Country 2 ==
+<p style="padding-left: 30px;">
+
+'''Country:''' {{ proposal['Location Of Current Solution2 Country'] }}<br />
+
+'''State/Province:''' {{ proposal['Location Of Current Solution2 State'] }}<br />
+
+'''Locality:''' {{ proposal['Location Of Current Solution2 Locality'] }}
+
+</p>
+== Country 3 ==
+<p style="padding-left: 30px;">
+
+'''Country:''' {{ proposal['Location Of Current Solution3 Country'] }}<br />
+
+'''State/Province:''' {{ proposal['Location Of Current Solution3 State'] }}<br />
+
+'''Locality:''' {{ proposal['Location Of Current Solution3 Locality'] }}
+
+</p>
+== Future Work Location(s) ==
+== Country 1 ==
+<p style="padding-left: 30px;">
+
+'''Country:''' {{ proposal['Location Of Future Work Country'] }}<br />
+
+'''State/Province:''' {{ proposal['Location Of Future Work State'] }}<br />
+
+'''Locality:''' {{ proposal['Location Of Future Work Locality'] }}
+
+</p>
+== Country 2 ==
+<p style="padding-left: 30px;">
+
+'''Country:''' {{ proposal['Location Of Future Work2 Country'] }}<br />
+
+'''State/Province:''' {{ proposal['Location Of Future Work2 State'] }}<br />
+
+'''Locality:''' {{ proposal['Location Of Future Work2 Locality'] }}
+
+</p>
+== Country 3 ==
+<p style="padding-left: 30px;">
+
+'''Country:''' {{ proposal['Location Of Future Work3 Country'] }}<br />
+
+'''State/Province:''' {{ proposal['Location Of Future Work3 State'] }}<br />
+
+'''Locality:''' {{ proposal['Location Of Future Work3 Locality'] }}
+
+</p>
+== Country 4 ==
+<p style="padding-left: 30px;">
+
+'''Country:''' {{ proposal['Location Of Future Work4 Country'] }}<br />
+
+'''State/Province:''' {{ proposal['Location Of Future Work4 State'] }}<br />
+
+'''Locality:''' {{ proposal['Location Of Future Work4 Locality'] }}
+
+</p>
+== Country 5 ==
+<p style="padding-left: 30px;">
+
+'''Country:''' {{ proposal['Location Of Future Work5 Country'] }}<br />
+
+'''State/Province:''' {{ proposal['Location Of Future Work5 State'] }}<br />
+
+'''Locality:''' {{ proposal['Location Of Future Work5 Locality'] }}
+
+</p>
+=== Competition Information ===
+<p style="padding-left: 30px;">
+
+'''Review Number:''' {{ proposal['Review Number'] }}<br />
+
+'''Did you apply to the first 100&Change?''' {{ proposal['Did Apply'] }}
+
+</p>
+=== How did you hear about 100&Change? ===
+<p style="padding-left: 30px;">
+
+{{ proposal['Hear About'] }}
+
+</p>
+= Bibliography =
+<p style="padding-left: 30px;">
+
+{{ proposal['Bibliography'] }}
+
+</p>
+
+<div style="page-break-after: before"></div>
+
+<div style="page-break-after: always"></div>
+= Wise Head Review =
+'''Rank: {{ proposal['Wise Head Overall Score Rank Normalized'] }}'''
+
+'''Total Score: {{ proposal['Wise Head Sum of Scores Normalized'] }}'''
+== Comments ==
+=== {{ proposal['Wise Head IMPACTFUL'] }} ({{ proposal['Wise Head IMPACTFUL Score Normalized'] }}) ===
+
+<p style="padding-left: 30px;">{{ proposal['Wise Head IMPACTFUL Comments'] }}</p>
+
+=== {{ proposal['Wise Head EVIDENCE-BASED'] }} ({{ proposal['Wise Head EVIDENCE-BASED Score Normalized'] }}) ===
+
+<p style="padding-left: 30px;">{{ proposal['Wise Head EVIDENCE-BASED Comments'] }}</p>
+
+=== {{ proposal['Wise Head FEASIBLE'] }} ({{ proposal['Wise Head FEASIBLE Score Normalized'] }}) ===
+
+<p style="padding-left: 30px;">{{ proposal['Wise Head FEASIBLE Comments'] }}</p>
+
+=== {{ proposal['Wise Head DURABLE'] }} ({{ proposal['Wise Head DURABLE Score Normalized'] }}) ===
+
+<p style="padding-left: 30px;">{{ proposal['Wise Head DURABLE Comments'] }}</p>
+= Applicant to Applicant Review =
+'''Rank: {{ proposal['Judge Overall Score Rank Normalized'] }}'''
+
+'''Total Score: {{ proposal['Judge Sum of Scores Normalized'] }}'''
+== Comments ==
+=== {{ proposal['Judge IMPACTFUL'] }} ({{ proposal['Judge IMPACTFUL Score Normalized'] }}) ===
+
+<p style="padding-left: 30px;">{{ proposal['Judge IMPACTFUL Comments'] }}</p>
+
+=== {{ proposal['Judge EVIDENCE-BASED'] }} ({{ proposal['Judge EVIDENCE-BASED Score Normalized'] }}) ===
+
+<p style="padding-left: 30px;">{{ proposal['Judge EVIDENCE-BASED Comments'] }}</p>
+
+=== {{ proposal['Judge FEASIBLE'] }} ({{ proposal['Judge FEASIBLE Score Normalized'] }}) ===
+
+<p style="padding-left: 30px;">{{ proposal['Judge FEASIBLE Comments'] }}</p>
+
+=== {{ proposal['Judge DURABLE'] }} ({{ proposal['Judge DURABLE Score Normalized'] }}) ===
+
+<p style="padding-left: 30px;">{{ proposal['Judge DURABLE Comments'] }}</p>
+
+<div class="noprint">
+
+<teamcomments />
+
+</div>
+
+
+<span style="font-size:75%" >'''Colophon:''' This page was generated by [https://github.com/OpenTechStrategies/csv2wiki csv2wiki]. Manual changes to this page might be overwritten by a subsequent run of csv2wiki.</span>
