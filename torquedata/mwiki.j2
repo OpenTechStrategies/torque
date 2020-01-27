@@ -1,54 +1,53 @@
-{{ "{{Sidebar" }}
-
-title={{ proposal['Project Title'] }}|
-
-rank={{ proposal['Wise Head Overall Score Rank Normalized'] }}|
-
-wisehead_score={{ proposal['Wise Head Sum of Scores Normalized'] }}|
-
-number={{ proposal['Review Number'] }}|
-
-org={{ proposal['Organization Legal Name'] }}|
-
-country={{ proposal['Locality'] }}|
-
-locality={{ proposal['Country'] }}|
-
-first_name={{ proposal['Primary Contact First Name'] }}|
-
-last_name={{ proposal['Primary Contact Last Name'] }}|
-
-contact_title={{ proposal['Primary Contact Title'] }}|
-
-email={{ proposal['Primary Contact Email'] }}|
-
-legal_status={{ proposal['Organization Legal Status'] }}|
-
-video={{ proposal['Youtube Video'] }}|
-
-priority_population={{ proposal['Priority Populations'] }}|
-
-primary_subject_area={{ proposal['Primary Subject Area'] }}|
-
-current_solution_country_1={{ proposal['Location Of Current Solution Country'] }}|
-
-current_solution_country_2={{ proposal['Location Of Current Solution2 Country'] }}|
-
-current_solution_country_3={{ proposal['Location Of Current Solution3 Country'] }}|
-
-future_work_country={{ proposal['Location Of Future Work Country'] }}|
-
-sdg={{ proposal['Sustainable Development Goals'] }}|
-
-key_words={{ proposal['Key Words'] }}|
-
-annual_operating_budget={{ proposal['Annual Operating Budget'] }}|
-
-num_employees={{ proposal['Number of Employees'] }}|
-
-description={{ proposal['Project Description'] }}|
-
-{{ "}}" }}
+<div class="noprint" style="float:right;border:1px solid black;width:400px;margin-left:10px;padding:10px">
+<div style="text-align: center">
+<h1 style="margin-top:0px">Snapshot</h1>
+'''{{ proposal['Project Title'] }} ({{ proposal['Review Number'] }})'''
+</div>
+<div style="font-size:80%">
+{{ "{{" }} #evu:{{ proposal['Youtube Video'] }}|dimensions=400{{ "}}" }}
+{|
+|-
+|style="vertical-align:top;width:150px" |'''Rank:'''
+|{{ proposal['Wise Head Overall Score Rank Normalized'] }}
+|-
+|style="vertical-align:top;width:150px" |'''Wise Head Panel Score:'''
+|{{ proposal['Wise Head Sum of Scores Normalized'] }}
+|-
+|style="vertical-align:top;width:150px" |'''Organization:'''
+|{{ proposal['Organization Legal Name'] }}
+|-
+|style="vertical-align:top;" | '''Project Description:'''
+| {{ proposal['Project Description'] }}
+|-
+|style="vertical-align:top;" | '''Priority populations:'''
+| {{ proposal['Priority Populations'] }}
+|-
+|style="vertical-align:top;" | '''Application subject area:'''
+| {{ proposal['Primary Subject Area'] }}
+|-
+|style="vertical-align:top;" | '''Current solution location(s):'''
+| {{ proposal['Location Of Current Solution Country'] }}
+|-
+|style="vertical-align:top;" | '''Future work location(s):'''
+| {{ proposal['Location Of Future Work Country'] }}
+|-
+|style="vertical-align:top;" | '''SDG(s):'''
+| {{ proposal['Sustainable Development Goals'] }}
+|-
+|style="vertical-align:top;" | '''Key words:'''
+| {{ proposal['Key Words'] }}
+|-
+|style="vertical-align:top;" | '''Annual operating budget:'''
+| {{ proposal['Annual Operating Budget'] }}
+|-
+|style="vertical-align:top;" | '''Number of employees:'''
+| {{ proposal['Number of Employees'] }}
+|-
+|style="vertical-align:top;" | '''Attachments:'''
+|
+|}
+</div>
+</div>
 
 '''{{ proposal['Project Description'] }}'''
 = Executive Summary =
