@@ -1,6 +1,8 @@
 from flask import Flask
 
 import csv
+import configparser
+import os
 
 app = Flask(__name__)
 
@@ -9,51 +11,28 @@ try:
 except:
     pass
 
-reader = csv.reader(open(app.config.get("SOURCE_DATA_LOCATION"), encoding='utf-8'),  delimiter=',', quotechar='"')
+sheet_config = configparser.ConfigParser()
+sheet_config.read(os.path.join(app.config['SPREADSHEET_FOLDER'], "sheets"))
+
 data = {}
+def load_sheet(sheet_name):
+    data[sheet_name] = {}
+    reader = csv.reader(
+            open(os.path.join(app.config.get("SPREADSHEET_FOLDER"), sheet_name + ".csv"), encoding='utf-8'),
+            delimiter=',',
+            quotechar='"'
+            )
+    header = next(reader)
+    for row in reader:
+        o = {}
+        for field in header:
+            o[field] = row[header.index(field)]
+        data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
 
-header = next(reader)
+for sheet_name in sheet_config.sections():
+    if sheet_name is "DEFAULT":
+        continue
 
-# The next three json_* are temp placeholders until permissions are up and running
-json_fields = [
-             "Organization Legal Name",
-             "City",
-             "State",
-             "Country",
-             "Principal Organization Website or Social Media",
-             "Identification Number of Principal Organization",
-             "Primary Contact First Name",
-             "Primary Contact Last Name",
-             "Primary Contact Title",
-             "Primary Contact Email",
-             "Review Number",
-             "Project Title",
-             "Project Description",
-             "Executive Summary",
-             "Problem Statement",
-             "Solution Overview",
-             "Youtube Video",
-             "Location Of Future Work Country",
-             "Location Of Current Solution Country",
-             "Project Website or Social Media Page",
-             "Application Level",
-             "Competition Domain",
-        ]
-json_cols = [ header.index(field) if field in header else -1 for field in json_fields ] 
-json_proposals = {}
-
-for row in reader:
-    proposal = {}
-    for field in header:
-        proposal[field] = row[header.index(field)]
-    data[proposal["Review Number"]] = proposal
-
-    # Similar to above, placeholder while permissions getting written
-    json_proposal = {}
-    for json_field, json_col in zip(json_fields, json_cols):
-        json_proposal[json_field] = row[json_col] if json_col != -1 else ""
-
-    if json_proposal["Application Level"] != "Invalid":
-        json_proposals[json_proposal["Review Number"]] = json_proposal
+    load_sheet(sheet_name)
 
 from torquedata import routes

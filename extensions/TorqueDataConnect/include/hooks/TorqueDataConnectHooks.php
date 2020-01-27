@@ -12,7 +12,7 @@ class TorqueDataConnectHooks {
     # was the winning set of things to do to get the #evu tags from
     # the video extension to correctly dump out html that's correctly
     # rendered.
-    return [$parser->recursiveTagParse(file_get_contents("http://localhost:5000/" . $location)), "isHTML" => true];
+    return [$parser->recursiveTagParse(file_get_contents("http://localhost:5000/api/" . $location)), "isHTML" => true];
 	}
 }
 
