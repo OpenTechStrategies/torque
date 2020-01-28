@@ -17,14 +17,16 @@
     ]
   },
   "AutoloadClasses": {
-    "TorqueDataConnectApi": "include/api/TorqueDataConnectApi.php",
+    "TorqueDataConnectQuery": "include/api/TorqueDataConnectQuery.php",
+    "TorqueDataConnectUpload": "include/api/TorqueDataConnectUpload.php",
     "TorqueDataConnectHooks": "include/hooks/TorqueDataConnectHooks.php"
   },
   "Hooks": {
     "ParserFirstCallInit": "TorqueDataConnectHooks::onParserFirstCallInit"
   },
   "APIModules": {
-    "torquedataconnect": "TorqueDataConnectApi"
+    "torquedataconnect": "TorqueDataConnectQuery",
+    "torquedataconnectupload": "TorqueDataConnectUpload"
   },
   "ExtensionMessagesFiles": {
 		"TorqueDataConnectMagic": "TorqueDataConnect.i18n.php"

@@ -1,5 +1,5 @@
 <?php
-class TorqueDataConnectAPI extends APIBase {
+class TorqueDataConnectQuery extends APIBase {
 
   public function __construct($main, $action) {
     parent::__construct($main, $action);
