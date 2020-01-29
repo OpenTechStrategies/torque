@@ -6,13 +6,18 @@ class TorqueDataConnectQuery extends APIBase {
   }
 
   public function execute() {
-    $proposals = json_decode(file_get_contents("http://localhost:5000/api/proposals"));
-    $this->getResult()->addValue(null, "proposals", $proposals);
+    $response = json_decode(file_get_contents("http://localhost:5000/api" . $this->getParameter("path")));
+    foreach($response as $name => $value) {
+      $this->getResult()->addValue(null, $name, $value);
+    }
   }
 
   public function getAllowedParams() {
     return [
-      "path" => "/"
+      "path" => [
+        ApiBase::PARAM_TYPE => 'string',
+        ApiBase::PARAM_REQUIRED => 'true'
+      ],
     ];
   }
 }

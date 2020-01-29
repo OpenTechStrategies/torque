@@ -34,12 +34,11 @@ json_fields = [
         ]
 
 def cull_for_json(o):
-    print(o)
     return {k:v for (k,v) in o.items() if (k in json_fields)}
 
 @app.route('/api/<sheet_name>')
 def sheet(sheet_name):
-    return json.dumps([cull_for_json(o) for o in list(data[sheet_name].values())])
+    return json.dumps({sheet_name: [cull_for_json(o) for o in list(data[sheet_name].values())]})
 
 @app.route('/api/<sheet_name>/<key>.<fmt>')
 def formatted_row(sheet_name, key, fmt):
