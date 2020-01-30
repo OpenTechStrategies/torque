@@ -6,7 +6,23 @@ class TorqueDataConnectQuery extends APIBase {
   }
 
   public function execute() {
-    $response = json_decode(file_get_contents("http://localhost:5000/api" . $this->getParameter("path")));
+    $valid_group = "";
+    foreach($this->getUser()->getGroups() as $group) {
+      error_log($group);
+      if(in_array($group, ["bureaucrat", "torqueapi"])) {
+        $valid_group = $group;
+        break;
+      }
+    }
+
+    $contents = file_get_contents(
+      "http://localhost:5000/api" .
+      $this->getParameter("path") .
+      "?group=" .
+      $valid_group
+      );
+
+    $response = json_decode($contents);
     foreach($response as $name => $value) {
       $this->getResult()->addValue(null, $name, $value);
     }

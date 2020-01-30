@@ -25,8 +25,10 @@ def load_sheet(sheet_name):
     header = next(reader)
     for row in reader:
         o = {}
-        for field in header:
-            o[field] = row[header.index(field)]
+        for (field, cell) in zip(header, row):
+            if field == 'Attachments':
+                cell = cell.strip().split("\n")
+            o[field] = cell
         data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
 
 for sheet_name in sheet_config.sections():

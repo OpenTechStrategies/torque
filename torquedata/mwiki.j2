@@ -44,6 +44,9 @@
 | {{ proposal['Number of Employees'] }}
 |-
 |style="vertical-align:top;" | '''Attachments:'''
+
+| {% for attachment in proposal['Attachments'] %}
+{{ attachment }} {% endfor %}
 |
 |}
 </div>
@@ -370,6 +373,7 @@ __TOC__
 
 <div style="page-break-after: before"></div>
 
+{% if 'Wise Head Sum of Scores Normalized' in proposal.keys() %}
 <div style="page-break-after: always"></div>
 = Wise Head Review =
 '''Rank: {{ proposal['Wise Head Overall Score Rank Normalized'] }}'''
@@ -411,6 +415,7 @@ __TOC__
 === {{ proposal['Judge DURABLE'] }} ({{ proposal['Judge DURABLE Score Normalized'] }}) ===
 
 <p style="padding-left: 30px;">{{ proposal['Judge DURABLE Comments'] }}</p>
+{% endif %}
 
 <div class="noprint">
 
