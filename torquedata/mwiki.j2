@@ -20,7 +20,9 @@
 | {{ proposal['Project Description'] }}
 |-
 |style="vertical-align:top;" | '''Priority populations:'''
-| {{ proposal['Priority Populations'] }}
+| {% for pop in proposal['Priority Populations'] %}
+[[Population_TOC#{{ pop }}|{{ pop }}]]
+{% endfor %}
 |-
 |style="vertical-align:top;" | '''Application subject area:'''
 | {{ proposal['Primary Subject Area'] }}

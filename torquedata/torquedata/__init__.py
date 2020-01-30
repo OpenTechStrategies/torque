@@ -30,6 +30,8 @@ def load_sheet(sheet_name):
                 cell = cell.strip().split("\n")
             if field == 'Sustainable Development Goals':
                 cell = cell.strip().split("\n")
+            if field == 'Priority Populations':
+                cell = cell.strip().split("\n")
             o[field] = cell
         data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
 
