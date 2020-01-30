@@ -61,8 +61,8 @@ groups["torqueapi"] = {
 def cull_invalid_columns(o, valid_fields):
     return {k:v for (k,v) in o.items() if (k in valid_fields)}
 
-@app.route('/api/<sheet_name>')
-def sheet(sheet_name):
+@app.route('/api/<sheet_name>.<fmt>')
+def formatted_sheet(sheet_name, fmt):
     group = request.args.get("group")
 
     valid_proposal_ids = []
@@ -72,10 +72,12 @@ def sheet(sheet_name):
 
     valid_proposals = [ p for p in data[sheet_name].values() if (p[sheet_config[sheet_name]["key_column"]] in valid_proposal_ids) ]
 
-    print(group)
-    return json.dumps({sheet_name: [cull_invalid_columns(o, json_fields) for o in valid_proposals ]})
+    if fmt == "json":
+        return json.dumps({sheet_name: [cull_invalid_columns(o, json_fields) for o in valid_proposals ]})
+    else
+        raise Exception("Only json format valid for full list")
 
-@app.route('/api/<sheet_name>/<key>.<fmt>')
+@app.route('/api/<sheet_name>/id/<key>.<fmt>')
 def formatted_row(sheet_name, key, fmt):
     group = request.args.get("group")
 
@@ -121,10 +123,6 @@ def formatted_row(sheet_name, key, fmt):
         return mwiki_template.render({config["singular"]: transformed_row})
     else:
         raise Exception("Invalid format: " + fmt)
-
-@app.route('/api/<sheet_name>/<key>')
-def row(sheet_name, key):
-    return formatted_row(sheet_name, key, "json")
 
 @app.route('/data/upload', methods=['POST'])
 def upload_sheet():
