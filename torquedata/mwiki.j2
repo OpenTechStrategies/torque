@@ -32,7 +32,9 @@
 | {{ proposal['Location Of Future Work Country'] }}
 |-
 |style="vertical-align:top;" | '''SDG(s):'''
-| {{ proposal['Sustainable Development Goals'] }}
+| {% for sdg in proposal['Sustainable Development Goals'] %}
+[[SDG_TOC#{{ sdg }}|{{ sdg }}]]
+{% endfor %}
 |-
 |style="vertical-align:top;" | '''Key words:'''
 | {{ proposal['Key Words'] }}

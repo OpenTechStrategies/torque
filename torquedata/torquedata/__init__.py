@@ -28,6 +28,8 @@ def load_sheet(sheet_name):
         for (field, cell) in zip(header, row):
             if field == 'Attachments':
                 cell = cell.strip().split("\n")
+            if field == 'Sustainable Development Goals':
+                cell = cell.strip().split("\n")
             o[field] = cell
         data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
 
