@@ -35,21 +35,17 @@ json_fields = [
         ]
 
 # More temporary stuff that will get moved to configuration
-top100 = [
-        "6988", "6802", "6990", "7392", "1085", "385", "729", "3410", "873", "458", "822", "5674", "1716",
-        "7701", "7794", "8336", "1113", "3516", "6342", "425", "4715", "9234", "3673", "5856", "6452", "624",
-        "3122", "8901", "1006", "8766", "2554", "8075", "1276", "29", "6002", "2601", "54", "958", "9217",
-        "2031", "8876", "3483", "6000", "960", "7091", "8871", "3681", "3376", "8277", "5665", "3773", "3499",
-        "4457", "3993", "6581", "52", "8782", "827", "1952", "8376", "8914", "7738", "6798", "940", "1779",
-        "5886", "912", "7045", "2058", "6329", "2042", "6961", "8161", "649", "613", "650", "433", "5848",
-        "3660", "1219", "6312", "405", "5562", "1814", "6740", "4740", "1196", "878", "4394", "932", "891",
-        "7886", "8838", "8120", "723", "112", "1899", "6939", "9338", "8893",
-        ]
+if "proposals" in data.keys():
+    top100 = [
+            p["Review Number"] for p in data["proposals"].values() if (int(p["Wise Head Overall Score Rank Normalized"]) < 101)
+            ]
+else:
+    top100 = []
 
 groups = {}
 
 groups["bureaucrat"] = {
-        "valid_proposal_ids": top100,
+        #"valid_proposal_ids": top100,
         #"columns": json_fields
         }
 
@@ -61,32 +57,63 @@ groups["torqueapi"] = {
 def cull_invalid_columns(o, valid_fields):
     return {k:v for (k,v) in o.items() if (k in valid_fields)}
 
-@app.route('/api/<sheet_name>.<fmt>')
-def formatted_sheet(sheet_name, fmt):
-    group = request.args.get("group")
-
-    valid_proposal_ids = []
-
-    if group in groups.keys():
+def cull_invalid_proposals(group, proposals):
+    if group not in groups.keys():
+        return []
+    elif "valid_proposal_ids" in groups[group].keys():
         valid_proposal_ids = groups[group]["valid_proposal_ids"];
+        return [ p for p in proposals if (p[sheet_config[sheet_name]["key_column"]] in valid_proposal_ids) ]
+    else:
+        return proposals
 
-    valid_proposals = [ p for p in data[sheet_name].values() if (p[sheet_config[sheet_name]["key_column"]] in valid_proposal_ids) ]
+@app.route('/api/<sheet_name>.<fmt>')
+def sheet(sheet_name, fmt):
+    group = request.args.get("group")
 
     if fmt == "json":
+        valid_proposals = cull_invalid_proposals(group, data[sheet_name].values())
         return json.dumps({sheet_name: [cull_invalid_columns(o, json_fields) for o in valid_proposals ]})
-    else
+    else:
         raise Exception("Only json format valid for full list")
 
-@app.route('/api/<sheet_name>/id/<key>.<fmt>')
-def formatted_row(sheet_name, key, fmt):
+@app.route('/api/<sheet_name>/toc.<fmt>')
+def sheet_toc(sheet_name, fmt):
     group = request.args.get("group")
 
-    valid_proposal_ids = []
+    valid_proposals = cull_invalid_proposals(group, list(data[sheet_name].values()))
+    valid_proposals.sort(key = lambda p: int(p["Wise Head Overall Score Rank Normalized"]))
+
+    if fmt == "mwiki":
+        toc_str = ""
+        for proposal in valid_proposals:
+            rank = int(proposal["Wise Head Overall Score Rank Normalized"])
+            proposal_str = "<span style='font-family:monospace;white-space:pre'>Rank %3s</span>" % str(rank)
+            proposal_str += " - [[%s]]" % (proposal["MediaWiki Title"])
+        
+            if rank > 100:
+                proposal_str += " - <span style='color:#306754;font-style: italic>Wild Card Eligible</span>"
+
+            toc_str += "* " + proposal_str + "\n"
+
+        return toc_str
+    else:
+        raise Exception("Only mwiki format valid for toc")
+
+@app.route('/api/<sheet_name>/id/<key>.<fmt>')
+def row(sheet_name, key, fmt):
+    group = request.args.get("group")
+
+    valid_id = False
 
     if group in groups.keys():
-        valid_proposal_ids = groups[group]["valid_proposal_ids"];
+        valid_proposal_ids = []
 
-    if key not in valid_proposal_ids:
+        if "valid_proposal_ids" not in groups[group].keys():
+            valid_id = True
+        else:
+            valid_id = (key not in valid_proposal_ids)
+
+    if not valid_id:
         if fmt == "json":
             return json.dumps({"error": "Invalid " + sheet_config[sheet_name]["key_column"]})
         else:
@@ -120,20 +147,20 @@ def formatted_row(sheet_name, key, fmt):
             else:
                 transformed_row[key] = value
 
-        return mwiki_template.render({config["singular"]: transformed_row})
+        return mwiki_template.render({config["object_name"]: transformed_row})
     else:
         raise Exception("Invalid format: " + fmt)
 
-@app.route('/data/upload', methods=['POST'])
+@app.route('/upload/sheet', methods=['POST'])
 def upload_sheet():
     from werkzeug.utils import secure_filename
 
     if 'data_file' not in request.files:
         raise Exception("Must have file in data upload")
-    if 'singular' not in request.form:
-        raise Exception("Must have the singular name")
-    if 'plural' not in request.form:
-        raise Exception("Must have the plural name")
+    if 'object_name' not in request.form:
+        raise Exception("Must have the object_name")
+    if 'sheet_name' not in request.form:
+        raise Exception("Must have the sheet_name")
     if 'key_column' not in request.form:
         raise Exception("Must have the key_column name")
 
@@ -141,16 +168,59 @@ def upload_sheet():
     if file.filename == '':
         raise Exception("File must have a filename associated with it")
     if file:
-        plural = secure_filename(request.form['plural'])
-        file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], plural + ".csv"))
+        sheet_name = secure_filename(request.form['sheet_name'])
 
-        sheet_config[plural] = {}
-        sheet_config[plural]["singular"] = request.form['singular']
-        sheet_config[plural]["plural"] = request.form['plural']
-        sheet_config[plural]["key_column"] = request.form['key_column']
+        try:
+            os.mkdir(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name))
+        except FileExistsError:
+            pass
+
+        try:
+            os.mkdir(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs"))
+        except FileExistsError:
+            pass
+
+        file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, sheet_name + ".csv"))
+
+        sheet_config[sheet_name] = {}
+        sheet_config[sheet_name]["object_name"] = request.form['object_name']
+        sheet_config[sheet_name]["sheet_name"] = request.form['sheet_name']
+        sheet_config[sheet_name]["key_column"] = request.form['key_column']
         with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "sheets"), 'w') as f:
             sheet_config.write(f)
 
-        load_sheet(plural)
+        load_sheet(sheet_name)
+
+    return ""
+
+@app.route('/upload/toc', methods=['POST'])
+def upload_toc():
+    from werkzeug.utils import secure_filename
+
+    if 'json' not in request.files:
+        raise Exception("Must have json file")
+    if 'template' not in request.files:
+        raise Exception("Must have template file")
+    if 'sheet_name' not in request.form:
+        raise Exception("Must have the sheet_name")
+    if 'toc_name' not in request.form:
+        raise Exception("Must have the toc_name")
+
+    json_file = request.files['json']
+    template_file = request.files['template']
+    sheet_name = secure_filename(request.form['sheet_name'])
+    toc_name = secure_filename(request.form['toc_name'])
+
+    if json_file.filename == '':
+        raise Exception("json_file must have a filename associated with it")
+    if template_file.filename == '':
+        raise Exception("template_file must have a filename associated with it")
+    if sheet_name not in sheet_config.keys():
+        raise Exception(sheet_name + " is not an existing sheet")
+    if file:
+        secure_sheet_name = secure_filename(request.form['sheet_name'])
+
+        json_file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".json"))
+        template_file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".j2"))
 
     return ""

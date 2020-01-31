@@ -11,13 +11,13 @@ class TorqueDataConnectUpload extends APIBase {
     $file = $this->getParameter("data_file");
     $data = [
       'data_file' => curl_file_create($file->getTempName()),
-      'singular' => $this->getParameter("singular"),
-      'plural' => $this->getParameter("plural"),
+      'object_name' => $this->getParameter("object_name"),
+      'sheet_name' => $this->getParameter("sheet_name"),
       'key_column' => $this->getParameter("key_column")
     ];
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'http://localhost:5000/data/upload');
+    curl_setopt($ch, CURLOPT_URL, 'http://localhost:5000/upload/sheet');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_exec ($ch);
     curl_close ($ch);
@@ -29,11 +29,11 @@ class TorqueDataConnectUpload extends APIBase {
 
   public function getAllowedParams() {
     return [
-      "singular" => [
+      "object_name" => [
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
-      "plural" => [
+      "sheet_name" => [
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],

@@ -18,7 +18,7 @@ data = {}
 def load_sheet(sheet_name):
     data[sheet_name] = {}
     reader = csv.reader(
-            open(os.path.join(app.config.get("SPREADSHEET_FOLDER"), sheet_name + ".csv"), encoding='utf-8'),
+            open(os.path.join(app.config.get("SPREADSHEET_FOLDER"), sheet_name, sheet_name + ".csv"), encoding='utf-8'),
             delimiter=',',
             quotechar='"'
             )
