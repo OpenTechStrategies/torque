@@ -1,5 +1,5 @@
 <?php
-class TorqueDataConnectUpload extends APIBase {
+class TorqueDataConnectUploadToc extends APIBase {
 
   public function __construct($main, $action) {
     parent::__construct($main, $action);
@@ -8,16 +8,17 @@ class TorqueDataConnectUpload extends APIBase {
   public function execute() {
     # We use phpcurl here because it's really straightforward, and
     # research (stackoverflow) didn't produce a compelling native php method.
-    $file = $this->getParameter("data_file");
+    $json = $this->getParameter("json");
+    $template = $this->getParameter("template");
     $data = [
-      'data_file' => curl_file_create($file->getTempName()),
-      'object_name' => $this->getParameter("object_name"),
+      'json' => curl_file_create($json->getTempName()),
+      'template' => curl_file_create($template->getTempName()),
       'sheet_name' => $this->getParameter("sheet_name"),
-      'key_column' => $this->getParameter("key_column")
+      'toc_name' => $this->getParameter("toc_name")
     ];
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'http://localhost:5000/upload/sheet');
+    curl_setopt($ch, CURLOPT_URL, 'http://localhost:5000/upload/toc');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_exec ($ch);
     curl_close ($ch);
@@ -29,7 +30,7 @@ class TorqueDataConnectUpload extends APIBase {
 
   public function getAllowedParams() {
     return [
-      "object_name" => [
+      "toc_name" => [
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
@@ -37,11 +38,11 @@ class TorqueDataConnectUpload extends APIBase {
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
-      "key_column" => [
-        ApiBase::PARAM_TYPE => 'string',
+      "json" => [
+        ApiBase::PARAM_TYPE => 'upload',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
-      "data_file" => [
+      "template" => [
         ApiBase::PARAM_TYPE => 'upload',
         ApiBase::PARAM_REQUIRED => 'true'
       ]

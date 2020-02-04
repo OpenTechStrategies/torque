@@ -16,6 +16,7 @@ json_fields = [
              "Country",
              "Principal Organization Website or Social Media",
              "Identification Number of Principal Organization",
+             "Identification Number of Principal Organization ein",
              "Primary Contact First Name",
              "Primary Contact Last Name",
              "Primary Contact Title",
@@ -62,7 +63,7 @@ def cull_invalid_proposals(group, proposals):
         return []
     elif "valid_proposal_ids" in groups[group].keys():
         valid_proposal_ids = groups[group]["valid_proposal_ids"];
-        return [ p for p in proposals if (p[sheet_config[sheet_name]["key_column"]] in valid_proposal_ids) ]
+        return [ p for p in proposals if (p[sheet_config["proposals"]["key_column"]] in valid_proposal_ids) ]
     else:
         return proposals
 
@@ -76,26 +77,21 @@ def sheet(sheet_name, fmt):
     else:
         raise Exception("Only json format valid for full list")
 
-@app.route('/api/<sheet_name>/toc.<fmt>')
-def sheet_toc(sheet_name, fmt):
+@app.route('/api/<sheet_name>/toc/<toc_name>.<fmt>')
+def sheet_toc(sheet_name, toc_name, fmt):
     group = request.args.get("group")
 
     valid_proposals = cull_invalid_proposals(group, list(data[sheet_name].values()))
-    valid_proposals.sort(key = lambda p: int(p["Wise Head Overall Score Rank Normalized"]))
 
     if fmt == "mwiki":
         toc_str = ""
-        for proposal in valid_proposals:
-            rank = int(proposal["Wise Head Overall Score Rank Normalized"])
-            proposal_str = "<span style='font-family:monospace;white-space:pre'>Rank %3s</span>" % str(rank)
-            proposal_str += " - [[%s]]" % (proposal["MediaWiki Title"])
-        
-            if rank > 100:
-                proposal_str += " - <span style='color:#306754;font-style: italic>Wild Card Eligible</span>"
+        with open(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".j2")) as f:
+            template_str = f.read()
+        with open(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".json")) as f:
+            template_data = json.loads(f.read())
+        template_data[sheet_name] = { p["Review Number"]:p for p in valid_proposals }
 
-            toc_str += "* " + proposal_str + "\n"
-
-        return toc_str
+        return Template(template_str).render(template_data)
     else:
         raise Exception("Only mwiki format valid for toc")
 
@@ -217,7 +213,7 @@ def upload_toc():
         raise Exception("template_file must have a filename associated with it")
     if sheet_name not in sheet_config.keys():
         raise Exception(sheet_name + " is not an existing sheet")
-    if file:
+    if json_file and template_file:
         secure_sheet_name = secure_filename(request.form['sheet_name'])
 
         json_file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".json"))
