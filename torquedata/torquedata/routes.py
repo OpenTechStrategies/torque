@@ -29,7 +29,15 @@ json_fields = [
              "Solution Overview",
              "Youtube Video",
              "Location Of Future Work Country",
+             "Location Of Future Work2 Country",
+             "Location Of Future Work3 Country",
+             "Location Of Future Work4 Country",
+             "Location Of Future Work5 Country",
              "Location Of Current Solution Country",
+             "Location Of Current Solution2 Country",
+             "Location Of Current Solution3 Country",
+             "Location Of Current Solution4 Country",
+             "Location Of Current Solution5 Country",
              "Project Website or Social Media Page",
              "Application Level",
              "Competition Domain",
@@ -40,8 +48,12 @@ if "proposals" in data.keys():
     top100 = [
             p["Review Number"] for p in data["proposals"].values() if (int(p["Wise Head Overall Score Rank Normalized"]) < 101)
             ]
+    wisehead_ranked_proposals = [
+            p["Review Number"] for p in data["proposals"].values() if (int(p["Wise Head Overall Score Rank Normalized"]) != 9999)
+            ]
 else:
     top100 = []
+    valid = []
 
 groups = {}
 
@@ -51,7 +63,7 @@ groups["bureaucrat"] = {
         }
 
 groups["torqueapi"] = {
-        "valid_proposal_ids": top100,
+        "valid_proposal_ids": wisehead_ranked_proposals,
         "columns": json_fields
         }
 

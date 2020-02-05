@@ -18,6 +18,7 @@ class TorqueDataConnectQuery extends APIBase {
     $contents = file_get_contents(
       "http://localhost:5000/api" .
       $this->getParameter("path") .
+      ".json" .
       "?group=" .
       $valid_group
       );
