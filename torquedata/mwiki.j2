@@ -261,17 +261,26 @@ __TOC__
 = Coding (subject, population, location) =
 '''Organizational Area of Expertise:''' {{ proposal['Primary Area of Expertise'] }}
 
-'''Application Subject Area(s):''' {{ proposal['Primary Subject Area Category'] }}, {{ proposal['Primary Subject Area'] }}
+'''Application Subject Area(s):''' [[Topic_TOC#{{ proposal['Primary Subject Area Category'] }}|{{ proposal['Primary Subject Area Category'] }}]], {{ proposal['Primary Subject Area'] }}
+
 
 '''Key Words:''' {{ proposal['Key Words'] }}
 
 '''Priority Populations:'''
 
-<div style="padding-left: 30px;">{{ proposal['Priority Populations'] }}</div>
+<div style="padding-left: 30px;">
+{% for population in proposal['Priority Populations'] %}
+* [[Population_TOC#{{ population }}|{{ population }}]]
+{% endfor %}
+</div>
 
 '''Sustainable Development Goals:'''
 
-<div style="padding-left: 30px;">{{ proposal['Sustainable Development Goals'] }}</div>
+<div style="padding-left: 30px;">
+{% for sdg in proposal['Sustainable Development Goals'] %}
+* [[SDG_TOC#{{ sdg }}|{{ sdg }}]]
+{% endfor %}
+</div>
 == Current Solution Location(s) ==
 == Country 1 ==
 <p style="padding-left: 30px;">
