@@ -169,11 +169,15 @@
     marker: "## {mark} ANSIBLE SIMPLE SAML PHP CONFIG"
     block: |
       wfLoadExtension( 'SimpleSAMLphp' );
-      $wgSimpleSAMLphp_InstallDir = '{{ simplesaml_install_directory }}/simplesamlphp-1.17.6';
+      $wgSimpleSAMLphp_InstallDir = '{{ simplesaml_install_directory }}/simplesamlphp-1.18.3';
       $wgSimpleSAMLphp_AuthSourceId = '{{ simplesaml_okta_metadata_name }}';
       $wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
       $wgSimpleSAMLphp_EmailAttribute = 'email';
       $wgSimpleSAMLphp_UsernameAttribute = 'email';
+      $wgSimpleSAMLphp_SyncAllGroups_GroupNameModificationCallback = function($origGroupName){
+        # Remove spaces
+        return preg_replace('/\s/', '', $origGroupName);
+      };
       $wgSimpleSAMLphp_AttributeProcessorFactories = [
         "MediaWiki\\Extension\\SimpleSAMLphp\\AttributeProcessor\\SyncAllGroups::factory"
       ];
@@ -331,12 +335,13 @@
     marker: "## {mark} ANSIBLE GROUP PERMISSIONS CONFIG"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     block: |
-      $wgGroupPermissions['Board Members']['read'] = true;
-      $wgGroupPermissions['Pseudo Board Members']['read'] = true;
-      $wgGroupPermissions['Board Members']['picksome'] = true;
-      $wgGroupPermissions['Pseudo Board Members']['picksome'] = true;
+      $wgGroupPermissions['LFCConsultants']['read'] = true;
+      $wgGroupPermissions['BoardMembers']['read'] = true;
+      $wgGroupPermissions['PseudoBoardMembers']['read'] = true;
+      $wgGroupPermissions['BoardMembers']['picksome'] = true;
+      $wgGroupPermissions['PseudoBoardMembers']['picksome'] = true;
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
-        $wgGroupPermissions['LFC Torque'][$key] = $value;
+        $wgGroupPermissions['LFCTorque'][$key] = $value;
       }
 
       $wgGroupPermissions['bot']['protect'] = true;
@@ -349,7 +354,7 @@
       $wgGroupPermissions['sysop']['picksome'] = true;
       $wgGroupPermissions['sysop']['picksome-admin'] = true;
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
-        $wgGroupPermissions['LFC Torque Admin'][$key] = $value;
+        $wgGroupPermissions['LFCTorqueAdmin'][$key] = $value;
       }
 
 - name: Transfer LFC Logo
@@ -371,8 +376,8 @@
 - name: Install board group css
   raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-{{ item }}.css < {{ mediawiki_install_directory }}/Group-board.css"
   loop:
-    - Board_Members_Torque
-    - Board_Members
+    - BoardMembersTorque
+    - BoardMembers
 
 - name: Remove board group css
   file:
