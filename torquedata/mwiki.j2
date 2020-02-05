@@ -9,9 +9,11 @@
 |-
 |style="vertical-align:top;width:150px" |'''Rank:'''
 |{{ proposal['Wise Head Overall Score Rank Normalized'] }}'''{% if proposal['Wild Card Eligible'] %}<span style='color:#306754;font-style: italic'> - Wild Card Eligible</span>{% endif %}
+{% if 'Wise Head Sum of Scores Normalized' in proposal.keys() %}
 |-
 |style="vertical-align:top;width:150px" |'''Wise Head Panel Score:'''
 |{{ proposal['Wise Head Sum of Scores Normalized'] }}
+{% endif %}
 |-
 |style="vertical-align:top;width:150px" |'''Organization:'''
 |{{ proposal['Organization Legal Name'] }}
@@ -46,12 +48,14 @@
 |-
 |style="vertical-align:top;" | '''Number of employees:'''
 | {{ proposal['Number of Employees'] }}
+{% if 'Attachments' in proposal.keys() %}
 |-
 |style="vertical-align:top;" | '''Attachments:'''
 
 | {% for attachment in proposal['Attachments'] %}
 {{ attachment }} {% endfor %}
 |
+{% endif %}
 |}
 </div>
 </div>

@@ -12,7 +12,7 @@ class TorqueDataConnectHooks {
 
     $valid_group = "";
     foreach($user->getGroups() as $group) {
-      if(in_array($group, ["bureaucrat"])) {
+      if(in_array($group, ["LFCTorque", "LFCTorqueAdmin", "PseudoBoardMembers", "BoardMembers", "LFCConsultants"])) {
         $valid_group = $group;
         break;
       }

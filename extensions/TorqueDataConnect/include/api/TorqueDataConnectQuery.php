@@ -8,8 +8,7 @@ class TorqueDataConnectQuery extends APIBase {
   public function execute() {
     $valid_group = "";
     foreach($this->getUser()->getGroups() as $group) {
-      error_log($group);
-      if(in_array($group, ["bureaucrat", "torqueapi"])) {
+      if(in_array($group, ["torqueapi"])) {
         $valid_group = $group;
         break;
       }
