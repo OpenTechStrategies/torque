@@ -239,7 +239,9 @@ if "proposals" in data.keys():
             ]
 else:
     top100 = []
-    valid = []
+    top200 = []
+    wildcard = []
+    wisehead_ranked_proposals = []
 
 groups = {}
 

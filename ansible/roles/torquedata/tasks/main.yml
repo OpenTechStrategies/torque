@@ -22,21 +22,13 @@
   loop:
     - Pipfile.lock
     - torquedata
+    - mwiki.j2
 
 - name: Install torquedata supervisor
   become_user: root
   template:
     src: supervisor-torquedata.conf.j2
     dest: /etc/supervisor/conf.d/torquedata.conf
-
-    #- name: Pipenv install
-    #  ignore_errors: true
-    #  command: "pipenv --venv"
-    #  args:
-    #    chdir: "{{ torquedata_install_directory }}"
-    #  register: pipenv_venv_check_cmd
-    #  changed_when:
-    #    - ('No virtualenv' not in pipenv_venv_check_cmd.stderr)
 
 - name: Run pipenv install
   command: "pipenv install"
@@ -47,6 +39,11 @@
   template:
     src: config.py.j2
     dest: "{{ torquedata_install_directory }}/config.py"
+
+- name: Create Spreadsheet Directory
+  file:
+    state: directory
+    path: "{{ torquedata_spreadsheet_location }}"
 
 - name: Restart supervisor for torquedata
   become_user: root

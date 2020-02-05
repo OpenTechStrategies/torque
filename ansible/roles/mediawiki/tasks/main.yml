@@ -335,6 +335,7 @@
     marker: "## {mark} ANSIBLE GROUP PERMISSIONS CONFIG"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     block: |
+      $wgGroupPermissions['torqueapi']['read'] = true;
       $wgGroupPermissions['LFCConsultants']['read'] = true;
       $wgGroupPermissions['BoardMembers']['read'] = true;
       $wgGroupPermissions['PseudoBoardMembers']['read'] = true;
@@ -383,6 +384,11 @@
   file:
     path: "{{ mediawiki_install_directory }}/Group-board.css"
     state: absent
+
+- name: Transfer htaccess
+  copy:
+    src: .htaccess
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/.htaccess"
 
 - name: Transfer wiki cheat sheet
   copy:
