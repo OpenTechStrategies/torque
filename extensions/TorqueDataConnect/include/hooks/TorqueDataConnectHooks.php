@@ -31,6 +31,16 @@ class TorqueDataConnectHooks {
     # rendered.
     return [$parser->recursiveTagParse($contents), "isHTML" => true];
 	}
+
+  public static function onPageContentSaveComplete(
+    $wikiPage, $user, $mainContent, $summaryText, $isMinor, $isWatch, $section,
+    &$flags, $revision, $status, $originalRevId, $undidRevId
+  ) {
+    global $wgTorqueDataConnectConfigPage;
+    if($wikiPage->getTitle()->equals(Title::newFromText($wgTorqueDataConnectConfigPage))) {
+      TorqueDataConnectConfig::commitConfigToTorqueData();
+    }
+  }
 }
 
 ?>

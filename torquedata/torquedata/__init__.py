@@ -3,6 +3,7 @@ from flask import Flask
 import csv
 import configparser
 import os
+import pickle
 
 app = Flask(__name__)
 
@@ -13,6 +14,12 @@ except:
 
 sheet_config = configparser.ConfigParser()
 sheet_config.read(os.path.join(app.config['SPREADSHEET_FOLDER'], "sheets"))
+
+try:
+    with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "permissions"), 'rb') as f:
+        permissions = pickle.load(f)
+except Exception:
+    permissions = {}
 
 data = {}
 def load_sheet(sheet_name):

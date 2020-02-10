@@ -17,13 +17,15 @@
     ]
   },
   "AutoloadClasses": {
+    "TorqueDataConnectConfig": "include/TorqueDataConnectConfig.php",
     "TorqueDataConnectQuery": "include/api/TorqueDataConnectQuery.php",
     "TorqueDataConnectUploadSheet": "include/api/TorqueDataConnectUploadSheet.php",
     "TorqueDataConnectUploadToc": "include/api/TorqueDataConnectUploadToc.php",
     "TorqueDataConnectHooks": "include/hooks/TorqueDataConnectHooks.php"
   },
   "Hooks": {
-    "ParserFirstCallInit": "TorqueDataConnectHooks::onParserFirstCallInit"
+    "ParserFirstCallInit": "TorqueDataConnectHooks::onParserFirstCallInit",
+    "PageContentSaveComplete": "TorqueDataConnectHooks::onPageContentSaveComplete"
   },
   "APIModules": {
     "torquedataconnect": "TorqueDataConnectQuery",
@@ -34,6 +36,7 @@
 		"TorqueDataConnectMagic": "TorqueDataConnect.i18n.php"
 	},
   "config": {
+    "TorqueDataConnectConfigPage": ""
   },
   "manifest_version": 1
 }
