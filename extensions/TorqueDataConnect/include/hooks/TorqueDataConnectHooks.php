@@ -8,21 +8,12 @@ class TorqueDataConnectHooks {
 	public static function loadLocation($parser, $location) {
   	$parser->disableCache();
 
-    $user = $parser->getUser();
-
-    $valid_group = "";
-    foreach($user->getGroups() as $group) {
-      if(in_array($group, ["LFCTorque", "LFCTorqueAdmin", "PseudoBoardMembers", "BoardMembers", "LFCConsultants"])) {
-        $valid_group = $group;
-        break;
-      }
-    }
-
+    global $wgTorqueDataConnectGroup;
     $contents = file_get_contents(
       "http://localhost:5000/api/" .
       $location .
       "?group=" .
-      $valid_group
+      $wgTorqueDataConnectGroup
       );
 
     # The combination of recursiveTagParse and isHTML set to true
@@ -39,6 +30,13 @@ class TorqueDataConnectHooks {
     global $wgTorqueDataConnectConfigPage;
     if($wikiPage->getTitle()->equals(Title::newFromText($wgTorqueDataConnectConfigPage))) {
       TorqueDataConnectConfig::commitConfigToTorqueData();
+    }
+  }
+
+  public static function onBeforeInitialize(&$title, &$article = null, &$output, &$user, $request, $mediaWiki) {
+    global $wgTorqueDataConnectGroup;
+    if($user && !$wgTorqueDataConnectGroup) {
+      $wgTorqueDataConnectGroup = TorqueDataConnectConfig::getValidGroup($user);
     }
   }
 }

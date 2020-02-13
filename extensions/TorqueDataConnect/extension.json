@@ -25,6 +25,7 @@
   },
   "Hooks": {
     "ParserFirstCallInit": "TorqueDataConnectHooks::onParserFirstCallInit",
+    "BeforeInitialize": "TorqueDataConnectHooks::onBeforeInitialize",
     "PageContentSaveComplete": "TorqueDataConnectHooks::onPageContentSaveComplete"
   },
   "APIModules": {
@@ -36,7 +37,8 @@
 		"TorqueDataConnectMagic": "TorqueDataConnect.i18n.php"
 	},
   "config": {
-    "TorqueDataConnectConfigPage": ""
+    "TorqueDataConnectConfigPage": "",
+    "TorqueDataConnectGroup": false
   },
   "manifest_version": 1
 }

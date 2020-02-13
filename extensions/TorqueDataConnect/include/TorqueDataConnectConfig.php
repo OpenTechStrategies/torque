@@ -1,5 +1,4 @@
 <?php
-
 class TorqueDataConnectConfig {
   public static function convertPageToColumnConfig($page) {
     $title = Title::newFromText($page);
@@ -48,11 +47,12 @@ class TorqueDataConnectConfig {
     curl_close ($ch);
   }
 
-  public static function commitConfigToTorqueData() {
+  private static function parseConfig() {
     global $wgTorqueDataConnectConfigPage;
     $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
     $configText = (new WikiPage($configPage))->getContent()->getText();
 
+    $config = [];
     // We have to parse this as best we can, because mediawiki doesn't really
     // give us a mwikiText->AST that we could loop over.
     $groupName = false;
@@ -89,7 +89,33 @@ class TorqueDataConnectConfig {
       }
 
       if($groupName && $columnPage && $proposalsPage && $templatePage) {
-        TorqueDataConnectConfig::commitGroupConfig($groupName, $columnPage, $proposalsPage, $templatePage);
+        array_push($config, [
+          "groupName" => $groupName,
+          "columnPage" => $columnPage,
+          "proposalsPage" => $proposalsPage,
+          "templatePage" => $templatePage
+        ]);
+      }
+    }
+
+    return $config;
+  }
+
+  public static function commitConfigToTorqueData() {
+    foreach(TorqueDataConnectConfig::parseConfig() as $group) {
+      TorqueDataConnectConfig::commitGroupConfig(
+        $group["groupName"],
+        $group["columnPage"],
+        $group["proposalsPage"],
+        $group["templatePage"]
+      );
+    }
+  }
+
+  public static function getValidGroup($user) {
+    foreach(TorqueDataConnectConfig::parseConfig() as $group) {
+      if(in_array($group["groupName"], $user->getGroups())) {
+        return $group["groupName"];
       }
     }
   }

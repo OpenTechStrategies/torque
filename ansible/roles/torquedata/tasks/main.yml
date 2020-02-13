@@ -22,7 +22,6 @@
   loop:
     - Pipfile.lock
     - torquedata
-    - mwiki.j2
 
 - name: Install torquedata supervisor
   become_user: root

@@ -6,13 +6,7 @@ class TorqueDataConnectQuery extends APIBase {
   }
 
   public function execute() {
-    $valid_group = "";
-    foreach($this->getUser()->getGroups() as $group) {
-      if(in_array($group, ["torqueapi"])) {
-        $valid_group = $group;
-        break;
-      }
-    }
+    $valid_group = TorqueDataConnectConfig::getValidGroup($this->getUser());
 
     $contents = file_get_contents(
       "http://localhost:5000/api" .

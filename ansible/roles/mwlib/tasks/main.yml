@@ -41,6 +41,12 @@
     path: "{{ mwlib_install_directory }}/cache/"
     state: directory
 
+- name: Patch For TorqueData
+  patch:
+    src: MwlibTorqueData.patch
+    strip: 1
+    basedir: "{{ mwlib_install_directory }}"
+
 - name: Install mwlib supervisor
   become_user: root
   template:

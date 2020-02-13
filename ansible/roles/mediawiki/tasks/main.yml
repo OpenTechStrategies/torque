@@ -57,7 +57,7 @@
   get_url:
     url: https://getcomposer.org/installer
     dest: "{{ mediawiki_install_directory }}/composer-setup.php"
-    checksum: "sha384:c5b9b6d368201a9db6f74e2611495f369991b72d9c8cbd3ffbc63edff210eb73d46ffbfce88669ad33695ef77dc76976"
+    checksum: "sha384:e0012edf3e80b6978849f5eff0d4b4e4c79ff1609dd1e613307e16318854d24ae64f26d17af3ef0bf7cfb710ca74755a"
 
 - name: Make wiki bin directory
   file:
@@ -247,13 +247,23 @@
     marker: "## {mark} ANSIBLE COLLECTION CONFIG"
     block: |
       require_once "$IP/extensions/Collection/Collection.php";
-      $wgCollectionMWServeCredentials = "{{ mediawiki_mwlib_username }}:{{ mediawiki_mwlib_password }}";
       $wgCollectionMWServeURL = "http://127.0.0.1:8899";
       $wgCollectionMaxArticles = 250;
       $wgEnableApi = true;
       $wgCollectionFormats = array( 'rl' => 'PDF',);
       $wgCollectionPortletFormats = [];
       $wgCollectionDisableDownloadSection = false;
+      $wgHooks['ApiBeforeMain'][] = function($main) {
+        global $wgTorqueDataConnectGroup;
+        if($main->getUser() && strtolower($main->getUser()->getName()) == "mwlib") {
+          $wgTorqueDataConnectGroup = $main->getRequest()->getText("tdcgroup", false);
+        }
+      };
+      $wgHooks['BeforeInitialize'][] = function(&$title, &$article = null, &$output, &$user, $request, $mediaWiki) {
+        global $wgCollectionMWServeCredentials;
+        $group = TorqueDataConnectConfig::getValidGroup($user);
+        $wgCollectionMWServeCredentials = "{{ mediawiki_mwlib_username }}:${group}:{{ mediawiki_mwlib_password }}";
+      };
 
 - name: Enable SimpleFavorites
   lineinfile:
@@ -265,6 +275,12 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     marker: "## {mark} ANSIBLE TORQUEDATACONNECT CONFIG"
     block: |
+      define("TORQUE_CONFIG", 4000);
+      define("TORQUE_CONFIG_TALK", 4001);
+      $wgExtraNamespaces[TORQUE_CONFIG] = "TorqueConfig";
+      $wgExtraNamespaces[TORQUE_CONFIG_TALK] = "TorqueConfig_talk";
+      $wgNamespaceProtection[TORQUE_CONFIG] = array("edittorqueconfig");
+      $wgTorqueDataConnectConfigPage = "TorqueConfig:MainConfig";
       wfLoadExtension('TorqueDataConnect');
 
 - name: Enable TeamComments
@@ -354,6 +370,7 @@
       $wgGroupPermissions['sysop']['generated'] = true;
       $wgGroupPermissions['sysop']['picksome'] = true;
       $wgGroupPermissions['sysop']['picksome-admin'] = true;
+      $wgGroupPermissions['sysop']['edittorqueconfig'] = true;
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
         $wgGroupPermissions['LFCTorqueAdmin'][$key] = $value;
       }
