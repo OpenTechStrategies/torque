@@ -30,14 +30,11 @@ def load_sheet(sheet_name):
             quotechar='"'
             )
     header = next(reader)
+    column_types = next(reader)
     for row in reader:
         o = {}
-        for (field, cell) in zip(header, row):
-            if field == 'Attachments':
-                cell = cell.strip().split("\n")
-            if field == 'Sustainable Development Goals':
-                cell = cell.strip().split("\n")
-            if field == 'Priority Populations':
+        for (field, column_type, cell) in zip(header, column_types, row):
+            if column_type == 'list':
                 cell = cell.strip().split("\n")
             o[field] = cell
         data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
