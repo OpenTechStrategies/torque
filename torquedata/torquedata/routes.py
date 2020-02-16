@@ -1,10 +1,12 @@
-from torquedata import app, data, sheet_config, load_sheet, permissions
+from torquedata import app, data, sheet_config, load_sheet, permissions, attachment_config
 from jinja2 import Template
-from flask import request
+from flask import request, send_file
+from werkzeug.utils import secure_filename
 
 import json
 import os
 import re
+import io
 import pickle
 
 def cull_invalid_columns(o, valid_fields):
@@ -76,31 +78,44 @@ def row(sheet_name, key, fmt):
         config = sheet_config[sheet_name]
         mwiki_template = Template(permissions[group]["template"])
 
-        transformed_row = {}
-        for key,value in row.items():
-            if key == "Attachments":
-                transformed_row[key] = []
-                for attachment in value:
-                    attachment_file_display = re.sub("^\\d*_", "", attachment)
-                    attachment_file_display = re.sub("\.pdf$", "", attachment_file_display)
-                    if len(attachment_file_display) > 33:
-                        attachment_file_display = \
-                                attachment_file_display[0:15] + \
-                                "..." + \
-                                attachment_file_display[(len(attachment_file_display)-15):]
-                    attachment_file_display = "[[Media:" + attachment + "|" + attachment_file_display + "]]\n"
-                    transformed_row[key].append(attachment_file_display)
-            else:
-                transformed_row[key] = value
-
-        return mwiki_template.render({config["object_name"]: transformed_row})
+        return mwiki_template.render({config["object_name"]: row})
     else:
         raise Exception("Invalid format: " + fmt)
 
+@app.route('/api/<sheet_name>/attachment/<key>/<attachment>')
+def attachment(sheet_name, key, attachment):
+    group = request.args.get("group")
+
+    import urllib.parse
+    attachment = urllib.parse.unquote_plus(attachment)
+
+    valid_id = False
+
+    if group in permissions.keys():
+        if "valid_ids" not in permissions[group].keys():
+            valid_id = True
+        else:
+            valid_id = (key in permissions[group]["valid_ids"])
+
+    if not valid_id:
+        return "Invalid " + sheet_config[sheet_name]["key_column"]
+
+    attachment_name = secure_filename(attachment)
+    if not attachment_name in attachment_config.keys():
+        return "Invalid attachment: " + attachment_name
+
+    if attachment_config[attachment_name]["object_id"] != key:
+        return "Invalid " + sheet_config[sheet_name]["key_column"]
+
+    attachment_permissions_column = attachment_config[attachment_name]["permissions_column"]
+    if attachment_permissions_column not in permissions[group]["columns"]:
+        return "Invalid attachment: " + attachment_name
+
+    with open(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments", attachment_name), "rb") as file:
+        return send_file(io.BytesIO(file.read()), attachment_filename = attachment_name)
+
 @app.route('/upload/sheet', methods=['POST'])
 def upload_sheet():
-    from werkzeug.utils import secure_filename
-
     if 'data_file' not in request.files:
         raise Exception("Must have file in data upload")
     if 'object_name' not in request.form:
@@ -123,6 +138,11 @@ def upload_sheet():
 
         try:
             os.mkdir(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs"))
+        except FileExistsError:
+            pass
+
+        try:
+            os.mkdir(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments"))
         except FileExistsError:
             pass
 
@@ -195,5 +215,44 @@ def upload_toc():
 
         json_file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".json"))
         template_file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".j2"))
+
+    return ""
+
+@app.route('/upload/attachment', methods=['POST'])
+def upload_attachment():
+    from werkzeug.utils import secure_filename
+
+    if 'attachment' not in request.files:
+        raise Exception("Must have file in data upload")
+    if 'attachment_name' not in request.form:
+        raise Exception("Must have the attachment_name")
+    if 'sheet_name' not in request.form:
+        raise Exception("Must have the sheet_name")
+    if 'permissions_column' not in request.form:
+        raise Exception("Must have the permissions_column")
+    if 'object_id' not in request.form:
+        raise Exception("Must have the object_id name")
+
+    attachment = request.files['attachment']
+    if attachment.filename == '':
+        raise Exception("attachment must have a filename associated with it")
+
+    sheet_name = secure_filename(request.form['sheet_name'])
+    if sheet_name not in sheet_config.keys():
+        raise Exception(sheet_name + " is not an existing sheet")
+
+    attachment_name = secure_filename(request.form['attachment_name'])
+    permissions_column = request.form['permissions_column']
+    object_id = request.form['object_id']
+
+    attachment_config[attachment_name] = {
+            'permissions_column': permissions_column,
+            'object_id': object_id
+            }
+
+    with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "attachment_config"), 'wb') as f:
+        pickle.dump(attachment_config, f)
+
+    attachment.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments", attachment_name))
 
     return ""

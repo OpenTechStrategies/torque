@@ -21,6 +21,12 @@ try:
 except Exception:
     permissions = {}
 
+try:
+    with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "attachment_config"), 'rb') as f:
+        attachment_config = pickle.load(f)
+except Exception:
+    attachment_config = {}
+
 data = {}
 def load_sheet(sheet_name):
     data[sheet_name] = {}
