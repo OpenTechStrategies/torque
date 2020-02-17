@@ -50,6 +50,11 @@ class TorqueDataConnectConfig {
   private static function parseConfig() {
     global $wgTorqueDataConnectConfigPage;
     $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
+
+    if(!$configPage->exists()) {
+      return [];
+    }
+
     $configText = (new WikiPage($configPage))->getContent()->getText();
 
     $config = [];
