@@ -1,8 +1,11 @@
 <?php
 class TorqueDataConnectConfig {
+  private static $errors = [];
+
   public static function convertPageToColumnConfig($page) {
     $title = Title::newFromText($page);
     if(!$title->exists()) {
+      array_push(self::$errors, $page . " does not exist, but is reference in config as a column config.");
       return [];
     }
     $page = new WikiPage($title);
@@ -19,6 +22,7 @@ class TorqueDataConnectConfig {
   public static function convertPageToIdConfig($page) {
     $title = Title::newFromText($page);
     if(!$title->exists()) {
+      array_push(self::$errors, $page . " does not exist, but is reference in config as a keys config.");
       return [];
     }
     $page = new WikiPage($title);
@@ -35,6 +39,7 @@ class TorqueDataConnectConfig {
   public static function getMwikiTemplate($mwikiPage) {
     $title = Title::newFromText($mwikiPage);
     if(!$title->exists()) {
+      array_push(self::$errors, $mwikiPage . " does not exist, but is reference in config as a template.");
       return "";
     }
     $page = new WikiPage($title);
@@ -61,6 +66,7 @@ class TorqueDataConnectConfig {
     $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
 
     if(!$configPage->exists()) {
+      array_push(self::$errors, "Config page ${wgTorqueDataConnectConfigPage} does not exist.");
       return [];
     }
 
@@ -141,6 +147,17 @@ class TorqueDataConnectConfig {
     }
 
     return false;
+  }
+
+  public static function checkForErrors() {
+    self::$errors = [];
+    $config = self::parseConfig();
+    foreach($config as $group) {
+      TorqueDataConnectConfig::convertPageToColumnConfig($group["columnPage"]);
+      TorqueDataConnectConfig::convertPageToIdConfig($group["proposalsPage"]);
+      TorqueDataConnectConfig::getMwikiTemplate($group["templatePage"]);
+    }
+    return self::$errors;
   }
 
   public static function getValidGroup($user) {

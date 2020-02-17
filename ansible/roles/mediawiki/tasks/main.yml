@@ -371,6 +371,7 @@
       $wgGroupPermissions['sysop']['picksome'] = true;
       $wgGroupPermissions['sysop']['picksome-admin'] = true;
       $wgGroupPermissions['sysop']['edittorqueconfig'] = true;
+      $wgGroupPermissions['sysop']['torquedataconnect-admin'] = true;
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
         $wgGroupPermissions['LFCTorqueAdmin'][$key] = $value;
       }

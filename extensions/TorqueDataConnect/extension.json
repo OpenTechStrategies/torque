@@ -16,6 +16,9 @@
       "i18n"
     ]
   },
+  "AvailableRights": [
+    "torquedataconnect-admin"
+  ],
   "AutoloadClasses": {
     "TorqueDataConnectConfig": "include/TorqueDataConnectConfig.php",
     "TorqueDataConnectQuery": "include/api/TorqueDataConnectQuery.php",
@@ -28,7 +31,8 @@
   "Hooks": {
     "ParserFirstCallInit": "TorqueDataConnectHooks::onParserFirstCallInit",
     "BeforeInitialize": "TorqueDataConnectHooks::onBeforeInitialize",
-    "PageContentSaveComplete": "TorqueDataConnectHooks::onPageContentSaveComplete"
+    "PageContentSaveComplete": "TorqueDataConnectHooks::onPageContentSaveComplete",
+    "SiteNoticeAfter": "TorqueDataConnectHooks::siteNoticeAfter"
   },
   "APIModules": {
     "torquedataconnect": "TorqueDataConnectQuery",
