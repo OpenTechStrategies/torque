@@ -2,6 +2,9 @@
 class TorqueDataConnectConfig {
   public static function convertPageToColumnConfig($page) {
     $title = Title::newFromText($page);
+    if(!$title->exists()) {
+      return [];
+    }
     $page = new WikiPage($title);
     $columns = [];
     foreach(explode("\n", $page->getContent()->getText()) as $line) {
@@ -15,6 +18,9 @@ class TorqueDataConnectConfig {
 
   public static function convertPageToIdConfig($page) {
     $title = Title::newFromText($page);
+    if(!$title->exists()) {
+      return [];
+    }
     $page = new WikiPage($title);
     $ids = [];
     foreach(explode("\n", $page->getContent()->getText()) as $line) {
@@ -28,6 +34,9 @@ class TorqueDataConnectConfig {
 
   public static function getMwikiTemplate($mwikiPage) {
     $title = Title::newFromText($mwikiPage);
+    if(!$title->exists()) {
+      return "";
+    }
     $page = new WikiPage($title);
     return $page->getContent()->getText();
   }
@@ -115,6 +124,23 @@ class TorqueDataConnectConfig {
         $group["templatePage"]
       );
     }
+  }
+
+  public static function isConfigPage($title) {
+    global $wgTorqueDataConnectConfigPage;
+    if($title->equals(Title::newFromText($wgTorqueDataConnectConfigPage))) {
+      return true;
+    }
+
+    foreach(TorqueDataConnectConfig::parseConfig() as $config) {
+      if($title->equals(Title::newFromText($config["columnPage"])) ||
+         $title->equals(Title::newFromText($config["proposalsPage"])) ||
+         $title->equals(Title::newFromText($config["templatePage"]))) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public static function getValidGroup($user) {

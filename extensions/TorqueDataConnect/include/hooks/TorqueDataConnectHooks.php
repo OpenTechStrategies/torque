@@ -20,7 +20,7 @@ class TorqueDataConnectHooks {
     # was the winning set of things to do to get the #evu tags from
     # the video extension to correctly dump out html that's correctly
     # rendered.
-    return [$parser->recursiveTagParse($contents), "isHTML" => true];
+    return [$parser->recursiveTagParseFully($contents), "isHTML" => true];
 	}
 
   public static function onPageContentSaveComplete(
@@ -28,7 +28,7 @@ class TorqueDataConnectHooks {
     &$flags, $revision, $status, $originalRevId, $undidRevId
   ) {
     global $wgTorqueDataConnectConfigPage;
-    if($wikiPage->getTitle()->equals(Title::newFromText($wgTorqueDataConnectConfigPage))) {
+    if(TorqueDataConnectConfig::isConfigPage($wikiPage->getTitle())) {
       TorqueDataConnectConfig::commitConfigToTorqueData();
     }
   }
