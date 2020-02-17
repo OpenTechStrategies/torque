@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 flask = "*"
-pystache = "*"
 
 [dev-packages]
 
