@@ -384,7 +384,7 @@
 - name: Install LFC Logo
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    regexp: ^$wgLogo = .*
+    regexp: ^\$wgLogo = .*
     line: $wgLogo = "$wgResourceBasePath/resources/assets/LeverForChange_Logo.png";
 
 - name: Transfer board group css
