@@ -119,7 +119,7 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
 }
 
 .teamcomments-body textarea {
-  width: 530px;
+  max-width: 530px;
   height: 300px;
 }
 
@@ -137,14 +137,14 @@ Besides, ny.css sets it back to 10px anyway, so this way everyone can be happy.
 
 .c-form-message {
   font-size: 11px;
-  width: 400px;
+  max-width: 400px;
   line-height: 13px;
   color: #666;
   padding: 5px 0px 10px 0px;
 }
 
 textarea#teamcomment {
-  width: 530px;
+  max-width: 530px;
 }
 
 .c-form-button {
