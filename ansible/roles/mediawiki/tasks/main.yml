@@ -196,10 +196,11 @@
       # to add it to the hook directly in LocalSettings
       $wgHooks['SidebarBeforeOutput'][] = 'PickSomeHooks::onSidebarBeforeOutput';
       wfLoadExtension('PickSome');
+      $wgPickSomeNumberOfPicks = 5;
       # This may not be performant and require caching if number of users/page hits
       # becomes large.
       $wgPickSomePage = function($title) {
-        $eligibleWildCardsTitle = Title::newFromText("Eligible Wild Cards");
+        $eligibleWildCardsTitle = Title::newFromText("TorqueConfig:FinalistCandidates");
         if($eligibleWildCardsTitle->exists()) {
           $page = new WikiPage($eligibleWildCardsTitle);
           $valid_pages = [];
@@ -216,16 +217,16 @@
       };
 
       $picksomeOverrideMessage = [
-        "picksome-all" => "Everyone's Wild Cards",
-        "picksome-title" => "Wild Cards",
-        "picksome-choices" => "Wild Card Choices",
-        "picksome-my-picks" => "My Wild Cards",
+        "picksome-all" => "Everyone's Finalist Candidates",
+        "picksome-title" => "Finalist Candidates",
+        "picksome-choices" => "Finalist Candidate Choices",
+        "picksome-my-picks" => "My Finalist Candidates",
         "picksome-unpick" => "Deselect",
         "picksome-pick" => "Select this page",
-        "picksome-no-picks" => "No Wild Cards",
+        "picksome-no-picks" => "No Finalist Candidates",
         "picksome-current" => "Current Page",
-        "picksome-view-all" => "View Everyone's Wild Cards",
-        "picksome-global-list" => "Global Wild Card List",
+        "picksome-view-all" => "View Everyone's Finalist Candidates",
+        "picksome-global-list" => "Global Finalist Candidate List",
         "picksome-remove-below" => "To select the current page, remove one below",
         "picksome-stop" => "Stop Selecting",
         "picksome-close-window" => "Close Window",
@@ -356,6 +357,7 @@
       $wgGroupPermissions['BoardMembers']['read'] = true;
       $wgGroupPermissions['PseudoBoardMembers']['read'] = true;
       $wgGroupPermissions['BoardMembers']['picksome'] = true;
+      $wgGroupPermissions['BoardMembers']['picksome-write'] = true;
       $wgGroupPermissions['PseudoBoardMembers']['picksome'] = true;
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
         $wgGroupPermissions['LFCTorque'][$key] = $value;
