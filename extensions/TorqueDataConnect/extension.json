@@ -48,7 +48,9 @@
   },
   "config": {
     "TorqueDataConnectConfigPage": "",
-    "TorqueDataConnectGroup": false
+    "TorqueDataConnectGroup": false,
+    "TorqueDataConnectNotFoundMessage": "Torque Data Connect Error: Key Not Found",
+    "TorqueDataConnectRenderToHTML": true
   },
   "manifest_version": 1
 }

@@ -8,7 +8,7 @@ class TorqueDataConnectHooks {
 	public static function loadLocation($parser, $location) {
   	$parser->disableCache();
 
-    global $wgTorqueDataConnectGroup;
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML;
     $contents = file_get_contents(
       "http://localhost:5000/api/" .
       $location .
@@ -16,11 +16,20 @@ class TorqueDataConnectHooks {
       $wgTorqueDataConnectGroup
       );
 
-    # The combination of recursiveTagParse and isHTML set to true
-    # was the winning set of things to do to get the #evu tags from
-    # the video extension to correctly dump out html that's correctly
-    # rendered.
-    return [$parser->recursiveTagParseFully($contents), "isHTML" => true];
+    # If there are parser hooks in the output of the template, then
+    # then we need to parse it fully, and let mediawiki know that
+    # we're sending html as output.
+    #
+    # Discovered this when using the #evu tag which creates iframes
+    # for videos.
+    if(!$contents) {
+      global $wgTorqueDataConnectNotFoundMessage;
+      return $wgTorqueDataConnectNotFoundMessage;
+    } else if($wgTorqueDataConnectRenderToHTML) {
+      return [$parser->recursiveTagParseFully($contents), "isHTML" => true];
+    } else {
+      return $contents;
+    }
 	}
 
   public static function onPageContentSaveComplete(

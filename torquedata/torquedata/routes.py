@@ -1,6 +1,6 @@
 from torquedata import app, data, sheet_config, load_sheet, permissions, attachment_config
 from jinja2 import Template
-from flask import request, send_file
+from flask import request, send_file, abort
 from werkzeug.utils import secure_filename
 
 import json
@@ -65,7 +65,7 @@ def row(sheet_name, key, fmt):
         if fmt == "json":
             return json.dumps({"error": "Invalid " + sheet_config[sheet_name]["key_column"]})
         else:
-            return  "Invalid " + sheet_config[sheet_name]["key_column"];
+            abort(403, "Invalid " + sheet_config[sheet_name]["key_column"]);
 
     row = data[sheet_name][key]
 

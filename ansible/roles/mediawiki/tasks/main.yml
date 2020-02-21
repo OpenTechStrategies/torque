@@ -255,8 +255,9 @@
       $wgCollectionPortletFormats = [];
       $wgCollectionDisableDownloadSection = false;
       $wgHooks['ApiBeforeMain'][] = function($main) {
-        global $wgTorqueDataConnectGroup;
-        if($main->getUser() && strtolower($main->getUser()->getName()) == "mwlib") {
+        global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML;
+        if($main->getUser() && strtolower($main->getUser()->getName()) == "{{ mediawiki_mwlib_username }}") {
+          $wgTorqueDataConnectRenderToHTML = false;
           $wgTorqueDataConnectGroup = $main->getRequest()->getText("tdcgroup", false);
         }
       };
@@ -282,6 +283,7 @@
       $wgExtraNamespaces[TORQUE_CONFIG_TALK] = "TorqueConfig_talk";
       $wgNamespaceProtection[TORQUE_CONFIG] = array("edittorqueconfig");
       $wgTorqueDataConnectConfigPage = "TorqueConfig:MainConfig";
+      $wgTorqueDataConnectNotFoundMessage = "This proposal has been disqualified in admin, peer, or expert review.";
       wfLoadExtension('TorqueDataConnect');
 
 - name: Enable TeamComments
