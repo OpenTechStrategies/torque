@@ -20,6 +20,7 @@
     src: "{{ playbook_dir }}/../torquedata/{{ item }}"
     dest: "{{ torquedata_install_directory }}"
   loop:
+    - Pipfile
     - Pipfile.lock
     - torquedata
 

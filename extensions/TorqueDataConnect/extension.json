@@ -32,7 +32,8 @@
     "ParserFirstCallInit": "TorqueDataConnectHooks::onParserFirstCallInit",
     "BeforeInitialize": "TorqueDataConnectHooks::onBeforeInitialize",
     "PageContentSaveComplete": "TorqueDataConnectHooks::onPageContentSaveComplete",
-    "SiteNoticeAfter": "TorqueDataConnectHooks::siteNoticeAfter"
+    "SiteNoticeAfter": "TorqueDataConnectHooks::siteNoticeAfter",
+    "SpecialSearchResultsAppend": "TorqueDataConnectHooks::onSpecialSearchResultsAppend"
   },
   "APIModules": {
     "torquedataconnect": "TorqueDataConnectQuery",

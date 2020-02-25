@@ -1,4 +1,4 @@
-from torquedata import app, data, sheet_config, load_sheet, permissions, attachment_config
+from torquedata import app, data, sheet_config, load_sheet, permissions, attachment_config, indices
 from jinja2 import Template
 from flask import request, send_file, abort
 from werkzeug.utils import secure_filename
@@ -9,25 +9,96 @@ import re
 import io
 import pickle
 
+import shutil
+import whoosh
+from whoosh import index
+from whoosh.index import create_in
+from whoosh.qparser import QueryParser
+from whoosh.fields import *
+
+wip_search_template = """
+<div style='max-width:38em'>
+[[{{ proposal['MediaWiki Title'] }}]]
+<div style='max-height:6.5em;line-height:1.5em;overflow:hidden;margin-top:-13px;'>
+{{ proposal["Executive Summary"] }}
+</div>
+<div style='color:green;margin-top:-2px'>
+Wise Head Rank - {{ proposal ['Wise Head Overall Score Rank Normalized'] }}
+</div>
+</div>
+"""
+
 def cull_invalid_columns(o, valid_fields):
     return {k:v for (k,v) in o.items() if (k in valid_fields)}
 
-def cull_invalid_proposals(group, proposals):
+def cull_invalid_objects(group, sheet_name):
     if group not in permissions.keys():
         return []
     elif "valid_ids" in permissions[group].keys():
         valid_ids = permissions[group]["valid_ids"];
-        return [ p for p in proposals if (p[sheet_config["proposals"]["key_column"]] in valid_ids) ]
+        return [ o for o in data[sheet_name].values() if (o[sheet_config[sheet_name]["key_column"]] in valid_ids) ]
     else:
-        return proposals
+        return list(data[sheet_name].values())
+
+def reindex_search(group, sheet_name):
+    dir = os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "indices", group)
+    if os.path.exists(dir):
+        shutil.rmtree(dir)
+
+    os.mkdir(dir)
+
+    print("Reindexing for " + sheet_name + " / " + group)
+    schema = Schema(key=ID(stored=True, unique=True), content=TEXT)
+    ix = create_in(dir, schema)
+    writer = ix.writer()
+    for o in cull_invalid_objects(group, sheet_name):
+        writer.add_document(
+                key=o[sheet_config[sheet_name]["key_column"]],
+                content=" ".join([str(c) for c in cull_invalid_columns(o, permissions[group]["columns"]).values()])
+                )
+    writer.commit()
+
+    indices[group] = ix
+
+    return ""
+
+@app.route("/search/<sheet_name>")
+def search(sheet_name):
+    q = request.args.get("q")
+    group = request.args.get("group")
+
+    if group in indices:
+        ix = indices[group]
+        with ix.searcher() as searcher:
+            parser = QueryParser("content", ix.schema)
+            query = parser.parse(q)
+            results = searcher.search(query, limit=20)
+            template = Template(wip_search_template)
+
+            config = sheet_config[sheet_name]
+
+            resp = ""
+
+            if results.scored_length() == 0:
+                return "There were no results matching the query."
+            else:
+                for r in results:
+                    o = data[sheet_name][r["key"]]
+                    culled_o = cull_invalid_columns(data[sheet_name][r["key"]], permissions[group]["columns"])
+                    resp += template.render({config["object_name"]: culled_o})
+                    resp += "\n\n"
+
+            return resp
+    else:
+        return ""
 
 @app.route('/api/<sheet_name>.<fmt>')
 def sheet(sheet_name, fmt):
     group = request.args.get("group")
 
     if fmt == "json":
-        valid_proposals = cull_invalid_proposals(group, data[sheet_name].values())
-        return json.dumps({sheet_name: [cull_invalid_columns(o, permissions[group]["columns"]) for o in valid_proposals ]})
+        valid_objects = cull_invalid_objects(group, sheet_name)
+        return json.dumps({sheet_name: [cull_invalid_columns(o, permissions[group]["columns"]) for o in valid_objects ]})
     else:
         raise Exception("Only json format valid for full list")
 
@@ -35,7 +106,7 @@ def sheet(sheet_name, fmt):
 def sheet_toc(sheet_name, toc_name, fmt):
     group = request.args.get("group")
 
-    valid_proposals = cull_invalid_proposals(group, list(data[sheet_name].values()))
+    valid_objects = cull_invalid_objects(group, sheet_name)
 
     if fmt == "mwiki":
         toc_str = ""
@@ -43,7 +114,7 @@ def sheet_toc(sheet_name, toc_name, fmt):
             template_str = f.read()
         with open(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".json")) as f:
             template_data = json.loads(f.read())
-        template_data[sheet_name] = { p["Review Number"]:p for p in valid_proposals }
+        template_data[sheet_name] = { o[sheet_config[sheet_name]["key_column"]]:o for o in valid_objects }
 
         return Template(template_str).render(template_data)
     else:
@@ -142,6 +213,11 @@ def upload_sheet():
             pass
 
         try:
+            os.mkdir(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "indices"))
+        except FileExistsError:
+            pass
+
+        try:
             os.mkdir(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments"))
         except FileExistsError:
             pass
@@ -179,12 +255,14 @@ def set_group_config():
     if 'columns' in new_config:
         permissions[group_name]['columns'] = new_config['columns']
 
-
     with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "permissions"), 'wb') as f:
         pickle.dump(permissions, f)
 
-    return ''
+    # Group permissions aren't tied to sheets yet, which is a problem that will need to be solved
+    for sheet_name in data.keys():
+        reindex_search(group_name, sheet_name)
 
+    return ''
 
 @app.route('/upload/toc', methods=['POST'])
 def upload_toc():

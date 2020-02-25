@@ -4,6 +4,7 @@ import csv
 import configparser
 import os
 import pickle
+from whoosh import index
 
 app = Flask(__name__)
 
@@ -28,6 +29,7 @@ except Exception:
     attachment_config = {}
 
 data = {}
+indices = {}
 def load_sheet(sheet_name):
     data[sheet_name] = {}
     reader = csv.reader(
@@ -44,6 +46,12 @@ def load_sheet(sheet_name):
                 cell = cell.strip().split("\n")
             o[field] = cell
         data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
+
+    for group in permissions.keys():
+        dir = os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "indices", group)
+        if index.exists_in(dir):
+            ix = index.open_dir(dir)
+            indices[group] = ix
 
 for sheet_name in sheet_config.sections():
     if sheet_name is "DEFAULT":
