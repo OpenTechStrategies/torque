@@ -1,4 +1,4 @@
-from torquedata import app, data, sheet_config, load_sheet, permissions, attachment_config, indices
+from torquedata import *
 from jinja2 import Template
 from flask import request, send_file, abort
 from werkzeug.utils import secure_filename
@@ -11,10 +11,7 @@ import pickle
 
 import shutil
 import whoosh
-from whoosh import index
-from whoosh.index import create_in
 from whoosh.qparser import QueryParser
-from whoosh.fields import *
 
 wip_search_template = """
 <div style='max-width:38em'>
@@ -28,47 +25,14 @@ Wise Head Rank - {{ proposal ['Wise Head Overall Score Rank Normalized'] }}
 </div>
 """
 
-def cull_invalid_columns(o, valid_fields):
-    return {k:v for (k,v) in o.items() if (k in valid_fields)}
-
-def cull_invalid_objects(group, sheet_name):
-    if group not in permissions.keys():
-        return []
-    elif "valid_ids" in permissions[group].keys():
-        valid_ids = permissions[group]["valid_ids"];
-        return [ o for o in data[sheet_name].values() if (o[sheet_config[sheet_name]["key_column"]] in valid_ids) ]
-    else:
-        return list(data[sheet_name].values())
-
-def reindex_search(group, sheet_name):
-    dir = os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "indices", group)
-    if os.path.exists(dir):
-        shutil.rmtree(dir)
-
-    os.mkdir(dir)
-
-    print("Reindexing for " + sheet_name + " / " + group)
-    schema = Schema(key=ID(stored=True, unique=True), content=TEXT)
-    ix = create_in(dir, schema)
-    writer = ix.writer()
-    for o in cull_invalid_objects(group, sheet_name):
-        writer.add_document(
-                key=o[sheet_config[sheet_name]["key_column"]],
-                content=" ".join([str(c) for c in cull_invalid_columns(o, permissions[group]["columns"]).values()])
-                )
-    writer.commit()
-
-    indices[group] = ix
-
-    return ""
-
 @app.route("/search/<sheet_name>")
 def search(sheet_name):
     q = request.args.get("q")
     group = request.args.get("group")
+    sha = permissions_sha(group)
 
-    if group in indices:
-        ix = indices[group]
+    if sha in indices:
+        ix = indices[sha]
         with ix.searcher() as searcher:
             parser = QueryParser("content", ix.schema)
             query = parser.parse(q)
@@ -213,7 +177,9 @@ def upload_sheet():
             pass
 
         try:
-            os.mkdir(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "indices"))
+            dir = os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "indices")
+            shutil.rmtree(dir)
+            os.mkdir(dir)
         except FileExistsError:
             pass
 
@@ -260,7 +226,7 @@ def set_group_config():
 
     # Group permissions aren't tied to sheets yet, which is a problem that will need to be solved
     for sheet_name in data.keys():
-        reindex_search(group_name, sheet_name)
+        index_search(group_name, sheet_name)
 
     return ''
 
