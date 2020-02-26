@@ -13,18 +13,6 @@ import shutil
 import whoosh
 from whoosh.qparser import QueryParser
 
-wip_search_template = """
-<div style='max-width:38em'>
-[[{{ proposal['MediaWiki Title'] }}]]
-<div style='max-height:6.5em;line-height:1.5em;overflow:hidden;margin-top:-13px;'>
-{{ proposal["Executive Summary"] }}
-</div>
-<div style='color:green;margin-top:-2px'>
-Wise Head Rank - {{ proposal ['Wise Head Overall Score Rank Normalized'] }}
-</div>
-</div>
-"""
-
 @app.route("/search/<sheet_name>")
 def search(sheet_name):
     q = request.args.get("q")
@@ -37,7 +25,10 @@ def search(sheet_name):
             parser = QueryParser("content", ix.schema)
             query = parser.parse(q)
             results = searcher.search(query, limit=20)
-            template = Template(wip_search_template)
+
+            search_templates = templates['Search']
+            search_template = search_templates['templates'][search_templates['default']]
+            template = Template(search_template)
 
             config = sheet_config[sheet_name]
 
@@ -74,11 +65,21 @@ def sheet_toc(sheet_name, toc_name, fmt):
 
     if fmt == "mwiki":
         toc_str = ""
+        config = sheet_config[sheet_name]
         with open(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".j2")) as f:
             template_str = f.read()
         with open(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".json")) as f:
             template_data = json.loads(f.read())
-        template_data[sheet_name] = { o[sheet_config[sheet_name]["key_column"]]:o for o in valid_objects }
+        template_data[sheet_name] = { o[config["key_column"]]:o for o in valid_objects }
+
+        toc_templates = templates['TOC']
+        toc_template = toc_templates['templates'][toc_templates['default']]
+        template = Template(toc_template)
+        template_data['toc_lines'] = {
+                o[config['key_column']]:template.render({config['object_name']: o})
+                for o
+                in valid_objects
+            }
 
         return Template(template_str).render(template_data)
     else:
@@ -111,9 +112,11 @@ def row(sheet_name, key, fmt):
         return json.dumps(row)
     elif fmt == "mwiki":
         config = sheet_config[sheet_name]
-        mwiki_template = Template(permissions[group]["template"])
+        mwiki_templates = templates['View']
+        mwiki_template = mwiki_templates['templates'][mwiki_templates['default']]
+        template = Template(mwiki_template)
 
-        return mwiki_template.render({config["object_name"]: row})
+        return template.render({config["object_name"]: row})
     else:
         raise Exception("Invalid format: " + fmt)
 
@@ -201,6 +204,19 @@ def upload_sheet():
 
     return ""
 
+@app.route('/config/reset')
+def reset_config():
+    global templates, permissions
+    permissions = {}
+    templates = {}
+    with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "permissions"), 'wb') as f:
+        pickle.dump(permissions, f)
+
+    with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "templates"), 'wb') as f:
+        pickle.dump(templates, f)
+
+    return ''
+
 @app.route('/config/group', methods=['POST'])
 def set_group_config():
     new_config = request.json
@@ -215,9 +231,6 @@ def set_group_config():
     if 'valid_ids' in new_config:
         permissions[group_name]['valid_ids'] = new_config['valid_ids']
 
-    if 'template' in new_config:
-        permissions[group_name]['template'] = new_config['template']
-
     if 'columns' in new_config:
         permissions[group_name]['columns'] = new_config['columns']
 
@@ -227,6 +240,35 @@ def set_group_config():
     # Group permissions aren't tied to sheets yet, which is a problem that will need to be solved
     for sheet_name in data.keys():
         index_search(group_name, sheet_name)
+
+    return ''
+
+@app.route('/config/template', methods=['POST'])
+def set_template_config():
+    new_config = request.json
+
+    if 'name' not in new_config:
+        raise Exception("Must have a template name")
+
+    if 'type' not in new_config:
+        raise Exception("Must have a template type")
+
+    template_type = new_config['type']
+    if template_type not in templates:
+        templates[template_type] = {
+                'default': None,
+                'templates': {}
+                }
+
+    name = new_config['name']
+    if name not in templates[template_type]['templates']:
+        # We just make the first one we get the default for the type
+        if not templates[template_type]['default']:
+            templates[template_type]['default'] = name
+        templates[template_type]['templates'][name] = new_config['template']
+
+    with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "templates"), 'wb') as f:
+        pickle.dump(templates, f)
 
     return ''
 
