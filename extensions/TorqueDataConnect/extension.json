@@ -33,7 +33,7 @@
     "BeforeInitialize": "TorqueDataConnectHooks::onBeforeInitialize",
     "PageContentSaveComplete": "TorqueDataConnectHooks::onPageContentSaveComplete",
     "SiteNoticeAfter": "TorqueDataConnectHooks::siteNoticeAfter",
-    "SpecialSearchResultsAppend": "TorqueDataConnectHooks::onSpecialSearchResultsAppend"
+    "SpecialSearchResultsPrepend": "TorqueDataConnectHooks::onSpecialSearchResultsPrepend"
   },
   "APIModules": {
     "torquedataconnect": "TorqueDataConnectQuery",

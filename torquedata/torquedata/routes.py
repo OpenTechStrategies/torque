@@ -24,7 +24,8 @@ def search(sheet_name):
         with ix.searcher() as searcher:
             parser = QueryParser("content", ix.schema)
             query = parser.parse(q)
-            results = searcher.search(query, limit=20)
+            # 2000 is arbitrarily large enough, and we must have a limit declared
+            results = searcher.search(query, limit=2000)
 
             search_templates = templates['Search']
             search_template = search_templates['templates'][search_templates['default']]

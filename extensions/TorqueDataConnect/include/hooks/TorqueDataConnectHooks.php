@@ -73,10 +73,10 @@ class TorqueDataConnectHooks {
     return true;
   }
 
-  public static function onSpecialSearchResultsAppend($specialSearch, $output, $term) {
+  public static function onSpecialSearchResultsPrepend($specialSearch, $output, $term) {
     global $wgTorqueDataConnectGroup;
 
-    $output->addWikiText("== Torque Results ==");
+    $output->addWikiText("== Torque Results for '" . $term . "' ==");
 
     $results = file_get_contents(
       "http://localhost:5000/search/proposals" .
@@ -87,7 +87,7 @@ class TorqueDataConnectHooks {
       );
     $output->addWikiText($results);
 
-    return true;
+    return false;
   }
 }
 
