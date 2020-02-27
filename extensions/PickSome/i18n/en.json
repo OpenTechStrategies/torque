@@ -19,5 +19,9 @@
   "picksome-remove-below": "To pick the current page, remove one below",
   "picksome-stop": "Stop Picking",
   "picksome-close-window": "Close Window",
-  "picksome-start": "Start Picking"
+  "picksome-start": "Start Picking",
+  "picksomelogpage": "PickSome log",
+  "picksomelogpagetext": "This is a log of PickSome choices made by users",
+  "picksome-logpick": "Picked in PickSome",
+  "picksome-logremove": "Removed in PickSome"
 }

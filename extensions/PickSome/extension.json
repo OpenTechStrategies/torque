@@ -11,6 +11,19 @@
 	"requires": {
 		"MediaWiki": ">= 1.31.0"
 	},
+  "LogActions": {
+    "picksome/pick": "picksome-logpick",
+    "picksome/remove": "picksome-logremove"
+  },
+  "LogHeaders": {
+    "picksome": "picksomelogpagetext"
+  },
+  "LogNames": {
+    "picksome": "picksomelogpage"
+  },
+  "LogTypes": [
+    "picksome"
+  ],
 	"SpecialPages": {
 		"PickSome": "PickSome"
 	},

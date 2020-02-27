@@ -25,6 +25,7 @@ class PickSome extends SpecialPage {
           redirect(
             $page_picked->getFullURL()
           );
+        $this->log("pick", $page_picked);
         return;
       case 'start':
         PickSomeSession::enable();
@@ -63,6 +64,8 @@ class PickSome extends SpecialPage {
           redirect(
             WikiPage::newFromID($this->getRequest()->getVal('returnto'))->getTitle()->getFullURL()
           );
+        $page_removed = WikiPage::newFromID($this->getRequest()->getVal('page'))->getTitle();
+        $this->log("remove", $page_removed);
         return;
     }
     $this->renderPickSomePage();
@@ -183,5 +186,11 @@ class PickSome extends SpecialPage {
       array_push($picked_pages, WikiPage::newFromID($row->page_id));
     }
     return $picked_pages;
+  }
+
+  private function log($action, $page) {
+    $log = new LogPage('picksome', false);
+
+    $log->addEntry($action, $page, $page->getText());
   }
 }
