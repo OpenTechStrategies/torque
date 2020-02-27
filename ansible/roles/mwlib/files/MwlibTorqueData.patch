@@ -6,7 +6,7 @@ diff -ruN mwlib/lib/python2.7/site-packages/mwlib/apps/make_nuwiki.py mwlib.modi
      def get_api(self):
          if self.username:
 -            api = mwapi.mwapi(self.api_url, self.username, self.password)
-+            api = mwapi.mwapi(self.api_url, self.torquegroup, self.username, self.password)
++            api = mwapi.mwapi(self.api_url, self.torqueinfo, self.username, self.password)
          else:
              api = mwapi.mwapi(self.api_url)
          api.set_limit()
@@ -14,7 +14,7 @@ diff -ruN mwlib/lib/python2.7/site-packages/mwlib/apps/make_nuwiki.py mwlib.modi
  
          self.username = options.username
          self.password = options.password
-+        self.torquegroup = options.torquegroup
++        self.torqueinfo = options.torqueinfo
          self.domain = options.domain
  
          self.fsout = fetch.fsoutput(self.fsdir)
@@ -26,10 +26,10 @@ diff -ruN mwlib/lib/python2.7/site-packages/mwlib/net/sapi.py mwlib.modified/lib
  
  class mwapi(object):
 -    def __init__(self, apiurl, username=None, password=None):
-+    def __init__(self, apiurl, torquegroup=None, username=None, password=None):
++    def __init__(self, apiurl, torqueinfo=None, username=None, password=None):
          self.apiurl = apiurl
          self.baseurl = apiurl  # XXX
-+        self.torquegroup = torquegroup
++        self.torqueinfo = torqueinfo
  
          if username:
              passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -37,8 +37,8 @@ diff -ruN mwlib/lib/python2.7/site-packages/mwlib/net/sapi.py mwlib.modified/lib
          if sem is not None:
              sem.acquire()
  
-+        if self.torquegroup:
-+            kwargs["tdcgroup"] = self.torquegroup
++        if self.torqueinfo:
++            kwargs["tdcinfo"] = self.torqueinfo
 +
          try:
              if use_post:
@@ -51,10 +51,10 @@ diff -ruN mwlib/lib/python2.7/site-packages/mwlib/nslave.py mwlib.modified/lib/p
  
      if login_credentials:
 -        username, password, domain = (login_credentials.split(":", 3) + [None] * 3)[:3]
-+        username, torquegroup, password, domain = (login_credentials.split(":", 4) + [None] * 4)[:4]
++        username, torqueinfo, password, domain = (login_credentials.split(":", 4) + [None] * 4)[:4]
          assert username and password, "bad login_credentials"
 -        args.extend(["--username", username, "--password", password])
-+        args.extend(["--username", username, "--password", password, "--torquegroup", torquegroup])
++        args.extend(["--username", username, "--password", password, "--torqueinfo", torqueinfo])
          if domain:
              args.extend(["--domain", domain])
  
@@ -65,7 +65,7 @@ diff -ruN mwlib/lib/python2.7/site-packages/mwlib/options.py mwlib.modified/lib/
          a("-l", "--logfile", help="log to logfile")
  
          a("--username", help="username for login")
-+        a("--torquegroup", help="group for torque")
++        a("--torqueinfo", help="info for torque")
          a("--password", help="password for login")
          a("--domain", help="domain for login")
  

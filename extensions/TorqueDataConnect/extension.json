@@ -33,7 +33,8 @@
     "BeforeInitialize": "TorqueDataConnectHooks::onBeforeInitialize",
     "PageContentSaveComplete": "TorqueDataConnectHooks::onPageContentSaveComplete",
     "SiteNoticeAfter": "TorqueDataConnectHooks::siteNoticeAfter",
-    "SpecialSearchResultsPrepend": "TorqueDataConnectHooks::onSpecialSearchResultsPrepend"
+    "SpecialSearchResultsPrepend": "TorqueDataConnectHooks::onSpecialSearchResultsPrepend",
+    "SidebarBeforeOutput": "TorqueDataConnectHooks::onSidebarBeforeOutput"
   },
   "APIModules": {
     "torquedataconnect": "TorqueDataConnectQuery",
@@ -50,6 +51,7 @@
   "config": {
     "TorqueDataConnectConfigPage": "",
     "TorqueDataConnectGroup": false,
+    "TorqueDataConnectView": false,
     "TorqueDataConnectNotFoundMessage": "Torque Data Connect Error: Key Not Found",
     "TorqueDataConnectRenderToHTML": true
   },

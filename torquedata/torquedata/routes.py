@@ -112,9 +112,10 @@ def row(sheet_name, key, fmt):
     if fmt == "json":
         return json.dumps(row)
     elif fmt == "mwiki":
-        config = sheet_config[sheet_name]
         mwiki_templates = templates['View']
-        mwiki_template = mwiki_templates['templates'][mwiki_templates['default']]
+        chosen_view = request.args.get("view", mwiki_templates['default'])
+        config = sheet_config[sheet_name]
+        mwiki_template = mwiki_templates['templates'][chosen_view]
         template = Template(mwiki_template)
 
         return template.render({config["object_name"]: row})

@@ -255,16 +255,18 @@
       $wgCollectionPortletFormats = [];
       $wgCollectionDisableDownloadSection = false;
       $wgHooks['ApiBeforeMain'][] = function($main) {
-        global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML;
+        global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView;
         if($main->getUser() && strtolower($main->getUser()->getName()) == "{{ mediawiki_mwlib_username }}") {
           $wgTorqueDataConnectRenderToHTML = false;
-          $wgTorqueDataConnectGroup = $main->getRequest()->getText("tdcgroup", false);
+          $tdcinfo = $main->getRequest()->getText("tdcinfo", false);
+          list($wgTorqueDataConnectGroup, $wgTorqueDataConnectView) = explode("|", $tdcinfo);
         }
       };
       $wgHooks['BeforeInitialize'][] = function(&$title, &$article = null, &$output, &$user, $request, $mediaWiki) {
         global $wgCollectionMWServeCredentials;
         $group = TorqueDataConnectConfig::getValidGroup($user);
-        $wgCollectionMWServeCredentials = "{{ mediawiki_mwlib_username }}:${group}:{{ mediawiki_mwlib_password }}";
+        $view = TorqueDataConnectConfig::getCurrentView();
+        $wgCollectionMWServeCredentials = "{{ mediawiki_mwlib_username }}:${group}|${view}:{{ mediawiki_mwlib_password }}";
       };
 
 - name: Enable SimpleFavorites

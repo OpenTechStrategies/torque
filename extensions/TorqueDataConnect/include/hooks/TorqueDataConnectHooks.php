@@ -8,12 +8,13 @@ class TorqueDataConnectHooks {
 	public static function loadLocation($parser, $location) {
   	$parser->disableCache();
 
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML;
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView;
     $contents = file_get_contents(
       "http://localhost:5000/api/" .
       $location .
       "?group=" .
-      $wgTorqueDataConnectGroup
+      $wgTorqueDataConnectGroup .
+      ($wgTorqueDataConnectView ? "&view=" . $wgTorqueDataConnectView : "")
       );
 
     # If there are parser hooks in the output of the template, then
@@ -43,9 +44,13 @@ class TorqueDataConnectHooks {
   }
 
   public static function onBeforeInitialize(&$title, &$article = null, &$output, &$user, $request, $mediaWiki) {
-    global $wgTorqueDataConnectGroup;
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectView;
     if($user && !$wgTorqueDataConnectGroup) {
       $wgTorqueDataConnectGroup = TorqueDataConnectConfig::getValidGroup($user);
+    }
+
+    if(!$wgTorqueDataConnectView) {
+      $wgTorqueDataConnectView = TorqueDataConnectConfig::getCurrentView();
     }
   }
 
@@ -88,6 +93,32 @@ class TorqueDataConnectHooks {
     $output->addWikiText($results);
 
     return false;
+  }
+
+  public static function onSidebarBeforeOutput(Skin $skin, &$bar) {
+    # Do this all inline here for now because it's quick, and it would actually
+    # be more confusing to set up the entire javascript infrastructure.  The moment
+    # we do more things with js, this should all get broken out and modularized
+    # correctly!
+    #
+    # Also depending on jquery here, which should get loaded by mediawiki.
+    $out  = "<div style='line-height: 1.125em; font-size: 0.75em'>";
+    $out .= "View: ";
+    $out .= "<select autocomplete=off id='torque-view-select' style='width:80px'";
+    $out .= "onchange='";
+    $out .= "var view = $(\"#torque-view-select\").children(\"option:selected\").val();";
+    $out .= "document.cookie = \"torqueview=\" + view + \"; path=/;\";";
+    $out .= "window.location = window.location;";
+    $out .= "'>";
+    foreach(TorqueDataConnectConfig::getAvailableViews() as $view) {
+      $selected = $view == $_COOKIE["torqueview"] ? " selected=selected" : "";
+      $out .= "<option $selected value='$view'>$view</option>";
+    }
+    $out .= "</select>";
+    $out .= "</div>";
+    $bar['Torque'] = $out;
+
+    return true;
   }
 }
 

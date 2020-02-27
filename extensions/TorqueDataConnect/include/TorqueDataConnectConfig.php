@@ -230,6 +230,29 @@ class TorqueDataConnectConfig {
     return self::$errors;
   }
 
+  public static function getAvailableViews() {
+    [$groupConfig, $templateConfig] = TorqueDataConnectConfig::parseConfig();
+    $views = [];
+    foreach($templateConfig as $config) {
+      if($config["templateType"] == "View") {
+        $views[] = $config["templateName"];
+      }
+    }
+    return $views;
+  }
+
+  public static function getCurrentView() {
+    if(array_key_exists("torqueview", $_COOKIE)) {
+      $cookieView = $_COOKIE["torqueview"];
+
+      if(in_array($cookieView, self::getAvailableViews())) {
+        return $cookieView;
+      }
+    }
+
+    return false;
+  }
+
   public static function getValidGroup($user) {
     foreach(TorqueDataConnectConfig::parseConfig()[0] as $group) {
       if(in_array($group["groupName"], $user->getGroups())) {
