@@ -107,7 +107,7 @@ class TorqueDataConnectHooks {
     $out .= "onchange='";
     $out .= "var view = $(\"#torque-view-select\").children(\"option:selected\").val();";
     $out .= "document.cookie = \"torqueview=\" + view + \"; path=/;\";";
-    $out .= "window.location = window.location;";
+    $out .= "window.location.reload(true);";
     $out .= "'>";
     foreach(TorqueDataConnectConfig::getAvailableViews() as $view) {
       $selected = $view == $_COOKIE["torqueview"] ? " selected=selected" : "";
