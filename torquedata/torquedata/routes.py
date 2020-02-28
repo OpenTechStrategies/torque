@@ -222,6 +222,7 @@ def reset_config():
 
 @app.route('/config/group', methods=['POST'])
 def set_group_config():
+    global permissions
     new_config = request.json
 
     if 'group' not in new_config:
