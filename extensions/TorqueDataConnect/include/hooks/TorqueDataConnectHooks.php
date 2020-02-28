@@ -81,8 +81,6 @@ class TorqueDataConnectHooks {
   public static function onSpecialSearchResultsPrepend($specialSearch, $output, $term) {
     global $wgTorqueDataConnectGroup;
 
-    $output->addWikiText("== Torque Results for '" . $term . "' ==");
-
     $results = file_get_contents(
       "http://localhost:5000/search/proposals" .
       "?group=" .

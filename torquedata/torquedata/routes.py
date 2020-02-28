@@ -38,6 +38,7 @@ def search(sheet_name):
             if results.scored_length() == 0:
                 return "There were no results matching the query."
             else:
+                resp = "== %d results for '%s' ==\n\n" % (results.scored_length(), q)
                 for r in results:
                     o = data[sheet_name][r["key"]]
                     culled_o = cull_invalid_columns(data[sheet_name][r["key"]], permissions[group]["columns"])
