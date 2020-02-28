@@ -111,6 +111,11 @@
     src: "{{ playbook_dir }}/../extensions/PickSome"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
+- name: Install ActivityLog
+  copy:
+    src: "{{ playbook_dir }}/../extensions/ActivityLog"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
 - name: Install TorqueDataConnect
   become_user: root
   copy:
@@ -181,6 +186,15 @@
       $wgSimpleSAMLphp_AttributeProcessorFactories = [
         "MediaWiki\\Extension\\SimpleSAMLphp\\AttributeProcessor\\SyncAllGroups::factory"
       ];
+
+- name: Enable ActivityLog
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE ACTIVITYLOG CONFIG"
+    block: |
+      wfLoadExtension('ActivityLog');
+      $wgActivityLogHooksToWatch["ArticleViewHeader"] = true;
+      $wgActivityLogHooksToWatch["UserLoginComplete"] = true;
 
 - name: Enable PickSome
   blockinfile:

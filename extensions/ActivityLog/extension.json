@@ -1,0 +1,37 @@
+{
+	"name": "ActivityLog",
+	"version": "0.0.1",
+	"author": [
+    "Open Tech Strategies"
+	],
+  "license-name": "GPL-2.0-or-later",
+	"url": "https://github.com/OpenTechStrategies/torque",
+	"descriptionmsg": "activitylog-desc",
+	"type": "other",
+	"LogActions": {
+		"activitylog/activity": "activitylog-activity"
+	},
+	"LogHeaders": {
+		"activitylog": "activitylogpagetext"
+	},
+	"LogNames": {
+		"activitylog": "activitylogpage"
+	},
+	"LogTypes": [
+		"activitylog"
+	],
+	"MessagesDirs": {
+		"ActivityLog": [
+			"i18n"
+		]
+	},
+	"AutoloadClasses": {
+		"ActivityLogHooks": "include/hooks/ActivityLogHooks.php"
+	},
+	"Hooks": {
+    "BeforeInitialize": "ActivityLogHooks::onBeforeInitialize"
+	},
+  "Config": {
+    "ActivityLogHooksToWatch": []
+  }
+}
