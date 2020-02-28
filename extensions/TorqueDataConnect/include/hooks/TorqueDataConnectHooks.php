@@ -103,8 +103,7 @@ class TorqueDataConnectHooks {
     #
     # Also depending on jquery here, which should get loaded by mediawiki.
     $out  = "<div style='line-height: 1.125em; font-size: 0.75em'>";
-    $out .= "View: ";
-    $out .= "<select autocomplete=off id='torque-view-select' style='width:80px'";
+    $out .= "<select autocomplete=off id='torque-view-select' style='width:130px'";
     $out .= "onchange='";
     $out .= "var view = $(\"#torque-view-select\").children(\"option:selected\").val();";
     $out .= "document.cookie = \"torqueview=\" + view + \"; path=/;\";";
@@ -116,7 +115,7 @@ class TorqueDataConnectHooks {
     }
     $out .= "</select>";
     $out .= "</div>";
-    $bar['Torque'] = $out;
+    $bar['View'] = $out;
 
     return true;
   }
