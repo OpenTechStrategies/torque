@@ -73,13 +73,19 @@ generate that file via:
 
 Look in that file for information about the variables and how you can set them
 
-### Note about secrets
+### Note for OTS deployers about variables/secrets
 
-While ansible does have the ability to encrypt secrets so they can be checked in
-and unlocked when running, torque uses ansible to act on other servers and
-doesn't have the ability to unlock vaults, and the design decisions around that
-have not been made.  For now, while running in prototype mode, secrets stay
-unlocked.
+While ansible does have the ability to encrypt secrets so they can be checked in,
+OTS has decided not to do that, and instead uses opass to hold the pertinent
+information.  There has been a script added in the svn location for the macfound
+project called `setup_ansible.sh` that will install the inventory files from
+opass for you.
+
+After that, you can run:
+
+```
+   $ ansible-playbook all.yml -i /path/to/inventories/<environment>
+```
 
 # Running the playbook
 
