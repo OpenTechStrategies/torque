@@ -52,6 +52,7 @@
     "TorqueDataConnectConfigPage": "",
     "TorqueDataConnectGroup": false,
     "TorqueDataConnectView": false,
+    "TorqueDataConnectSheetName": "",
     "TorqueDataConnectNotFoundMessage": "Torque Data Connect Error: Key Not Found",
     "TorqueDataConnectRenderToHTML": true
   },

@@ -47,8 +47,9 @@ class TorqueDataConnectConfig {
   }
 
   public static function commitGroupConfig($groupName, $columnPage, $proposalPage) {
+    global $wgTorqueDataConnectSheetName;
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'http://localhost:5000/config/group');
+    curl_setopt($ch, CURLOPT_URL, "http://localhost:5000/config/${wgTorqueDataConnectSheetName}/group");
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
       [
         "group" => $groupName,
@@ -61,8 +62,9 @@ class TorqueDataConnectConfig {
   }
 
   public static function commitTemplateConfig($templateName, $templatePage, $templateType) {
+    global $wgTorqueDataConnectSheetName;
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'http://localhost:5000/config/template');
+    curl_setopt($ch, CURLOPT_URL, "http://localhost:5000/config/${wgTorqueDataConnectSheetName}/template");
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
       [
         "name" => $templateName,
@@ -75,7 +77,8 @@ class TorqueDataConnectConfig {
   }
 
   public static function resetConfig() {
-    file_get_contents("http://localhost:5000/config/reset");
+    global $wgTorqueDataConnectSheetName;
+    file_get_contents("http://localhost:5000/config/${wgTorqueDataConnectSheetName}/reset");
   }
 
   private static function parseConfig() {
@@ -100,7 +103,7 @@ class TorqueDataConnectConfig {
     // that the following is cleaner.
     $groupName = false;
     $columnPage = false;
-    $proposalsPage = false;
+    $idsPage = false;
 
     $templateName = false;
     $templatePage = false;
@@ -121,7 +124,7 @@ class TorqueDataConnectConfig {
         if($permissionsSection) {
           $groupName = false;
           $columnPage = false;
-          $proposalsPage = false;
+          $idsPage = false;
         }else if($templatesSection) {
           $templateName = false;
           $templatePage = false;
@@ -136,18 +139,18 @@ class TorqueDataConnectConfig {
             $matches = [];
             preg_match("/\\[\\[(.*)\\]\\]/", $line, $matches);
             $columnPage = $matches[1];
-          } else if(!$proposalsPage) {
+          } else if(!$idsPage) {
             $matches = [];
             preg_match("/\\[\\[(.*)\\]\\]/", $line, $matches);
-            $proposalsPage = $matches[1];
+            $idsPage = $matches[1];
           } else {
             // Do nothing here, since a fourth column is ok for user notes if they like
           }
-          if($groupName && $columnPage && $proposalsPage) {
+          if($groupName && $columnPage && $idsPage) {
             array_push($groupConfig, [
               "groupName" => $groupName,
               "columnPage" => $columnPage,
-              "proposalsPage" => $proposalsPage
+              "idsPage" => $idsPage
             ]);
           }
         } else if($templatesSection) {
@@ -186,7 +189,7 @@ class TorqueDataConnectConfig {
       TorqueDataConnectConfig::commitGroupConfig(
         $group["groupName"],
         $group["columnPage"],
-        $group["proposalsPage"]
+        $group["idsPage"]
       );
     }
     foreach($templateConfig as $template) {
@@ -207,7 +210,7 @@ class TorqueDataConnectConfig {
     [$groupConfig, $templateConfig] = TorqueDataConnectConfig::parseConfig();
     foreach($groupConfig as $config) {
       if($title->equals(Title::newFromText($config["columnPage"])) ||
-         $title->equals(Title::newFromText($config["proposalsPage"]))) {
+         $title->equals(Title::newFromText($config["idsPage"]))) {
         return true;
       }
     }
@@ -225,7 +228,7 @@ class TorqueDataConnectConfig {
     [$groupConfig, $templateConfig] = TorqueDataConnectConfig::parseConfig();
     foreach($groupConfig as $group) {
       TorqueDataConnectConfig::convertPageToColumnConfig($group["columnPage"]);
-      TorqueDataConnectConfig::convertPageToIdConfig($group["proposalsPage"]);
+      TorqueDataConnectConfig::convertPageToIdConfig($group["idsPage"]);
     }
     return self::$errors;
   }

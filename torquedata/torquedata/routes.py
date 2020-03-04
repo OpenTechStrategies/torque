@@ -17,7 +17,7 @@ from whoosh.qparser import QueryParser
 def search(sheet_name):
     q = request.args.get("q")
     group = request.args.get("group")
-    sha = permissions_sha(group)
+    sha = permissions_sha(sheet_name, group)
 
     if sha in indices:
         ix = indices[sha]
@@ -27,7 +27,7 @@ def search(sheet_name):
             # 2000 is arbitrarily large enough, and we must have a limit declared
             results = searcher.search(query, limit=2000)
 
-            search_templates = templates['Search']
+            search_templates = templates[sheet_name]['Search']
             search_template = search_templates['templates'][search_templates['default']]
             template = Template(search_template)
 
@@ -41,7 +41,7 @@ def search(sheet_name):
                 resp = "== %d results for '%s' ==\n\n" % (results.scored_length(), q)
                 for r in results:
                     o = data[sheet_name][r["key"]]
-                    culled_o = cull_invalid_columns(data[sheet_name][r["key"]], permissions[group]["columns"])
+                    culled_o = cull_invalid_columns(data[sheet_name][r["key"]], permissions[sheet_name][group]["columns"])
                     resp += template.render({config["object_name"]: culled_o})
                     resp += "\n\n"
 
@@ -55,13 +55,19 @@ def sheet(sheet_name, fmt):
 
     if fmt == "json":
         valid_objects = cull_invalid_objects(group, sheet_name)
-        return json.dumps({sheet_name: [cull_invalid_columns(o, permissions[group]["columns"]) for o in valid_objects ]})
+        return json.dumps({sheet_name: [cull_invalid_columns(o, permissions[sheet_name][group]["columns"]) for o in valid_objects ]})
     else:
         raise Exception("Only json format valid for full list")
 
 @app.route('/api/<sheet_name>/toc/<toc_name>.<fmt>')
 def sheet_toc(sheet_name, toc_name, fmt):
     group = request.args.get("group")
+
+    if not group:
+        abort(403, "Group " + group + " invalid");
+    
+    if not 'TOC' in templates[sheet_name]:
+        abort(403, "No TOC defined for " + sheet_name);
 
     valid_objects = cull_invalid_objects(group, sheet_name)
 
@@ -74,7 +80,7 @@ def sheet_toc(sheet_name, toc_name, fmt):
             template_data = json.loads(f.read())
         template_data[sheet_name] = { o[config["key_column"]]:o for o in valid_objects }
 
-        toc_templates = templates['TOC']
+        toc_templates = templates[sheet_name]['TOC']
         toc_template = toc_templates['templates'][toc_templates['default']]
         template = Template(toc_template)
         template_data['toc_lines'] = {
@@ -93,11 +99,11 @@ def row(sheet_name, key, fmt):
 
     valid_id = False
 
-    if group in permissions.keys():
-        if "valid_ids" not in permissions[group].keys():
+    if group in permissions[sheet_name].keys():
+        if "valid_ids" not in permissions[sheet_name][group].keys():
             valid_id = True
         else:
-            valid_id = (key in permissions[group]["valid_ids"])
+            valid_id = (key in permissions[sheet_name][group]["valid_ids"])
 
     if not valid_id:
         if fmt == "json":
@@ -107,13 +113,13 @@ def row(sheet_name, key, fmt):
 
     row = data[sheet_name][key]
 
-    if "columns" in permissions[group]:
-        row = cull_invalid_columns(row, permissions[group]["columns"])
+    if "columns" in permissions[sheet_name][group]:
+        row = cull_invalid_columns(row, permissions[sheet_name][group]["columns"])
 
     if fmt == "json":
         return json.dumps(row)
     elif fmt == "mwiki":
-        mwiki_templates = templates['View']
+        mwiki_templates = templates[sheet_name]['View']
         chosen_view = request.args.get("view", mwiki_templates['default'])
         config = sheet_config[sheet_name]
         mwiki_template = mwiki_templates['templates'][chosen_view]
@@ -132,11 +138,11 @@ def attachment(sheet_name, key, attachment):
 
     valid_id = False
 
-    if group in permissions.keys():
-        if "valid_ids" not in permissions[group].keys():
+    if group in permissions[sheet_name].keys():
+        if "valid_ids" not in permissions[sheet_name][group].keys():
             valid_id = True
         else:
-            valid_id = (key in permissions[group]["valid_ids"])
+            valid_id = (key in permissions[sheet_name][group]["valid_ids"])
 
     if not valid_id:
         return "Invalid " + sheet_config[sheet_name]["key_column"]
@@ -149,7 +155,7 @@ def attachment(sheet_name, key, attachment):
         return "Invalid " + sheet_config[sheet_name]["key_column"]
 
     attachment_permissions_column = attachment_config[attachment_name]["permissions_column"]
-    if attachment_permissions_column not in permissions[group]["columns"]:
+    if attachment_permissions_column not in permissions[sheet_name][group]["columns"]:
         return "Invalid attachment: " + attachment_name
 
     with open(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments", attachment_name), "rb") as file:
@@ -207,11 +213,11 @@ def upload_sheet():
 
     return ""
 
-@app.route('/config/reset')
-def reset_config():
+@app.route('/config/<sheet_name>/reset')
+def reset_config(sheet_name):
     global templates, permissions
-    permissions = {}
-    templates = {}
+    permissions[sheet_name] = {}
+    templates[sheet_name] = {}
     with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "permissions"), 'wb') as f:
         pickle.dump(permissions, f)
 
@@ -220,23 +226,26 @@ def reset_config():
 
     return ''
 
-@app.route('/config/group', methods=['POST'])
-def set_group_config():
+@app.route('/config/<sheet_name>/group', methods=['POST'])
+def set_group_config(sheet_name):
     global permissions
     new_config = request.json
+
+    if sheet_name not in permissions.keys():
+        permissions[sheet_name] = {}
 
     if 'group' not in new_config:
         raise Exception("Must have a group name")
 
     group_name = new_config['group']
-    if group_name not in permissions.keys():
-        permissions[group_name] = {}
+    if group_name not in permissions[sheet_name].keys():
+        permissions[sheet_name][group_name] = {}
 
     if 'valid_ids' in new_config:
-        permissions[group_name]['valid_ids'] = new_config['valid_ids']
+        permissions[sheet_name][group_name]['valid_ids'] = new_config['valid_ids']
 
     if 'columns' in new_config:
-        permissions[group_name]['columns'] = new_config['columns']
+        permissions[sheet_name][group_name]['columns'] = new_config['columns']
 
     with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "permissions"), 'wb') as f:
         pickle.dump(permissions, f)
@@ -247,8 +256,8 @@ def set_group_config():
 
     return ''
 
-@app.route('/config/template', methods=['POST'])
-def set_template_config():
+@app.route('/config/<sheet_name>/template', methods=['POST'])
+def set_template_config(sheet_name):
     new_config = request.json
 
     if 'name' not in new_config:
@@ -257,19 +266,22 @@ def set_template_config():
     if 'type' not in new_config:
         raise Exception("Must have a template type")
 
+    if sheet_name not in templates.keys():
+        templates[sheet_name] = {}
+
     template_type = new_config['type']
-    if template_type not in templates:
-        templates[template_type] = {
+    if template_type not in templates[sheet_name]:
+        templates[sheet_name][template_type] = {
                 'default': None,
                 'templates': {}
                 }
 
     name = new_config['name']
-    if name not in templates[template_type]['templates']:
+    if name not in templates[sheet_name][template_type]['templates']:
         # We just make the first one we get the default for the type
-        if not templates[template_type]['default']:
-            templates[template_type]['default'] = name
-        templates[template_type]['templates'][name] = new_config['template']
+        if not templates[sheet_name][template_type]['default']:
+            templates[sheet_name][template_type]['default'] = name
+        templates[sheet_name][template_type]['templates'][name] = new_config['template']
 
     with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "templates"), 'wb') as f:
         pickle.dump(templates, f)

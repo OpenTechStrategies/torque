@@ -79,10 +79,11 @@ class TorqueDataConnectHooks {
   }
 
   public static function onSpecialSearchResultsPrepend($specialSearch, $output, $term) {
-    global $wgTorqueDataConnectGroup;
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectSheetName;
 
     $results = file_get_contents(
-      "http://localhost:5000/search/proposals" .
+      "http://localhost:5000/search/" .
+      $wgTorqueDataConnectSheetName.
       "?group=" .
       $wgTorqueDataConnectGroup .
       "&q=" .
