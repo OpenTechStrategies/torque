@@ -14,7 +14,7 @@ class TorqueDataConnectAttachment extends SpecialPage {
   }
 
   public function execute($subPage) {
-    global $wgTorqueDataConnectGroup;
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectWikiKey;
     $id = $this->getRequest()->getVal('id');
     $attachment = $this->getRequest()->getVal('attachment');
     $sheet_name = $this->getRequest()->getVal('sheet_name');
@@ -28,7 +28,9 @@ class TorqueDataConnectAttachment extends SpecialPage {
       '/' .
       urlencode($attachment) .
       "?group=" .
-      $wgTorqueDataConnectGroup);
+      $wgTorqueDataConnectGroup .
+      "&wiki_key=" .
+      $wgTorqueDataConnectWikiKey);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $resp = curl_exec ($ch);
 

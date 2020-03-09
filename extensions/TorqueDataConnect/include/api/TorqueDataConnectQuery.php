@@ -8,13 +8,16 @@ class TorqueDataConnectQuery extends APIBase {
   public function execute() {
     $valid_group = TorqueDataConnectConfig::getValidGroup($this->getUser());
 
+    global $wgTorqueDataConnectWikiKey;
+
     $contents = file_get_contents(
       "http://localhost:5000/api" .
       $this->getParameter("path") .
       ".json" .
       "?group=" .
-      $valid_group
-      );
+      $valid_group .
+      "&wiki_key=" .
+      $wgTorqueDataConnectWikiKey);
 
     $response = json_decode($contents);
     foreach($response as $name => $value) {

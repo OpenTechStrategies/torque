@@ -47,12 +47,13 @@ class TorqueDataConnectConfig {
   }
 
   public static function commitGroupConfig($groupName, $columnPage, $proposalPage) {
-    global $wgTorqueDataConnectSheetName;
+    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey;
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "http://localhost:5000/config/${wgTorqueDataConnectSheetName}/group");
+    curl_setopt($ch, CURLOPT_URL, "http://localhost:5000/config/${wgTorqueDataConnectSheetName}/${wgTorqueDataConnectWikiKey}/group");
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
       [
         "group" => $groupName,
+        "wiki_key" => $wgTorqueDataConnectWikiKey,
         "columns" => TorqueDataConnectConfig::convertPageToColumnConfig($columnPage),
         "valid_ids" => TorqueDataConnectConfig::convertPageToIdConfig($proposalPage)
       ]));
@@ -62,12 +63,13 @@ class TorqueDataConnectConfig {
   }
 
   public static function commitTemplateConfig($templateName, $templatePage, $templateType) {
-    global $wgTorqueDataConnectSheetName;
+    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey;
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "http://localhost:5000/config/${wgTorqueDataConnectSheetName}/template");
+    curl_setopt($ch, CURLOPT_URL, "http://localhost:5000/config/${wgTorqueDataConnectSheetName}/${wgTorqueDataConnectWikiKey}/template");
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
       [
         "name" => $templateName,
+        "wiki_key" => $wgTorqueDataConnectWikiKey,
         "template" => TorqueDataConnectConfig::getMwikiTemplate($templatePage),
         "type" => $templateType
       ]));
@@ -77,8 +79,8 @@ class TorqueDataConnectConfig {
   }
 
   public static function resetConfig() {
-    global $wgTorqueDataConnectSheetName;
-    file_get_contents("http://localhost:5000/config/${wgTorqueDataConnectSheetName}/reset");
+    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey;
+    file_get_contents("http://localhost:5000/config/${wgTorqueDataConnectSheetName}/${wgTorqueDataConnectWikiKey}/reset");
   }
 
   private static function parseConfig() {

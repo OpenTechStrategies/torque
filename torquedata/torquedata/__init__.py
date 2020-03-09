@@ -41,31 +41,34 @@ indices = {}
 def cull_invalid_columns(o, valid_fields):
     return {k:v for (k,v) in o.items() if (k in valid_fields)}
 
-def cull_invalid_objects(group, sheet_name):
+def cull_invalid_objects(group, sheet_name, wiki_key):
     if sheet_name not in permissions.keys():
         return []
-    if group not in permissions[sheet_name].keys():
+    if wiki_key not in permissions[sheet_name].keys():
         return []
-    elif "valid_ids" in permissions[sheet_name][group].keys():
-        valid_ids = permissions[sheet_name][group]["valid_ids"];
+    if group not in permissions[sheet_name][wiki_key].keys():
+        return []
+    elif "valid_ids" in permissions[sheet_name][wiki_key][group].keys():
+        valid_ids = permissions[sheet_name][wiki_key][group]["valid_ids"];
         return [ o for o in data[sheet_name].values() if (o[sheet_config[sheet_name]["key_column"]] in valid_ids) ]
     else:
         return list(data[sheet_name].values())
 
-def permissions_sha(sheet_name, group):
+def permissions_sha(sheet_name, wiki_key, group):
     import hashlib
 
     return hashlib.sha224(
-        str(permissions[sheet_name][group]["valid_ids"]).encode('utf-8') +
-        str(permissions[sheet_name][group]["columns"]).encode('utf-8')
+        sheet_name.encode('utf-8') +
+        str(permissions[sheet_name][wiki_key][group]["valid_ids"]).encode('utf-8') +
+        str(permissions[sheet_name][wiki_key][group]["columns"]).encode('utf-8')
     ).hexdigest()
 
-def index_search(group, sheet_name):
-    sha = permissions_sha(sheet_name, group)
+def index_search(group, sheet_name, wiki_key):
+    sha = permissions_sha(sheet_name, wiki_key, group)
     dir = os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "indices", sha)
 
     if(index.exists_in(dir)):
-        print("Index already exists for " + sheet_name + " / " + group + " (or comparable)")
+        print("Index already exists for " + sheet_name + " / " + wiki_key + " / " + group + " (or comparable)")
         ix = index.open_dir(dir)
         indices[sha] = ix
         return
@@ -79,10 +82,10 @@ def index_search(group, sheet_name):
     schema = Schema(key=ID(stored=True, unique=True), content=TEXT)
     ix = create_in(dir, schema)
     writer = ix.writer()
-    for o in cull_invalid_objects(group, sheet_name):
+    for o in cull_invalid_objects(group, sheet_name, wiki_key):
         writer.add_document(
                 key=o[sheet_config[sheet_name]["key_column"]],
-                content=" ".join([str(c) for c in cull_invalid_columns(o, permissions[sheet_name][group]["columns"]).values()])
+                content=" ".join([str(c) for c in cull_invalid_columns(o, permissions[sheet_name][wiki_key][group]["columns"]).values()])
                 )
     writer.commit()
 
@@ -115,10 +118,11 @@ def load_sheet(sheet_name):
             o[field] = cell
         data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
 
-    for group in permissions[sheet_name].keys():
-        sha = permissions_sha(sheet_name, group)
-        dir = os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "indices", sha)
-        index_search(group, sheet_name)
+    for wiki_key in permissions[sheet_name].keys():
+        for group in permissions[sheet_name][wiki_key].keys():
+            sha = permissions_sha(sheet_name, wiki_key, group)
+            dir = os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, wiki_key, "indices", sha)
+            index_search(group, sheet_name, wiki_key)
 
 for sheet_name in sheet_config.sections():
     if sheet_name is "DEFAULT":

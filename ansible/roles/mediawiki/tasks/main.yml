@@ -298,6 +298,8 @@
       $wgExtraNamespaces[TORQUE_CONFIG] = "TorqueConfig";
       $wgExtraNamespaces[TORQUE_CONFIG_TALK] = "TorqueConfig_talk";
       $wgNamespaceProtection[TORQUE_CONFIG] = array("edittorqueconfig");
+      $wgTorqueDataConnectSheetName = "proposals";
+      $wgTorqueDataConnectWikiKey = "lfc";
       $wgTorqueDataConnectConfigPage = "TorqueConfig:MainConfig";
       $wgTorqueDataConnectNotFoundMessage = "This proposal has been disqualified in admin, peer, or expert review.";
       wfLoadExtension('TorqueDataConnect');

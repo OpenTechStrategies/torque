@@ -53,7 +53,9 @@
     "TorqueDataConnectGroup": false,
     "TorqueDataConnectView": false,
     "TorqueDataConnectSheetName": "",
+    "TorqueDataConnectWikiKey": "",
     "TorqueDataConnectNotFoundMessage": "Torque Data Connect Error: Key Not Found",
+    "TorqueDataConnectRaw": false,
     "TorqueDataConnectRenderToHTML": true
   },
   "manifest_version": 1

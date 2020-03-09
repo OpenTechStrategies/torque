@@ -8,12 +8,15 @@ class TorqueDataConnectHooks {
 	public static function loadLocation($parser, $location) {
   	$parser->disableCache();
 
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView;
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView,
+      $wgTorqueDataConnectRaw, $wgTorqueDataConnectWikiKey;
     $contents = file_get_contents(
       "http://localhost:5000/api/" .
       $location .
       "?group=" .
       $wgTorqueDataConnectGroup .
+      "&wiki_key=" .
+      $wgTorqueDataConnectWikiKey .
       ($wgTorqueDataConnectView ? "&view=" . $wgTorqueDataConnectView : "")
       );
 
@@ -26,6 +29,12 @@ class TorqueDataConnectHooks {
     if(!$contents) {
       global $wgTorqueDataConnectNotFoundMessage;
       return $wgTorqueDataConnectNotFoundMessage;
+    } else if($wgTorqueDataConnectRaw) {
+      # We need to remove newlines and extra spaces because mediawiki adds a bunch of
+      # <p> tags # when it hits them.  Since we want the output to be completely raw,
+      # we trick mediawiki into doing just that by putting it all on one line
+      $contents = preg_replace("/\s+/", " ", $contents);
+      return [$contents, "isHTML" => true];
     } else if($wgTorqueDataConnectRenderToHTML) {
       return [$parser->recursiveTagParseFully($contents), "isHTML" => true];
     } else {
@@ -79,13 +88,15 @@ class TorqueDataConnectHooks {
   }
 
   public static function onSpecialSearchResultsPrepend($specialSearch, $output, $term) {
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectSheetName;
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey;
 
     $results = file_get_contents(
       "http://localhost:5000/search/" .
       $wgTorqueDataConnectSheetName.
       "?group=" .
       $wgTorqueDataConnectGroup .
+      "&wiki_key=" .
+      $wgTorqueDataConnectWikiKey .
       "&q=" .
       urlencode($term)
       );
