@@ -91,6 +91,11 @@
     src: EmbedVideoIframeTitle.patch
     basedir: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/EmbedVideo-v2.8.0/"
 
+- name: Install RSS
+  unarchive:
+    src: thirdparty/extensions/RSS-REL1_34-0e63926.tar.gz
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
 - name: Install PluggableAuth
   unarchive:
     src: thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz
@@ -141,6 +146,14 @@
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     line: "wfLoadExtension('EmbedVideo-v2.8.0');"
+
+- name: Enable RSS
+  tags: DEV
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      wfLoadExtension('RSS');
+      $wgRSSUrlWhitelist = ["*"];
 
 - name: Enable PluggableAuth
   blockinfile:
