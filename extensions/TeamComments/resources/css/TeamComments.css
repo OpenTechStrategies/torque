@@ -160,3 +160,7 @@ textarea#teamcomment {
 .cod img {
   margin-bottom: 8px;
 }
+
+.special-teamcomments-list div.c-actions {
+  display: none;
+}

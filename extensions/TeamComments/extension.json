@@ -57,6 +57,7 @@
   "AutoloadClasses": {
     "TeamComment": "includes/TeamComment.php",
     "TeamCommentsPage": "includes/TeamCommentsPage.php",
+    "TeamCommentsList": "includes/specials/TeamCommentsList.php",
     "DisplayTeamComments": "includes/parser/DisplayTeamComments.php",
     "TeamCommentFunctions": "includes/TeamCommentFunctions.php",
     "TeamCommentsLogFormatter": "includes/TeamCommentsLogFormatter.php",
@@ -66,6 +67,9 @@
     "TeamCommentListAPI": "includes/api/TeamCommentListAPI.php",
     "TeamCommentEditAPI": "includes/api/TeamCommentEditAPI.php",
     "TeamCommentSubmitAPI": "includes/api/TeamCommentSubmitAPI.php"
+  },
+  "SpecialPages": {
+    "TeamCommentsList": "TeamCommentsList"
   },
   "ResourceModules": {
     "ext.teamcomments.css": {

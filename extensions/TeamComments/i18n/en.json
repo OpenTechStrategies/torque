@@ -73,5 +73,6 @@
   "action-teamcommentadmin": "administrate user-submitted comments",
   "right-teamcommentadmin": "Administrate user-submitted comments",
   "action-teamcommentlinks": "use external links in comments",
-  "right-teamcommentlinks": "Use external links in comments"
+  "right-teamcommentlinks": "Use external links in comments",
+  "teamcomments-special-teamcommentlist": "Team Comments List"
 }
