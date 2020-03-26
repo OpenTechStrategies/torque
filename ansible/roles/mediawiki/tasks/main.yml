@@ -148,7 +148,6 @@
     line: "wfLoadExtension('EmbedVideo-v2.8.0');"
 
 - name: Enable RSS
-  tags: DEV
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     block: |
@@ -241,6 +240,15 @@
         } else {
           return false;
         }
+      };
+
+      $wgPickSomeSortFunction = function($t1, $t2) {
+        $text1 = $t1->getText();
+        $text2 = $t2->getText();
+
+        $text1 = preg_replace("/^\\W/", "", $text1);
+        $text2 = preg_replace("/^\\W/", "", $text2);
+        return $text1 > $text2;
       };
 
       $picksomeOverrideMessage = [
