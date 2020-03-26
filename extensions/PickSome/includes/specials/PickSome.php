@@ -160,6 +160,8 @@ class PickSome extends SpecialPage {
   }
 
   private function allPickedPages() {
+    global $wgPickSomeSortFunction;
+
     $dbw = wfGetDB(DB_MASTER);
     $res = $dbw->select("PickSome", ["page_id", "user_id"]);
     $picked_pages = [];
@@ -171,8 +173,16 @@ class PickSome extends SpecialPage {
 
       array_push($picked_pages[$page_id][1], User::newFromID($row->user_id));
     }
-    return $picked_pages;
 
+    if($wgPickSomeSortFunction) {
+      $cmp_page = function($p1, $p2) {
+        global $wgPickSomeSortFunction;
+        return call_user_func($wgPickSomeSortFunction, $p1[0]->getTitle(), $p2[0]->getTitle());
+      };
+      usort($picked_pages, $cmp_page);
+    }
+
+    return $picked_pages;
   }
 
   private function usersPickedPages() {
