@@ -195,7 +195,7 @@ def upload_sheet():
 
         try:
             dir = os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "indices")
-            shutil.rmtree(dir)
+            shutil.rmtree(dir, True)
             os.mkdir(dir)
         except FileExistsError:
             pass
@@ -258,9 +258,7 @@ def set_group_config(sheet_name, wiki_key):
     with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "permissions"), 'wb') as f:
         pickle.dump(permissions, f)
 
-    # Group permissions aren't tied to sheets yet, which is a problem that will need to be solved
-    for sheet_name in data.keys():
-        index_search(group_name, sheet_name, wiki_key)
+    index_search(group_name, sheet_name, wiki_key)
 
     return ''
 
