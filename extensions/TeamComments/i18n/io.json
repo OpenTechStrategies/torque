@@ -1,9 +1,0 @@
-{
-  "@metadata": {
-    "authors": [
-      "Joao Xavier"
-    ]
-  },
-  "teamcomments-time-days": "{{PLURAL:$1|un dio|$1 dii}}",
-  "teamcomments-time-hours": "{{PLURAL:$1|1 horo|$1 hori}}"
-}
