@@ -1,54 +1,42 @@
 # torque
 
-A flexible web-based open source system for collaboratively evaluating proposals.
+A python web server and MediaWiki extension that, when combined, work
+to turn a MediaWiki instance into a CMS.
 
-Please see [the design documentation](DESIGN.md) for more about
-Torque's features.  You can join the
+The basic workflow is that, after installation, you can upload a csv
+to the torque system through mediawiki, and then tailor the output
+of that system based on what mediawiki group a user is part of.
+
+This document provides a brief overview, but see
+[the design documentation](DESIGN.md) for more about the features.  You can also
+join the
 [chat channel](https://chat.opentechstrategies.com/#narrow/stream/45-Lever-for.20Change)
 to talk with the development team in real time, and you can also reach
 us by filing a ticket in the
 [issue tracker](https://github.com/opentechstrategies/torque/issues).
 
-See the
-[development wiki](https://github.com/opentechstrategies/torque/wiki)
-for evaluation notes on various plugins we're considering using.
+Examples of a torque-compatible proposal input pipeline for different
+use cases, with ansible scripts relating to setting up a function system
+can be seen in the
+[torque-sites](https://github.com/opentechstrategies/torque-sites) repository.
 
-See the [ansible install guide](ansible/INSTALL.md) for installation
-instructions.
+# torquedata
 
-An example of a torque-compatible proposal input pipeline for one
-particular use case can be seen in the
-[MacFound](https://github.com/opentechstrategies/MacFound) repository.
+torquedata is a flask server that's responsible for storigin up spreadsheet data
+and then serving it out as needed.  As a rule, it's very accepting, and should
+not be exposed to the greater internet.  All of the authentication and authorization
+are done via the mediawiki plugin.
 
-# Extensions
+It stores the data on the file system, with indices and configuration also being
+stored there.
 
-## PickSome
+See [torquedata README](torquedata/README.md) for more in depth information.
 
-Look in [the picksome extension](extensions/PickSome/) for
-information.
+# TorqueDataConnect
 
-## TeamComments
+TorqueDataConnect is the mediawiki plugin that accesses the torquedata server.
+After being installed and configured, it uses hooks to ask torquedata
+to render pages formatted for mediawiki, as well as providing json versions
+of the data through MediaWiki's api.
 
-This extension was forked from
-[the mediawiki Comments extension](https://www.mediawiki.org/wiki/Extension:Comments)
-and then updated to have uses more specific to the needs of torque.  Those include,
-but aren't limited to:
-
-* UI Updates
-* Global on/off switch
-* Viewing authorization
-* Removal of scoring, profile picture, voting, ignoring
-* Adding more nesting
-
-## SimpleFavorites
-
-This extension was forked from
-[the main mediawiki extension](https://www.mediawiki.org/wiki/Extension:SimpleFavorites)
-and then updated to have uses more specific to the needs of torque.  Those include,
-but aren't limited to:
-
-* Changing some looking and feel
-* Removing a lot of the uneeded functionality, especially in the Special pages
-* Updating how the extension is loaded
-* Removing some of the configuration because it's unneeded
-* Removing the parser tag
+See the [TorqueDataConnect README](TorqueDataConnect/README.md) for more in depth information.

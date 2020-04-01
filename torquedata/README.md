@@ -1,30 +1,64 @@
-# The Torque Data App
+# The torquedata app
 
-This serves up all the data for torque (see [DESIGN-torque-data.md]).
+This is the python server resposible for housing the data and doing
+the rendering and searching.
 
-Currently this file is a placeholder
+Outside of starting it up, this should remain a black box.  The reason being
+that none of the routes or uses for this should be accessed except
+through the [TorqueDataConnect MediaWiki plugin](../TorqueDataConnect/).
 
-# Usage
+For developers, look in the individual code files for details on the inner
+workings.
 
-Right now, this usage is a bit hardcoded, but we need to retain it for
-it's eventual evolution.  We use the mediawiki api to access the proposals.
+# Installation and Startup
 
-This usage should get updated eventually to be more general purpose for
-the link between api and spreadsheets uploaded.
+Installation is handled by using pipenv:
 
-In python
-
-```python
-import mwclient
-site = mwclient.Site('<SERVERNAME>', path='lfc/', scheme='https')
-site.login("<LOGIN>", "<PASSWORD>")
-site.api('torquedataconnect', format='json', path='/proposals')
+```
+$ pipenv install
 ```
 
-In shell
+## Configuration
+
+Copy over the config file and then update the variables.  See the template
+for more information.
+
 ```
-export TORQUE_TOKEN=$(eval - echo $(curl https://<SERVERNAME>/lfc/api.php --cookie-jar cookies.jar --data "action=query" --data "meta=tokens" --data "format=json" --data "type=login" | jq '.query.tokens.logintoken'))
-curl https://torque.leverforchange.org/lfc/api.php --cookie @cookies.jar --cookie-jar cookies.jar --data "action=clientlogin" --data "username=<LOGIN>" --data "password=<PASSWORD>" --data "format=json" --data-urlencode "logintoken=$TORQUE_TOKEN"  --data "loginreturnurl=http://google.com/"
-curl https://torque.leverforchange.org/lfc/api/proposals --cookie @cookie.jar
-curl https://torque.leverforchange.org/lfc/api/proposals --cookie @cookie.jar | jq ".proposals | length"
+$ cp config.py.tmpl config.py
+$ $EDITOR config.py
+```
+
+## Starting the server
+
+The easiest way to start the server in development mode is via pipenv
+
+```
+$ export FLASK_ENV=development  # For reloading on code changes
+$ export FLASK_APP=torquedata
+$ pipenv run flask run
+```
+
+### Using supervisor
+
+```
+# As superuser, on debian at least
+$ apt-get install supervisor
+$ cat > /etc/supervisor/conf.d/torquedata.conf << EOF
+[program:torquedata]
+directory=/path/to/torquedata/server
+user:DEPLOYMENT_USER
+command=pipenv run flask run
+autostart=true
+autorestart=false
+redirect_stderr=true
+redirect_stdout=true
+environment=FLASK_APP=torquedata
+EOF
+```
+
+Then restart it
+
+```
+# As superuser
+$ service supervisor restart
 ```
