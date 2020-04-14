@@ -6,6 +6,7 @@ class TorqueDataConnectUploadAttachment extends APIBase {
   }
 
   public function execute() {
+    parent::checkUserRightsAny(["torquedataconnect-admin"]);
     # We use phpcurl here because it's really straightforward, and
     # research (stackoverflow) didn't produce a compelling native php method.
     $attachment = $this->getParameter("attachment");
