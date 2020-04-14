@@ -16,6 +16,8 @@ package manager.  torque has been tested with MediaWiki 1.33, and should work
 with that or greater.  Then set it up normally, either through the web
 interface, or via the commandline.  This will usually include an admin user.
 
+TorqueDataConnect also requires PHP 7.3+
+
 After that, copy the files from TorqueDataConnect into the extensions directory
 of that instance.
 

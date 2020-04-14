@@ -9,6 +9,7 @@ of how torque works.  For a more detailed information, see [the design](../DESIG
 
 ## Installation
 
+* NOTE: Make sure your system has PHP 7.3+
 * Download and place the file(s) in a directory called TorqueDataConnect in your extensions/ folder
 * Add the following line to your LocalSettings.php
 ```
