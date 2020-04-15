@@ -96,6 +96,10 @@ handed to the templates for display.  The column type row declares
 what type will be found in the column, allowing torque to assign
 it that type for use in the templates.
 
+NOTE: There's no sanitization of data, and the uploader needs to take
+care of that before using torque.  XSS attacks, badly formatted sheets,
+and whatnot, will just get blindly served up if torque is given it.
+
 For right now, the available types are:
 
 * `list` - a new line separated list of values.  This gets turned
