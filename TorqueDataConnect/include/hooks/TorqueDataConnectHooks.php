@@ -120,7 +120,7 @@ class TorqueDataConnectHooks {
     $out .= "window.location.reload(true);";
     $out .= "'>";
     foreach(TorqueDataConnectConfig::getAvailableViews() as $view) {
-      $selected = $view == $_COOKIE["torqueview"] ? " selected=selected" : "";
+      $selected = (array_key_exists("torqueview", $_COOKIE) && $view == $_COOKIE["torqueview"]) ? " selected=selected" : "";
       $out .= "<option $selected value='$view'>$view</option>";
     }
     $out .= "</select>";
