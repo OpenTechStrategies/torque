@@ -1,7 +1,6 @@
 # The torquedata app
 
-This is the python server resposible for housing the data and doing
-the rendering and searching.
+This is the Python server resposible for housing data, rendering, and searching.
 
 Outside of starting it up, this should remain a black box.  The reason being
 that none of the routes or uses for this should be accessed except
@@ -12,7 +11,7 @@ workings.
 
 # Installation and Startup
 
-Installation is handled by using pipenv:
+Installation is handled by using Pipenv:
 
 ```
 $ pipenv install
@@ -30,7 +29,7 @@ $ $EDITOR config.py
 
 ## Starting the server
 
-The easiest way to start the server in development mode is via pipenv
+The easiest way to start the server in development mode is via Pipenv
 
 ```
 $ export FLASK_ENV=development  # For reloading on code changes
