@@ -1,44 +1,41 @@
-# torque
+# Torque
 
-Torque is a two part system to give MediaWiki light-weight CMS capabilities.
-The original design was to meet the needs for for philanthronpic competitions.
-These competitions want to foster collaboration and communication that makes
-MediaWiki a perfect platform, but have a certain set of data that is restricted
-due to confidentiality concerns.  While a solution could have been to use
-two systems, one for each purpose, torque was created to allow the confidential
-data to be present in MediaWiki for a better user experience.
+Torque is a two-part system that gives MediaWiki lightweight CMS capabilities.
+It was originally designed to meet the needs of philanthropic competitions.
+While MediaWiki is well-suited for collaboration and communication, it does not
+offer any kind of restrictions on who can view confidential or sensitive data.
+Torque adds this functionality.
 
-The two systems that make up torque are:
+The two systems that make up Torque are:
 
-1. A flask app, torquedata, that houses and renders teh data
-2. A MediaWiki extension, TorqueDataConnect, that not only integrates the torque
-   responses into wiki pages, but is also the gatekeep to accessing the data.
+1. torquedata, a Flask app that houses and renders the data
+2. TorqueDataConnect, a MediaWiki extension that integrates the Torque
+   responses into wiki pages and controls access to said pages.
 
 The decision to split the server housing the data from MediaWiki was made
 for several reasons:
 
 * Ease of development.  MediaWiki is an excellent platform for developing wikis,
-  but python+flask fit the needs of torque's backend needs far better
-* Allowing multiple wikis to access one data set
-  * For instance, this allows a public wiki and a private wiki with different
-    permission sets
-* Allowing the data to reside on a different server than the wikis accessing
+  but Python and Flask fit Torque's backend needs far better.
+* Allowing multiple wikis to access one data set. For instance, having a public
+    wiki and a private wiki with different permission sets.
+* Allowing the data to reside on a different server than the wikis themselves.
 
 ## Types of Users
 
-torque is built around having four classes of users:
+Torque is built around having four classes of users:
 
 * Normal Wiki Users: These users use the wiki like anyone else.  Ideally,
-  unless they are editing pages, they don't have any idea torque is running
-  underneath.  They belong to a user group that's defined in torque to
+  unless they are editing pages, they don't have any idea Torque is running
+  underneath.  They belong to a user group that's defined in Torque to
   customize the information they have access to.
 
-* API Users: These users access the torque information through the
+* API Users: These users access the Torque information through the
   MediaWiki API.  They have the same permissions as the normal users,
-  but the information usually comes in the json format for programmatic ease.
+  but the information usually comes in the JSON format for programmatic ease.
 
 * Torque Admin Wiki Users: These users are responsible for the dynamic
-  configuration of the torque system.  They can edit the Torque Config Page,
+  configuration of the Torque system.  They can edit the Torque config Page,
   update the templates defined in MediaWiki, adjust column and object
   permissions.
 
@@ -46,13 +43,13 @@ torque is built around having four classes of users:
   upload new spreadsheets, and overwrite spreadsheets.
 
 * System Administrators: These users are responsible for setting up the
-  MediaWiki instance, installing torque, and setting the variables
-  necessary for a correctly running system.  In an ideal torque system,
+  MediaWiki instance, installing Torque, and setting the variables
+  necessary for a correctly running system.  In an ideal Torque system,
   after initial setup, there is no more work for system administrators.
 
 ## Permissions Structure
 
-The permissions of the Torque system are defined dynamically in MediaWiki.
+Torque's permissions are defined dynamically in MediaWiki.
 The page linked to by the
 [`$wgTorqueDataConnectConfigPage`](TorqueDataConnect/README.md#Parameters)
 variable is read, and the groups listed in the `Permissions` section are
@@ -71,41 +68,39 @@ in torquedata for search results that are correct for the users permissions.
 
 ## torquedata Flask app
 
-The flask app, named `torquedata` exists to use a backing store, initially
-csvs stored on the hard drive, and provide different outputs necessary for
+`torquedata` exists to use a backing store, initially
+CSV files stored on the hard drive, and provide different outputs necessary for
 the project.
 
 Because it's largely not user facing, the [README](torquedata/README.md)
 is lightweight and concerned mostly system adminstrator information
-for installation and configuration of the app.  The nuts and bolts
-of how it exposes information to MediaWiki is left undocumented and
-may be changed at any time.
+for installation and configuration of the app.  How it exposes information to
+MediaWiki is left undocumented and may be changed at any time.
 
-It provides the following features.
+It provides the following features:
 
-### Input from CSV
+### Input from CSV files
 
-CSVs are uploaded through the
+CSV files are uploaded through the
 [TorqueDataConnect extension](TorqueDataConnect/README.md#torquedataconnectuploadsheet).
-The csvs must start with two rows, one being a header row, and the following
+The files must start with two rows, one being a header row, and the following
 being a column type row.
 
-The header row determines what the names of the columns are, and they
-should be unique.  These are the indices into the dictionary that's
-handed to the templates for display.  The column type row declares
-what type will be found in the column, allowing torque to assign
-it that type for use in the templates.
+Entries in the header row should be unique. They will become indices in the
+dictionary passed to templates for display. The column type row declares what
+type will be found in the column, allowing Torque to assign it that type for use
+in the templates.
 
-NOTE: There's no sanitization of data, and the uploader needs to take
-care of that before using torque.  XSS attacks, badly formatted sheets,
-and whatnot, will just get blindly served up if torque is given it.
+NOTE: There's no data sanitization.  The uploader needs to take
+care of that before using Torque.  XSS attacks, badly formatted sheets,
+and whatnot, will just get blindly served up if passed to Torque.
 
 For right now, the available types are:
 
 * `list` - a new line separated list of values.  This gets turned
   into a list in memory for the template to iterate over
 
-One of the columns needs to be specified as a key column.  The keys
+One of the columns must be specified as a key column.  The keys
 in the document should also all be unique to prevent collisions.
 This key is the way that all of the data is queried from the various
 hooks and permissions checks.
@@ -113,7 +108,7 @@ hooks and permissions checks.
 When uploading, the last thing needed is a name for the sheet.  This
 needs to be a simple name that can work as a variable, so it can't
 start with a number.  The reason is that in table of content templates,
-the place torque puts what objects the user is allowed to view is in
+the place Torque puts what objects the user is allowed to view is in
 the variable `<sheet_name>`.
 
 ### Wiki Markup from CSV rows
@@ -121,9 +116,9 @@ the variable `<sheet_name>`.
 Templates are configured as part of the
 [TorqueDataConnect extension](TorqueDataConnect/README.md#WikiPage_configuration)
 
-These templates, which are stored on the wiki, are jinja templates.  When a request
+These templates, which are stored on the wiki, are Jinja templates.  When a request
 is made to `api/<sheet_name>/id/<id>.mwiki`, the desired template can be specified
-(or a the default is used), and torque does the following:
+(or a the default is used), and Torque does the following:
 
 * It ascertains whether the user has the permissions to access that `id`
 * It then culls the object referenced by that `id` to just ht ecolumns
@@ -131,11 +126,11 @@ is made to `api/<sheet_name>/id/<id>.mwiki`, the desired template can be specifi
 * It feeds that redacted object to the template under the name specified
   at sheet upload time as the `object_name`
 
-If it fails for any of these reasons, it errors out with a 403 http code.
+If it fails for any of these reasons, it errors out with a 403 HTTP code.
 
-Outside of these assumptions, there's none made by torque.  It doesn't know
-whether it is returning wiki markup, html, or something else.  Conventionally,
-the `mwiki` type on the api call indicates that the template should put
+These are the only assumptions made by Torque. It doesn't know
+whether it's returning wiki markup, HTML, or something else.  Conventionally,
+the `mwiki` type on the API call indicates that the template should put
 out wiki markup, however there's nothing forcing it to.  The power of
 declaring how things look is completely up to the users of the wiki with
 permissions to edit the templates.
@@ -146,11 +141,11 @@ Tables of Contents are dynamically generated lists of objects in the sheet.
 In order to provide flexibility there are three parts to the table of contents.
 
 Part 1 is the template itself.  This template will be provided, as data, an
-object that is made of two setions.
+object that is made of two sections.
 
-Part 2 is the first section of the aforementioned object.  This is a json document
+Part 2 is the first section of the aforementioned object.  This is a JSON document
 that's converted to a dictionary and provided to the template as the base.  That
-means that if you provide the json document:
+means that if you provide the JSON document:
 
 ```
 {
@@ -169,7 +164,7 @@ means that if you provide the json document:
 }
 ```
 you would refer to the object you've been given in your template by the names
-`grouped_objects` and `description` right in the jinjga template.
+`grouped_objects` and `description` in the Jinja template.
 
 Part 3 is an object that's added to the data passed to the template, which
 will always be in the name `<sheet_name>` for whatever sheet this Table of
@@ -182,20 +177,20 @@ contents items look and feel, and what information is displayed.
 
 ### JSON output from CSV rows for API
 
-Torque also allows programmatic access for the data, throught the `torquedataconnect`
-api call.  Any user with access can call into mediawiki's api, using http
-or a supporting library, and ask for a path.  The response is a json documnet
+Torque also allows programmatic access of the data, throught the `torquedataconnect`
+API call.  Any user with access can call into MediaWiki's API, using HTTP
+or a supporting library, and ask for a path.  The response is a JSON document
 with a list of objects, each having a mapping of the header to cell data for
-a given row.  This is redacted to what that user has access to.
+a given row.  This is redacted based on what that user has access to.
 
-This allows for outside software to use the document store torque uses.  Of course,
-outside sources can use the rest of mediawiki's api to just render the wiki pages,
+This allows for outside software to use the document store Torque uses.  Of course,
+outside sources can use the rest of MediaWiki's API to just render the wiki pages,
 but this provides a more software friendly source of data.
 
 ### Attachments
 
-One large issue with mediawiki is that there's no way to strongly associate
-attachments (in this case, pdfs) with pages, and then have authorization
+One large issue with MediaWiki is that there's no way to strongly associate
+attachments (in this case, PDFs) with pages, and then have authorization
 fall through to those.  Indeed, the default setting is that attachments
 are just handled by the filesystem and webserver.  `torquedata` handles
 those attachments, and all the authorizations therein through a SpecialPage.
@@ -211,8 +206,8 @@ for details on how to generate the page.
 
 ### Search results
 
-Because mediawiki cannot cull search results based on authorization,
-since it's not a CMS, that's handled by `torquedata`.  The search
+MediaWiki cannot cull search results based on authorization
+because it's not a CMS. Instead, that's handled by `torquedata`.  The search
 results come back filtered through the template set up for Search.
 
 The search uses [whoosh](https://whoosh.readthedocs.io/en/latest/index.html)
@@ -221,23 +216,22 @@ the results are tailored to the logged in user.
 
 ## TorqueDataConnect MediaWiki Extension
 
-The MediaWiki extension, named TorqueDataConnect, controls the user facing
-aspects of torque.  You can look at the [README](TorqueDataConnect/README.md)
-for the reference of how to configure and use the system.  This document
-focuses on the design, intent, and general information.
+TorqueDataConnect controls the user facing
+aspects of Torque.  You can look at the [README](TorqueDataConnect/README.md)
+for the reference of how to configure and use the system.
 
 ### Torque Configuration
 
-The MediaWiki configuration comes in two parts.  The first is in LocalSettings,
+The MediaWiki configuration comes in two parts.  The first is in `LocalSettings.php`,
 which sets up the page.  Those are defined by the
-[parmeters](TorqueDataConnect/README.md#parameters).  The ones that need to be
+[parameters](TorqueDataConnect/README.md#parameters).  The ones that need to be
 set for a correctly running system are:
 
 * `$wgTorqueDataConnectConfigPage`
 * `$wgTorqueDataConnectSheetName`
 * `$wgTorqueDataConnectWikiKey`
 
-The others can have defaults, or are assigned by TorqueDataConnect based on
+The others have values to default to, or are assigned by TorqueDataConnect based on
 your user.  See below for why you might want to override those.
 
 ### Configuration Page
@@ -245,7 +239,7 @@ your user.  See below for why you might want to override those.
 The configuration page linked to by `$wgTorqueDataConnectConfigPage` is
 set up to link groups with permissions, and defined templates.  See the
 [above section](#Permissions Structure) for more information.  Every
-torque instance has to have a built out and configured Config Page
+Torque instance has to have a built out and configured config Page
 in order to work correctly.
 
 When not set up correctly, the plugin will let you know that there's
@@ -253,16 +247,14 @@ an error if you're in the `torquedataconnect-admin` user group.
 
 ### Template Page
 
-There are three different types of templates: View, TOC, and Search
+There are three different types of templates: View, TOC, and Search.
 
 For each type, the template listed first in the configuration becomes
 the default template for that type.
 
-These templates are stored in MediaWiki because 
-
 #### View
 
-View templates define how objects are rendered for display in the wiki.
+View templates define how objects are rendered in the wiki.
 If there are multiple view templates, than a left sidebar item is created
 that allows the user to select which view they want.
 
@@ -270,7 +262,7 @@ The selected view template is called with the object being rendered
 set to the name defined when
 [uploading the sheet](TorqueDataConnect/README.md#torquedataconnectuploadsheet).
 That object is a dictionary with the column headers of the spreadsheet
-being indices into to get the cell data for that row.  This is an
+being indices to get the cell data for that row.  This is an
 instance where demonstration is more informative than information, so see the
 [example](EXAMPLE.md) for a concrete example.
 
@@ -281,9 +273,9 @@ based on the user selection.
 
 Search templates define how search results are rendered.  Similar
 to the view templates, the `object_name` is used to declare the variable
-name available in jinja for rendering.  Because practically there is
-only one template for Search results, it needs to access only fields that
-are available for everyone to see or have conditionals to prevent an
+name available in Jinja for rendering.  Because there is
+only one template for search results, it needs to access only fields that
+are available for everyone to see, or have conditionals to prevent an
 error.  The template should be relatively short in order for the
 search results page to show up.
 
@@ -299,7 +291,7 @@ paragraph.
 
 Since the table of contents already has a template, this feature is
 somewhat redundant.  However, the uploaded template is usually set at
-setup time, and torque wants to give flexibility to users of the system
+setup time, and Torque wants to give flexibility to users of the system
 to adjust the look and feel without requiring more uploads.
 
 ### tdcrender Hook
@@ -310,18 +302,18 @@ the resulting text will be inserted to that location.
 
 #### Single objects
 
-For single objects, reference the object by it's id.  The path used is
+For single objects, reference the object by its id.  The path used is
 
 `<sheet_name>/id/<id>.mwiki`
 
 This will render the single object through the chosen view.  If there's
-an error, like the template doesn't work with the redacted column set,
+an error, like if the template doesn't work with the redacted column set,
 or the user doesn't have access to that object, then a generic error
 message will be returned in order to obfuscate the reason for the response.
 
 #### Tables of contents
 
-For tables of contents, reference the toc by it's name.  The path used is
+For tables of contents, reference the TOC by its name.  The path used is
 
 `<sheet_name>/toc/<toc_name>.mwiki`
 
@@ -330,56 +322,56 @@ See [above](#TOC pages) for how this is rendered.
 ### Attachments Special Page
 
 Attachments are another area that MediaWiki decides to not protect.
-Attachments are usually kept as a public directory that that are served
+They are usually kept as a public directory and served
 directly from the webserver without going through MediaWiki at all.  This
 has a number of benefits, such as caching, allowing deep linking, sharing
-of resources, and just easier software development.  The one feature it's
-lacking is any kind of restrictions, as even a user not yet logged in can
-view attachments with the correct URL.
+of resources, and just easier software development. However, it lacks any kind
+of restrictions, as even a user not yet logged in can view attachments with the
+correct URL. 
 
-The way torque solves this is by creating a
+The way Torque solves this is by creating a
 [special page](TorqueDataConnect/README.md#Special page for attachments: Special:TorqueDataConnectAttachment).
 When uploading, the column and proposal are linked to an attachment, and
-then when accessing that file, those are checked against the torque
+then when accessing that file, those are checked against the Torque
 permissions the user has.
 
 ### Uploading data
 
-torque allows torqueadmin's to upload three kinds of files:
+Torque allows torqueadmin's to upload three kinds of files:
 
 * [The full data sheet](TorqueDataConnect/README.md#torquedataconnectuploadsheet)
 * [A table of contents](TorqueDataConnect/README.md#torquedataconnectuploadtoc)
 * [An Attachment](TorqueDataConnect/README.md#torquedataconnectuploadattachment)
 
-These are done through the MediaWiki api, most likely through a bot account.
+These are done through the MediaWiki API (most likely through a bot account).
 
-See the [example](EXAMPLE.md) for a better demonstration about how one might
+See the [example](EXAMPLE.md) for a better demonstration of how one might
 upload these files.
 
 ### API usage
 
-For normal wiki users, they can access MediaWiki programmatically through
-the API.  torque adds an api that has the same permissions as the tdcrender
-hook, but instead of returning a rendered wiki page, returns a json
-representation of the authorized data.  This allows torque systems to be
+Normal wiki users can access MediaWiki programmatically through
+the API.  Torque adds an API that has the same permissions as the `tdcrender`
+hook, but instead of returning a rendered wiki page, returns a JSON
+representation of the authorized data.  This allows Torque systems to be
 the central data repository for projects, instead of just a consumer.
 
 ### Conditional override of LocalSettings Parameters
 
-Some of the [parmeters](TorqueDataConnect/README) used by TorqueDataConnect
+Some of the [parameters](TorqueDataConnect/README) used by TorqueDataConnect
 are set by the extension itself based on the user logged in and the
 dynamic configuration of the system.
 
 * `$wgTorqueDataConnectView`
 * `$wgTorqueDataConnectGroup`
 
-However, it may be useful to override them.  When overridden, torque
+However, it may be useful to override them.  When overridden, Torque
 uses the set value rather than assigning one to it.  Some use cases
 include:
 
-* Hardcoding the view for certain users regardless of what they select
+* Hard-coding the view for certain users regardless of what they select
 * Being able to view the the data through the lens of a different group
-* Harcoding view/group based on dns entry point, for instance, for
+* Hard-coding view/group based on dns entry point, for instance, for
   public facing views of the wiki.
 
 In that case, just set them in LocalSettings, or via other hooks
@@ -387,11 +379,11 @@ and extensions.
 
 ### Search Results
 
-Currently, the search results from torque completely take over the
+Currently, the search results from Torque completely take over the
 results page for MediaWiki, and supplant all normal search results.
-The reason for this is MediaWiki does not provide ranking information
-with it's results, so each search enging must have a complete picture
+This is because MediaWiki does not provide ranking information
+with its results, so each search engine must have a complete picture
 of the data in order to correctly rank search results against each other.
 
-In the future, torquedata will gain a better understanding of the wiki
-and be able to returned interleaved results that work more correctly.
+In the future, torquedata will gain a better understanding of the wiki to return
+better interleaved results. 

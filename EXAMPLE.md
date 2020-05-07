@@ -1,4 +1,4 @@
-This document works through a sample example of a torque system as a companion
+This document works through an example of a Torque system as a companion
 to [the design](DESIGN.md).  Several pieces in that document are more challenging
 to explain than to show, requiring a practical use case.
 
@@ -10,11 +10,11 @@ data with changes as needed.
 
 ## Setting up MediaWiki
 
-You can either get MediaWiki from their
+You can get MediaWiki from their
 [download site](https://www.mediawiki.org/wiki/Download) or as part of your
-package manager.  torque has been tested with MediaWiki 1.33, and should work
+package manager.  Torque has been tested with MediaWiki 1.33, and should work
 with that or greater.  Then set it up normally, either through the web
-interface, or via the commandline.  This will usually include an admin user.
+interface or the command line.  This will usually include an admin user.
 
 TorqueDataConnect also requires PHP 7.3+
 
@@ -53,9 +53,9 @@ $wgGroupPermissions['public']['read'] = true;
 wfLoadExtension('TorqueDataConnect');
 ```
 
-## Setting up torque
+## Setting up Torque
 
-Follow the [installation instructions](torquedata/README.md#Installation and Startup)
+Follow the [installation instructions](./torquedata/README.md#Installation and Startup)
 
 ## Uploading a spreadsheet
 
@@ -199,7 +199,7 @@ EOF
 
 This set is doing a fair amount.  The json file is a simple relation of
 which application ids are linked to what cities.  This could be generated
-at upload time from the spreadsheet, or hand curated.  Because torque
+at upload time from the spreadsheet, or hand curated.  Because Torque
 can't know anything specific about data, these kinds of relations have
 to be built at data upload time, rather than dynamically.
 
@@ -265,7 +265,7 @@ with open(os.path.join(template_file_name)) as template_file, \
 
 This section details how to configure the running system through the TorqueConfig
 namespace.  These files are meant to be living files that reside in MediaWiki with
-updates, history, and greater access to torque admin users.
+updates, history, and greater access to Torque admin users.
 
 ## The main config page
 
@@ -344,11 +344,11 @@ be a simple mediawiki list on this page:
 ## TorqueConfig:AllProposals
 
 Similarly, here's a list of all the proposals in the system.  Note that
-the only thing torque cares about is the id before the colon.  For
+the only thing Torque cares about is the id before the colon.  For
 what comes after, this convention is to provide links to the pages
 having those proposals themselves.  These links will be red becase
 we haven't added the pages with those proposals to the wiki yet,
-even though the data is in torque.
+even though the data is in Torque.
 
 ```MediaWiki
 * 1: [[Application A]]
@@ -395,7 +395,7 @@ The main template for viewing.
 {% endfor %}
 
 {% if 'Confidential' in proposal.keys() %}
-= Confidential Information }}
+= Confidential Information =
 
 {{ proposal['Confidential'] }}
 
@@ -433,7 +433,7 @@ This is a slightly redacted template.  Some uses for different views:
 {{ proposal['Description'] }}
 
 {% if 'Confidential' in proposal.keys() %}
-= Confidential Information }}
+= Confidential Information =
 
 {{ proposal['Confidential'] }}
 {% endif %}

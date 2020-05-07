@@ -1,10 +1,10 @@
 # Extension:TorqueDataConnect
 
 The TorqueDataConnect extension connects to a running instance of [torquedata](../torquedata)
-to serve up information.  In order for it to be effective, you first need that service running.
+to serve up information.  In order for it to work, you first need that service running.
 
-This document serves as a reference document for someone who already has a good understanding
-of how torque works.  For a more detailed information, see [the design](../DESIGN.md) and
+This document serves as a reference for someone who already has a good understanding
+of how Torque works.  For more detailed information, see [the design](../DESIGN.md) and
 [the example setup](../EXAMPLE.md).
 
 ## Installation
@@ -22,26 +22,26 @@ wfLoadExtension('TorqueDataConnect');
 ### Parameters
 
 * `$wgTorqueDataConnectConfigPage` - The central [configuration page](#WikiPage configuration).
-  It is a good idea to make this in a restricted access namespace of the wiki.
-* `$wgTorqueDataConnectGroup` - The group representing this user that's sent to the torquedata
-  server.  This defaults to the first group that is in the list of known torque groups that
+  It's a good idea to make this in a restricted access namespace of the wiki.
+* `$wgTorqueDataConnectGroup` - The group representing this user that's sent to the torquedata.
+  server.  This defaults to the first group that is in the list of known Torque groups that
   is also a group the current user is in.  Overriding it can be useful to view data
   as another user, or for non logged in users.
 * `$wgTorqueDataConnectView` - The current view used for rendering.  This is usually the
-  one selected on the left menu, as a selection between configured groups
+  one selected on the left menu, as a selection between configured groups.
 * `$wgTorqueDataConnectSheetName` - The uploaded sheet this wiki is configured to use.
-  This affects what sheet search will run against, as well as what sheet $wgTorqueDataConnectConfigPage
+  This affects what sheet search will run against, as well as what sheet `$wgTorqueDataConnectConfigPage`
   will be configured by.
 * `$wgTorqueDataConnectWikiKey` - The key identifying this wiki.  This is needed in case
   multiple wikis are using the same torquedata instance so that their permissions are distinct.
-  A useful use case of this is a private and public version of the same daata
+  A useful use case of this is a private and public version of the same data.
 * `$wgTorqueDataConnectNotFoundMessage` - An optional message to be displayed if a user doesn't
-  have permissions to view an object.  Defaults to "No `<key>` found for `<sheet>`"
-* `$wgTorqueDataConnectRaw` - Whether the response coming from torquedata is raw html or wiki markup.
-  This let's TorqueDataConnect know to stop all MediaWiki processing on the response from torquedata.
+  have permissions to view an object.  Defaults to "No `<key>` found for `<sheet>`".
+* `$wgTorqueDataConnectRaw` - Whether the response coming from torquedata is raw HTML or wiki markup.
+  This lets TorqueDataConnect know to stop all MediaWiki processing on the response from torquedata.
 * `$wgTorqueDataConnectRenderToHTML` - Whether to render the wiki markup to HTML or not.  If
   TorqueDataConnect does the rendering, then things like inner tags will get parsed.  However,
-  some users, especially api users, may want the wiki markup to do things like pdf rendering.
+  some users, especially API users, may want the wiki markup to do things like pdf rendering.
 
 ### WikiPage configuration
 
@@ -55,7 +55,7 @@ $wgExtraNamespaces[TORQUE_CONFIG_TALK] = "TorqueConfig_talk";
 $wgNamespaceProtection[TORQUE_CONFIG] = array("edittorqueconfig");
 ```
 
-This prevents non admin people from accessing data they shouldn't be accessing.
+This prevents non-admin people from accessing data they shouldn't be accessing.
 
 After which, the page setup needs to be of the form:
 
@@ -98,7 +98,7 @@ In the "Permissions" table, the columns are:
 * \<ColumnName3\>
 * \<ColumnName4\>
 ```
-  there the column names are the spreadsheet header names (the values in the cells on the first row)
+  there, the column names are the spreadsheet header names (the values in the cells on the first row)
 * and a link to the page that lists what rows on the spreadsheet they have access to.
   - the page linked must be of the form
 ```
@@ -106,18 +106,18 @@ In the "Permissions" table, the columns are:
 * \<ID2\>: 
 * \<ID3\>: 
 ```
-    where everything after the colon is discarded by torque.  The ID here is related to the key_column
+    where everything after the colon is discarded by Torque.  The ID here is related to the key_column
     when uploading the sheet (see [below](#torquedataconnectuploadsheet)).
 
 In the "Templates" table the three columns must be:
 * The template Name
-* A link to a wiki page which is a jinja template file
+* A link to a wiki page which is a Jinja template file
 * The template type, which must be 'Search', 'TOC', or 'View'
   * At this time, Search and TOC can really only have one template, but that may change in the future
   * The types are as follows:
     * Search: Search results are passed through this template before displaying on the results page
     * TOC: TOC templates are provided with objects passed through this template in addition to their
-      specified json data
+      specified JSON data
     * View: Different views for the page.  Having multiple leads to a dropdown on the sidebar
       allowing the user to choose what way they'd like to show the data.
 
@@ -125,32 +125,32 @@ In the "Templates" table the three columns must be:
 
 ### API
 
-MediaWiki api calls added;
+MediaWiki API calls added;
 
 #### torquedataconnect
 
-Make a call to torque api.  This makes calls against torquserver/api/\<path\>, so you
-can access the data but can't do things like update settings.  It always returns in json
+Make a call to Torque API.  This makes calls against `torqueserver/api/\<path\>`, so you
+can access the data but can't do things like update settings.  It always returns in JSON
 format.
 
 Parameters:
 
-* `path` - the path to pass on to torque 
+* `path` - the path to pass on to Torque 
 
 #### torquedataconnectuploadsheet 
 
-Uploads a sheet to torque.  For admins only, so whatever bot account you might make
-needs to be given the `torquedataconnect-admin` privelege
+Uploads a sheet to Torque.  For admins only, so whatever bot account you might make
+needs to be given the `torquedataconnect-admin` privilege.
 
 NOTE: you may need to increase your `upload_max_filesize` and `post_max_size` values
-in your php configuration if your spreadsheets are large.
+in your PHP configuration if your spreadsheets are large.
 
 Parameters:
 
 * `object_name` - The name of the object that will be referenced in templates
-* `sheet_name` - The name of the sheet for reference by tcdrender and the api
+* `sheet_name` - The name of the sheet for reference by tcdrender and the API
 * `key_column` - Which column in the spreadsheet should be used for keying into the data
-* `data_file` - A csv file respresenting the data
+* `data_file` - A CSV file respresenting the data
 
 #### torquedataconnectuploadtoc
 
@@ -160,12 +160,12 @@ Parameters:
 
 * `toc_name` - The name of the table of contents, for reference in templates
 * `sheet_name` - The name of the sheet the TOC is related to
-* `json` - the json file that should be fed to the template
+* `json` - the JSON file that should be fed to the template
 * `template` - the template file used for rendering
 
 #### torquedataconnectuploadattachment
 
-Upload an attahcment.  For admins only, as above.
+Upload an attachment.  For admins only, as above.
 
 Parameters:
 
@@ -177,23 +177,23 @@ Parameters:
 
 ### tdcrender hook
 
-TorqueDataConnect provides a single, simple hook for pages to use to ask torque to render
+TorqueDataConnect provides a single hook for pages to use to ask Torque to render
 data for them.  The path will get `api` prepended to it so that users can't use it to
-access torque's control areas.
+access Torque's control areas.
 
 ```
 {{ #tdcrender:<path> }}
 ```
 
-The path's available from torque are:
+The paths available from Torque are:
 
-* \<sheet_name\>/id/\<id\>.mwiki - for rendering an object, so for example `proposals/id/1234.mwiki`
-* \<sheet_name\>/toc/\<TOC_Name\>.mwiki - for rendering a dynamic table of contents that had been uploaded previously.  For example `proposals/toc/Topic_TOC.mwiki`
+* `\<sheet_name\>/id/\<id\>.mwiki` - for rendering an object (for example, `proposals/id/1234.mwiki`)
+* `\<sheet_name\>/toc/\<TOC_Name\>.mwiki` - for rendering a dynamic table of contents that had been uploaded previously (for example, `proposals/toc/Topic_TOC.mwiki`)
 
 ### Special page for attachments: Special:TorqueDataConnectAttachment
 
 In order to protect attachments, a special page is provided.  When calling, it
-takes paremeters to fetch the attachment, and will promt with a save-as with the name
+takes parameters to fetch the attachment, and will prompt with a save-as with the name
 specified at upload time.
 
 Parameters:
@@ -213,7 +213,7 @@ to how it manages integrating wiki search results.
 
 Note that this does NOT prevent other people from editing the configuration page, or pages
 linked to those configuration pages.  The maintainer needs to use MediaWiki's permission
-system to lock those down, most easily through namespaces, as [noted above](#WikiPage_configuration)
+system to lock those down, most easily done through namespaces, as [noted above](#WikiPage_configuration)
 
 ## Internationalization
 
