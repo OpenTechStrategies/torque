@@ -1,0 +1,7 @@
+{
+  "convert-column-page-ne": "$1 does not exist, but is referenced in config as a column config.",
+  "convert-id-page-ne": "$1 does not exist, but is referenced in config as a keys config.",
+  "mwiki-template-ne": "$1 does not exist, but is referenced in config as a template.",
+  "data-config-alert": "Torque Data Configuration Alert!",
+  "config-ne": "Config page $1 does not exist."
+}

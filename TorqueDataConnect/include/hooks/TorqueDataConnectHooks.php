@@ -79,7 +79,7 @@ class TorqueDataConnectHooks {
     if(sizeof($configErrors) > 0) {
       $html = "";
       $html .= "<div style='border:2px solid #AA3333;padding:10px;text-align:left;margin-top:10px;background-color:#FFEEEE'>";
-      $html .= "<h2 style='margin-top:0px;border-bottom:0px'>Torque Data Configuration Alert!</h2>";
+      $html .= "<h2 style='margin-top:0px;border-bottom:0px'>" . wfMessage("data-config-alert")->plain() . "</h2>";
 
       $html .= "<ul>";
       foreach($configErrors as $configError) {

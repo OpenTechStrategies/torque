@@ -5,7 +5,7 @@ class TorqueDataConnectConfig {
   public static function convertPageToColumnConfig($page) {
     $title = Title::newFromText($page);
     if(!$title->exists()) {
-      array_push(self::$errors, $page . " does not exist, but is reference in config as a column config.");
+      array_push(self::$errors, wfMessage("convert-column-page-ne", $page)->parse());
       return [];
     }
     $page = new WikiPage($title);
@@ -22,7 +22,7 @@ class TorqueDataConnectConfig {
   public static function convertPageToIdConfig($page) {
     $title = Title::newFromText($page);
     if(!$title->exists()) {
-      array_push(self::$errors, $page . " does not exist, but is reference in config as a keys config.");
+      array_push(self::$errors, wfMessage("convert-id-page-ne", $page)->parse());
       return [];
     }
     $page = new WikiPage($title);
@@ -39,7 +39,7 @@ class TorqueDataConnectConfig {
   public static function getMwikiTemplate($mwikiPage) {
     $title = Title::newFromText($mwikiPage);
     if(!$title->exists()) {
-      array_push(self::$errors, $mwikiPage . " does not exist, but is reference in config as a template.");
+      array_push(self::$errors, wfMessage("mwiki-template-ne", $mwikiPage)->parse());
       return "";
     }
     $page = new WikiPage($title);
@@ -88,7 +88,7 @@ class TorqueDataConnectConfig {
     $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
 
     if(!$configPage->exists()) {
-      array_push(self::$errors, "Config page ${wgTorqueDataConnectConfigPage} does not exist.");
+      array_push(self::$errors, wfMessage("config-ne", $wgTorqueDataConnectConfigPage)->parse());
       return [];
     }
 
