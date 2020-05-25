@@ -164,15 +164,13 @@ class TorqueDataConnectConfig {
             $templatePage = $matches[1];
           } else if(!$templateType) {
             $templateType = $line;
-          } else {
-            // Do nothing here, since a fourth column is ok for user notes if they like
-          }
-          if($templateName && $templatePage && $templateType) {
             array_push($templateConfig, [
               "templateName" => $templateName,
               "templatePage" => $templatePage,
               "templateType" => $templateType
             ]);
+          } else {
+            // Do nothing here, since a fourth column is ok for user notes if they like
           }
         }
       }
