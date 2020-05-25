@@ -87,7 +87,11 @@ def sheet_toc(sheet_name, toc_name, fmt):
         toc_template = toc_templates['templates'][toc_templates['default']]
         template = Template(toc_template)
         template_data['toc_lines'] = {
-                o[config['key_column']]:template.render({config['object_name']: o})
+                o[config['key_column']]:
+                    template.render({
+                        config['object_name']:
+                        cull_invalid_columns(o, permissions[sheet_name][wiki_key][group]["columns"])
+                    })
                 for o
                 in valid_objects
             }
