@@ -114,7 +114,10 @@ def load_sheet(sheet_name):
         o = {}
         for (field, column_type, cell) in zip(header, column_types, row):
             if column_type == 'list':
-                cell = cell.strip().split("\n")
+                if cell == '':
+                    cell = []
+                else:
+                    cell = cell.strip().split("\n")
             o[field] = cell
         data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
 
