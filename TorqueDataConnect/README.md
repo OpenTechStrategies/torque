@@ -113,13 +113,15 @@ In the "Templates" table the three columns must be:
 * The template Name
 * A link to a wiki page which is a Jinja template file
 * The template type, which must be 'Search', 'TOC', or 'View'
-  * At this time, Search and TOC can really only have one template, but that may change in the future
+  * At this time, Search can really only have one template, but that may change in the future
   * The types are as follows:
     * Search: Search results are passed through this template before displaying on the results page
     * TOC: TOC templates are provided with objects passed through this template in addition to their
-      specified JSON data
+      specified JSON data.  Having multiple allows toc writers to choose which template to
+      view a given `tdcrender` call with.
     * View: Different views for the page.  Having multiple leads to a dropdown on the sidebar
-      allowing the user to choose what way they'd like to show the data.
+      allowing the user to choose what way they'd like to show the data.  It also allows the
+      wiki page writers to choose the template to view a given `tdcrender` call with.
 
 ## Usage
 
@@ -179,10 +181,11 @@ Parameters:
 
 TorqueDataConnect provides a single hook for pages to use to ask Torque to render
 data for them.  The path will get `api` prepended to it so that users can't use it to
-access Torque's control areas.
+access Torque's control areas.  The view, when provided, will tell torquedata to 
+render the page/toc with a specific view that was configured in the MainConfig
 
 ```
-{{ #tdcrender:<path> }}
+{{ #tdcrender:<path>|<view> }}
 ```
 
 The paths available from Torque are:

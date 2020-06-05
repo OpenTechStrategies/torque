@@ -300,6 +300,9 @@ The `#tdcrender` hook is the main way that pages ask torquedata to render
 objects for them.  These can be inserted at any place on any page, and
 the resulting text will be inserted to that location.
 
+The hook also allows for the caller to specify which view template to use,
+within the templates available for that render type (toc versus normal).
+
 #### Single objects
 
 For single objects, reference the object by its id.  The path used is

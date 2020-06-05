@@ -84,7 +84,15 @@ def sheet_toc(sheet_name, toc_name, fmt):
         template_data[sheet_name] = { o[config["key_column"]]:o for o in valid_objects }
 
         toc_templates = templates[sheet_name][wiki_key]['TOC']
+
         toc_template = toc_templates['templates'][toc_templates['default']]
+
+        # Because TorqueDataConnect will sometimes override the global view and send it along,
+        # and because that view may not be a valid TOC view, only use the view argument to override
+        # the default if it's valid.
+        if request.args.get("view") and request.args.get("view") in toc_templates['templates']:
+            toc_template = toc_templates['templates'][request.args.get("view")]
+
         template = Template(toc_template)
         template_data['toc_lines'] = {
                 o[config['key_column']]:

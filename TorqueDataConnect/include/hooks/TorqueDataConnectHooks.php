@@ -5,11 +5,17 @@ class TorqueDataConnectHooks {
 		$parser->setFunctionHook('tdcrender', [ self::class, 'loadLocation' ]);
 	}
 
-	public static function loadLocation($parser, $location) {
+	public static function loadLocation($parser, $location, $view = false) {
   	$parser->disableCache();
 
     global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView,
       $wgTorqueDataConnectRaw, $wgTorqueDataConnectWikiKey;
+
+    // Let the tdcrender view be top priority
+    if(!$view) {
+      $view = $wgTorqueDataConnectView;
+    }
+
     $contents = file_get_contents(
       "http://localhost:5000/api/" .
       $location .
@@ -17,7 +23,7 @@ class TorqueDataConnectHooks {
       $wgTorqueDataConnectGroup .
       "&wiki_key=" .
       $wgTorqueDataConnectWikiKey .
-      ($wgTorqueDataConnectView ? "&view=" . $wgTorqueDataConnectView : "")
+      ($view ? "&view=" . $view : "")
       );
 
     # If there are parser hooks in the output of the template, then

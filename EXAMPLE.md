@@ -492,7 +492,13 @@ Then repeat for:
 * `http://yourdomain.tld/wiki/index.php/Application_B`, to 2.mwiki
 * `http://yourdomain.tld/wiki/index.php/Application_C`, to 3.mwiki
 * `http://yourdomain.tld/wiki/index.php/Application_D`, to 4.mwiki
-* `http://yourdomain.tld/wiki/index.php/Application_E`, to 5.mwiki
+
+For `http://yourdomain.tld/wiki/index.php/Application_E`, use the
+redecated view:
+
+```MediaWiki
+{{ #tdcrender:proposals/id/5.mwiki|Redacted }}
+```
 
 ## The Everything List TOC
 
