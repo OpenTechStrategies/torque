@@ -114,6 +114,9 @@ def load_sheet(sheet_name):
         o = {}
         for (field, column_type, cell) in zip(header, column_types, row):
             if column_type == 'list':
+                # This may be reversed as a decision at some point, but the empty cell
+                # from the csv comes through as the empty string, meaning that the user
+                # probably wants the list to be empty as well.
                 if cell == '':
                     cell = []
                 else:
