@@ -4,6 +4,7 @@ import csv
 import configparser
 import os
 import pickle
+import json
 from whoosh import index
 from whoosh.index import create_in
 from whoosh.fields import *
@@ -121,6 +122,11 @@ def load_sheet(sheet_name):
                     cell = []
                 else:
                     cell = cell.strip().split("\n")
+            elif column_type == 'json':
+                if cell == '':
+                    cell = {}
+                else:
+                    cell = json.loads(cell)
             o[field] = cell
         data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
 

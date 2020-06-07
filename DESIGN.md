@@ -99,6 +99,8 @@ For right now, the available types are:
 
 * `list` - a new line separated list of values.  This gets turned
   into a list in memory for the template to iterate over
+* `json` - a json document embedded in the csv, that will then
+  get turned into a python dict
 
 One of the columns must be specified as a key column.  The keys
 in the document should also all be unique to prevent collisions.
