@@ -55,7 +55,7 @@ wfLoadExtension('TorqueDataConnect');
 
 ## Setting up Torque
 
-Follow the [installation instructions](./torquedata/README.md#Installation and Startup)
+Follow the [installation instructions](./torquedata/README.md#installation-and-startup)
 
 ## Uploading a spreadsheet
 
