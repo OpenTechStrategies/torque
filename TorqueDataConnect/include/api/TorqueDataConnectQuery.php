@@ -6,6 +6,9 @@ class TorqueDataConnectQuery extends APIBase {
   }
 
   public function execute() {
+    $log = new LogPage('torquedataconnect-apiaccess', false);
+    $log->addEntry('apiaccess', $this->getTitle(), null, array($this->getParameter("path")));
+
     $valid_group = TorqueDataConnectConfig::getValidGroup($this->getUser());
 
     global $wgTorqueDataConnectWikiKey;

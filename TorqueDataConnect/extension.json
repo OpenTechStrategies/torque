@@ -59,5 +59,21 @@
     "TorqueDataConnectRaw": false,
     "TorqueDataConnectRenderToHTML": true
   },
+  "LogTypes": [
+    "torquedataconnect-apiaccess",
+    "torquedataconnect-datachanges"
+  ],
+  "LogNames": {
+    "torquedataconnect-apiaccess": "torquedataconnect-apiaccesslog",
+    "torquedataconnect-datachanges": "torquedataconnect-datachangeslog"
+  },
+  "LogHeaders": {
+    "torquedataconnect-apiaccess": "torquedataconnect-apiaccesslog-header",
+    "torquedataconnect-datachanges": "torquedataconnect-datachangeslog-header"
+  },
+  "LogActionsHandlers": {
+    "torquedataconnect-apiaccess/*": "LogFormatter",
+    "torquedataconnect-datachanges/*": "LogFormatter"
+  },
   "manifest_version": 1
 }

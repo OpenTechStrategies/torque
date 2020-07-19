@@ -6,6 +6,9 @@ class TorqueDataConnectUploadSheet extends APIBase {
   }
 
   public function execute() {
+    $log = new LogPage('torquedataconnect-datachanges', false);
+    $log->addEntry('sheetupload', $this->getTitle(), null);
+
     parent::checkUserRightsAny(["torquedataconnect-admin"]);
     # We use phpcurl here because it's really straightforward, and
     # research (stackoverflow) didn't produce a compelling native php method.
