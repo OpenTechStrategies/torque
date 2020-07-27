@@ -50,6 +50,23 @@ def search(sheet_name):
     else:
         return ""
 
+@app.route('/api/sheets')
+def sheets():
+    """ Return a summary of all the sheets """
+    group = request.args.get("group")
+    wiki_key = request.args.get("wiki_key")
+
+    response = []
+    for sheet_name, sheet in data.items():
+        sheet = sheet.apply_permissions(permissions[sheet_name][wiki_key][group])
+        response.append({
+            "name": sheet_name,
+            "object_name": sheet.object_name,
+            "key_column": sheet.key_column,
+            "columns": sheet.columns
+        })
+    return json.dumps(response)
+
 @app.route('/api/<sheet_name>.<fmt>')
 def sheet(sheet_name, fmt):
     group = request.args.get("group")
