@@ -29,6 +29,7 @@
     "TorqueDataConnectUploadToc": "include/api/TorqueDataConnectUploadToc.php",
     "TorqueDataConnectUploadAttachment": "include/api/TorqueDataConnectUploadAttachment.php",
     "TorqueDataConnectAttachment": "include/specials/TorqueDataConnectAttachment.php",
+    "TorqueDataConnectColumns": "include/specials/TorqueDataConnectColumns.php",
     "TorqueDataConnectHooks": "include/hooks/TorqueDataConnectHooks.php"
   },
   "Hooks": {
@@ -53,7 +54,8 @@
     "TorqueDataConnectAlias": "TorqueDataConnect.i18n.alias.php"
   },
   "SpecialPages": {
-    "TorqueDataConnectAttachment": "TorqueDataConnectAttachment"
+    "TorqueDataConnectAttachment": "TorqueDataConnectAttachment",
+    "TorqueDataConnectColumns": "TorqueDataConnectColumns"
   },
   "config": {
     "TorqueDataConnectConfigPage": "",
