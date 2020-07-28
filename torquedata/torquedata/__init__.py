@@ -5,67 +5,11 @@ import configparser
 import os
 import pickle
 import json
-from dataclasses import dataclass
-from collections import UserDict
 from whoosh import index
 from whoosh.index import create_in
 from whoosh.fields import *
 
 app = Flask(__name__)
-
-# explanation: since this class inherits from UserDict, it behaves pretty much
-# exactly like a dict which means old code doesn't break but new code can use
-# the methods attached to this class
-class Spreadsheet(UserDict):
-    @classmethod
-    def read(cls, name):
-        """Load an existing spreadsheet"""
-        raise NotImplementedError
-
-    @classmethod
-    def write(cls):
-        """Save spreadsheet to filesystem"""
-        raise NotImplementedError
-
-    def __init__(self, name, object_name, key_column, columns=[]):
-        self.name = name
-        self.object_name = object_name
-        self.key_column = key_column
-        self.columns = columns
-
-        super().__init__()
-
-    def apply_permissions(self, permissions):
-        """
-        Return a new spreadsheet with only data that is allowed by a given
-        permissions object
-        """
-        new_data = {}
-        # cull invalid rows, columns
-        for key, entry in self.data.items():
-            if 'valid_ids' in permissions and key not in permissions['valid_ids']:
-                continue
-            if 'columns' in permissions:
-                new_entry = {}
-                for column, value in entry.items():
-                    if column not in permissions['columns']:
-                        continue
-                    new_entry[column] = value
-                new_data[key] = new_entry
-            else:
-                new_data[key] = entry
-
-        new_sheet = Spreadsheet(
-            name=self.name,
-            object_name=self.object_name,
-            key_column=self.key_column,
-            columns=permissions.get('columns', None) or self.columns
-        )
-        new_sheet.data = new_data
-        return new_sheet
-
-    def json(self):
-        return json.dumps({self.name: self.data.values()})
 
 try:
     app.config.from_object('config')
@@ -152,12 +96,7 @@ def index_search(group, sheet_name, wiki_key):
 
 
 def load_sheet(sheet_name):
-    data[sheet_name] = Spreadsheet(
-        name=sheet_name,
-        object_name=sheet_config[sheet_name]['object_name'],
-        key_column=sheet_config[sheet_name]['key_column'],
-        columns=[]
-    )
+    data[sheet_name] = {}
     reader = csv.reader(
             open(os.path.join(app.config.get("SPREADSHEET_FOLDER"), sheet_name, sheet_name + ".csv"), encoding='utf-8'),
             delimiter=',',
@@ -175,7 +114,6 @@ def load_sheet(sheet_name):
     for row in reader:
         o = {}
         for (field, column_type, cell) in zip(header, column_types, row):
-            data[sheet_name].columns.append(field)
             if column_type == 'list':
                 # This may be reversed as a decision at some point, but the empty cell
                 # from the csv comes through as the empty string, meaning that the user
