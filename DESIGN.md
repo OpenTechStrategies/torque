@@ -353,6 +353,91 @@ These are done through the MediaWiki API (most likely through a bot account).
 See the [example](EXAMPLE.md) for a better demonstration of how one might
 upload these files.
 
+### Editing data
+
+As per [issue
+#32](https://github.com/opentechstrategies/torque/issues/32), users
+can edit data fields (e.g., to fix a typo in a city's name in the
+"City" field) if they have proper permissions.
+
+Because the original proposal data is inhaled from an on-disk
+spreadsheet at startup time and lives in an in-memory data structure,
+edits are persisted "off to the side" as overlays over that original
+data.  The overlay information is then consulted for updates when
+proposal data is loaded.
+
+For simplicity's sake, we store the edits in their own top-level data
+structure (pickled to and from disk just like the original data is).
+This is what that data structure looks like:
+
+```
+edits = {
+    "proposals": {
+        "1": {
+               "Application #":
+                  [ BASE_HASH,
+                    [
+                      {
+                        "new_value": "15",
+                        "edit_message": "says reason for the edit",
+                        "edit_timestamp": "2020-07-31",
+                        "editor": "JRandom",
+                        "approver": NULL,
+                        "approval_code": NULL,
+                        "approval_timestamp": NULL,
+                      },
+                      {
+                        "new_value": "9",
+                        "edit_message": "says reason for the edit",
+                        "edit_timestamp": "2020-07-29",
+                        "editor": "JRandom",
+                        "approver": NULL,
+                        "approval_code": NULL,
+                        "approval_timestamp": NULL,
+                      },
+                      ...
+                    ]
+                  ]
+                "Name":
+                  [ BASE_HASH,
+                    [
+                      {
+                        "new_value": "Fish",
+                        "edit_message": "says reason for the edit",
+                        "edit_timestamp": "2020-08-12",
+                        "editor": "JRandom",
+                        "approver": NULL,
+                        "approval_code": NULL,
+                        "approval_timestamp": NULL,
+                      },
+                      {
+                        "new_value": "Food",
+                        "edit_message": "says reason for the edit",
+                        "edit_timestamp": "2020-08-07",
+                        "editor": "JRandom",
+                        "approver": NULL,
+                        "approval_code": NULL,
+                        "approval_timestamp": NULL,
+                      },
+                      ...
+                    ]
+                  ]
+             },
+         "2": { ...},
+         ...}
+      }
+```
+
+The edit subdicts are listed in reverse chronological order by
+`edit_timestamp`.  The `BASE_HASH` is a hash of the original value for
+this field, that is, the value that came from the original
+spreadsheet.
+
+The approval fields are unused right now, though they may be used for
+an enhancement to this feature later.  We should decide whether there
+are different meanings for when the approval fields are present but
+NULL versus them just not being present at all.
+
 ### API usage
 
 Normal wiki users can access MediaWiki programmatically through
