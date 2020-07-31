@@ -1,9 +1,11 @@
+from datetime import datetime
 from torquedata import *
 from jinja2 import Template
 from flask import request, send_file, abort
 from werkzeug.utils import secure_filename
 
 import threading
+import flask
 import json
 import os
 import re
@@ -13,6 +15,7 @@ import pickle
 import shutil
 import whoosh
 from whoosh.qparser import QueryParser
+
 
 @app.route("/search/<sheet_name>")
 def search(sheet_name):
@@ -51,6 +54,7 @@ def search(sheet_name):
     else:
         return ""
 
+
 @app.route('/api/<sheet_name>.<fmt>')
 def sheet(sheet_name, fmt):
     group = request.args.get("group")
@@ -62,6 +66,7 @@ def sheet(sheet_name, fmt):
     else:
         raise Exception("Only json format valid for full list")
 
+
 @app.route('/api/<sheet_name>/toc/<toc_name>.<fmt>')
 def sheet_toc(sheet_name, toc_name, fmt):
     group = request.args.get("group")
@@ -69,7 +74,7 @@ def sheet_toc(sheet_name, toc_name, fmt):
 
     if not group:
         abort(403, "Group " + group + " invalid");
-    
+
     if not 'TOC' in templates[sheet_name][wiki_key]:
         abort(403, "No TOC defined for " + sheet_name + " for wiki " + wiki_key);
 
@@ -109,20 +114,17 @@ def sheet_toc(sheet_name, toc_name, fmt):
     else:
         raise Exception("Only mwiki format valid for toc")
 
-@app.route('/api/<sheet_name>/id/<key>.<fmt>')
-def row(sheet_name, key, fmt):
-    group = request.args.get("group")
-    wiki_key = request.args.get("wiki_key")
 
-    valid_id = False
-
+def is_valid_id(group, wiki_key, key, sheet_name):
     if wiki_key in permissions[sheet_name].keys() and group in permissions[sheet_name][wiki_key].keys():
         if "valid_ids" not in permissions[sheet_name][wiki_key][group].keys():
-            valid_id = True
+            return True
         else:
-            valid_id = (key in permissions[sheet_name][wiki_key][group]["valid_ids"])
+            return (key in permissions[sheet_name][wiki_key][group]["valid_ids"])
 
-    if not valid_id:
+
+def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
+    if not is_valid_id(group, wiki_key, key, sheet_name):
         if fmt == "json":
             return json.dumps({"error": "Invalid " + sheet_config[sheet_name]["key_column"]})
         else:
@@ -133,11 +135,13 @@ def row(sheet_name, key, fmt):
     if "columns" in permissions[sheet_name][wiki_key][group]:
         row = cull_invalid_columns(row, permissions[sheet_name][wiki_key][group]["columns"])
 
+    row = update_row_with_edits(row, sheet_name, key)
+
     if fmt == "json":
         return json.dumps(row)
     elif fmt == "mwiki":
         mwiki_templates = templates[sheet_name][wiki_key]['View']
-        chosen_view = request.args.get("view", mwiki_templates['default'])
+        chosen_view = view or mwiki_templates['default']
         config = sheet_config[sheet_name]
         mwiki_template = mwiki_templates['templates'][chosen_view]
         template = Template(mwiki_template)
@@ -145,6 +149,44 @@ def row(sheet_name, key, fmt):
         return template.render({config["object_name"]: row})
     else:
         raise Exception("Invalid format: " + fmt)
+
+
+@app.route('/api/<sheet_name>/edit-record/<key>', methods=['POST'])
+def edit_record(sheet_name, key):
+    group = request.json.get("group")
+    wiki_key = request.json.get("wiki_key")
+    new_values = json.loads(request.json.get("new_values"))
+
+    if not is_valid_id(group, wiki_key, key, sheet_name):
+        abort(403)
+
+    for field, val in new_values.items():
+        edit = {
+            "new_value": val,
+            "edit_message": None,
+            "edit_timestamp": datetime.datetime.now(),
+            "editor": group,
+            "approver": None,
+            "approval_code": None,
+            "approval_timestamp": None,
+            "wiki_key": wiki_key
+        }
+        edits[sheet_name][key][field]["edits"].append(edit)
+
+    with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "edits"), 'wb') as f:
+        pickle.dump(edits, f)
+
+    return get_row(group, wiki_key, key, "mwiki", sheet_name)
+
+
+@app.route('/api/<sheet_name>/id/<key>.<fmt>')
+def row(sheet_name, key, fmt):
+    group = request.args.get("group")
+    wiki_key = request.args.get("wiki_key")
+
+    return get_row(group, wiki_key, key, fmt, sheet_name,
+                   request.args.get("view", None))
+
 
 @app.route('/api/<sheet_name>/attachment/<key>/<attachment>')
 def attachment(sheet_name, key, attachment):
@@ -178,6 +220,7 @@ def attachment(sheet_name, key, attachment):
 
     with open(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments", attachment_name), "rb") as file:
         return send_file(io.BytesIO(file.read()), attachment_filename = attachment_name)
+
 
 @app.route('/upload/sheet', methods=['POST'])
 def upload_sheet():
@@ -231,6 +274,7 @@ def upload_sheet():
 
     return ""
 
+
 @app.route('/config/<sheet_name>/<wiki_key>/reset')
 def reset_config(sheet_name, wiki_key):
     global templates, permissions
@@ -243,6 +287,7 @@ def reset_config(sheet_name, wiki_key):
         pickle.dump(templates, f)
 
     return ''
+
 
 @app.route('/config/<sheet_name>/<wiki_key>/group', methods=['POST'])
 def set_group_config(sheet_name, wiki_key):
@@ -274,6 +319,7 @@ def set_group_config(sheet_name, wiki_key):
     index_search(group_name, sheet_name, wiki_key)
 
     return ''
+
 
 @app.route('/config/<sheet_name>/<wiki_key>/template', methods=['POST'])
 def set_template_config(sheet_name, wiki_key):
@@ -310,6 +356,7 @@ def set_template_config(sheet_name, wiki_key):
 
     return ''
 
+
 @app.route('/upload/toc', methods=['POST'])
 def upload_toc():
     from werkzeug.utils import secure_filename
@@ -341,6 +388,7 @@ def upload_toc():
         template_file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".j2"))
 
     return ""
+
 
 @app.route('/upload/attachment', methods=['POST'])
 def upload_attachment():
@@ -381,9 +429,11 @@ def upload_attachment():
 
     return ""
 
+
 # We need a lock because we have incrementing ids.
 # This should really be in a database....
 userlock = threading.Lock()
+
 
 @app.route('/users/username/<username>')
 def find_user_by_username(username):

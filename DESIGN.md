@@ -375,8 +375,8 @@ edits = {
     "proposals": {
         "1": {
                "Application #":
-                  [ BASE_HASH,
-                    [
+                  { "original": ORIGINAL_VALUE,
+                    "edits": [
                       {
                         "new_value": "15",
                         "edit_message": "says reason for the edit",
@@ -397,10 +397,10 @@ edits = {
                       },
                       ...
                     ]
-                  ]
+                  }
                 "Name":
-                  [ BASE_HASH,
-                    [
+                  { "original": ORIGINAL_VALUE,
+                    "edits": [
                       {
                         "new_value": "Fish",
                         "edit_message": "says reason for the edit",
@@ -421,7 +421,7 @@ edits = {
                       },
                       ...
                     ]
-                  ]
+                  }
              },
          "2": { ...},
          ...}
@@ -429,9 +429,8 @@ edits = {
 ```
 
 The edit subdicts are listed in reverse chronological order by
-`edit_timestamp`.  The `BASE_HASH` is a hash of the original value for
-this field, that is, the value that came from the original
-spreadsheet.
+`edit_timestamp`. The `ORIGINAL_VALUE` is a copy of the original value for
+this field, that is, the value that came from the original spreadsheet.
 
 The approval fields are unused right now, though they may be used for
 an enhancement to this feature later.  We should decide whether there

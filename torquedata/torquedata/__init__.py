@@ -43,10 +43,22 @@ try:
 except Exception:
     users = {}
 
+try:
+    with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "edits"), 'rb') as f:
+        edits = pickle.load(f)
+        load_edits = False
+except Exception:
+    edits = {}
+    load_edits = True
+
+loaded_edits = {}
 data = {}
 indices = {}
+
+
 def cull_invalid_columns(o, valid_fields):
-    return {k:v for (k,v) in o.items() if (k in valid_fields)}
+    return {k:v for (k, v) in o.items() if (k in valid_fields)}
+
 
 def cull_invalid_objects(group, sheet_name, wiki_key):
     if sheet_name not in permissions.keys():
@@ -61,6 +73,17 @@ def cull_invalid_objects(group, sheet_name, wiki_key):
     else:
         return list(data[sheet_name].values())
 
+
+def update_row_with_edits(row, sheet_name, key):
+    row_edits = edits[sheet_name][key]
+
+    for k in row:
+        if len(row_edits[k]['edits']) > 0:
+            row[k] = row_edits[k]['edits'][-1]['new_value']
+
+    return row
+
+
 def permissions_sha(sheet_name, wiki_key, group):
     import hashlib
 
@@ -69,6 +92,7 @@ def permissions_sha(sheet_name, wiki_key, group):
         str(permissions[sheet_name][wiki_key][group]["valid_ids"]).encode('utf-8') +
         str(permissions[sheet_name][wiki_key][group]["columns"]).encode('utf-8')
     ).hexdigest()
+
 
 def index_search(group, sheet_name, wiki_key):
     sha = permissions_sha(sheet_name, wiki_key, group)
@@ -103,6 +127,7 @@ def index_search(group, sheet_name, wiki_key):
 
 def load_sheet(sheet_name):
     data[sheet_name] = {}
+    loaded_edits = {}
     reader = csv.reader(
             open(os.path.join(app.config.get("SPREADSHEET_FOLDER"), sheet_name, sheet_name + ".csv"), encoding='utf-8'),
             delimiter=',',
@@ -119,6 +144,7 @@ def load_sheet(sheet_name):
     column_types = next(reader)
     for row in reader:
         o = {}
+        edit_o = {}
         for (field, column_type, cell) in zip(header, column_types, row):
             if column_type == 'list':
                 # This may be reversed as a decision at some point, but the empty cell
@@ -135,12 +161,23 @@ def load_sheet(sheet_name):
                     cell = json.loads(cell)
             o[field] = cell
         data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
+        loaded_edits[o[sheet_config[sheet_name]["key_column"]]] = {}
+
+        for k, v in o.items():
+            loaded_edits[o[sheet_config[sheet_name]["key_column"]]][k] = {
+                "original": v,
+                "edits": []
+            }
+    
+    if load_edits:
+        edits[sheet_name] = loaded_edits
 
     for wiki_key in permissions[sheet_name].keys():
         for group in permissions[sheet_name][wiki_key].keys():
             sha = permissions_sha(sheet_name, wiki_key, group)
             dir = os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, wiki_key, "indices", sha)
             index_search(group, sheet_name, wiki_key)
+
 
 for sheet_name in sheet_config.sections():
     if sheet_name is "DEFAULT":

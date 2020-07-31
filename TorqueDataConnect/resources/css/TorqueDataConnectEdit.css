@@ -1,0 +1,60 @@
+.torque-edit:hover {
+    text-decoration: underline;
+}
+
+.torque-edit::before {
+    content: "[" ;
+    color: black;
+}
+.torque-edit::after {
+    content: "]" ;
+    color: black;
+}
+
+.torque-edit-button {
+    color: #0645ad;
+    display: inline-block;
+}
+
+.torque-edit-button.paragraph {
+    padding-left: 1em;
+}
+
+table p {
+    display: inline;
+}
+
+.torque-edit-button:hover {
+    background: transparent;
+    cursor: pointer;
+}
+
+.torque-save-wrapper {
+    display: flex;
+}
+
+.torque-save-wrapper > span {
+    color: #FFF;
+    font-weight: bold;
+    padding: 4px 0;
+    text-align: center;
+    flex: 0 0 50%;
+}
+
+.torque-save-wrapper > span:hover {
+    filter: brightness(120%);
+    cursor: pointer;
+}
+
+.torque-save {
+    background-color: #3870D3;
+}
+
+.torque-save-cancel {
+    background-color:  	#CD5C5C;
+}
+
+.torque-main-content > p {
+    display: inline;
+    padding-left: 0 !important;
+}
