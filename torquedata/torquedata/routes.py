@@ -1,9 +1,11 @@
+from datetime import datetime
 from torquedata import *
 from jinja2 import Template
 from flask import request, send_file, abort
 from werkzeug.utils import secure_filename
 
 import threading
+import flask
 import json
 import os
 import re
@@ -13,6 +15,7 @@ import pickle
 import shutil
 import whoosh
 from whoosh.qparser import QueryParser
+
 
 @app.route("/search/<sheet_name>")
 def search(sheet_name):
@@ -40,16 +43,19 @@ def search(sheet_name):
             if results.scored_length() == 0:
                 return "There were no results matching the query."
             else:
-                resp = "== %d results for '%s' ==\n\n" % (results.scored_length(), q)
+                resp = "== %d results for '%s' ==\n\n" % (
+                    results.scored_length(), q)
                 for r in results:
                     o = data[sheet_name][r["key"]]
-                    culled_o = cull_invalid_columns(data[sheet_name][r["key"]], permissions[sheet_name][wiki_key][group]["columns"])
+                    culled_o = cull_invalid_columns(
+                        data[sheet_name][r["key"]], permissions[sheet_name][wiki_key][group]["columns"])
                     resp += template.render({config["object_name"]: culled_o})
                     resp += "\n\n"
 
             return resp
     else:
         return ""
+
 
 @app.route('/api/<sheet_name>.<fmt>')
 def sheet(sheet_name, fmt):
@@ -58,9 +64,10 @@ def sheet(sheet_name, fmt):
 
     if fmt == "json":
         valid_objects = cull_invalid_objects(group, sheet_name, wiki_key)
-        return json.dumps({sheet_name: [cull_invalid_columns(o, permissions[sheet_name][wiki_key][group]["columns"]) for o in valid_objects ]})
+        return json.dumps({sheet_name: [cull_invalid_columns(o, permissions[sheet_name][wiki_key][group]["columns"]) for o in valid_objects]})
     else:
         raise Exception("Only json format valid for full list")
+
 
 @app.route('/api/<sheet_name>/toc/<toc_name>.<fmt>')
 def sheet_toc(sheet_name, toc_name, fmt):
@@ -68,10 +75,10 @@ def sheet_toc(sheet_name, toc_name, fmt):
     wiki_key = request.args.get("wiki_key")
 
     if not group:
-        abort(403, "Group " + group + " invalid");
-    
+        abort(403, "Group " + group + " invalid")
+
     if not 'TOC' in templates[sheet_name][wiki_key]:
-        abort(403, "No TOC defined for " + sheet_name + " for wiki " + wiki_key);
+        abort(403, "No TOC defined for " + sheet_name + " for wiki " + wiki_key)
 
     valid_objects = cull_invalid_objects(group, sheet_name, wiki_key)
 
@@ -82,7 +89,8 @@ def sheet_toc(sheet_name, toc_name, fmt):
             template_str = f.read()
         with open(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".json")) as f:
             template_data = json.loads(f.read())
-        template_data[sheet_name] = { o[config["key_column"]]:o for o in valid_objects }
+        template_data[sheet_name] = {
+            o[config["key_column"]]: o for o in valid_objects}
 
         toc_templates = templates[sheet_name][wiki_key]['TOC']
 
@@ -96,48 +104,49 @@ def sheet_toc(sheet_name, toc_name, fmt):
 
         template = Template(toc_template)
         template_data['toc_lines'] = {
-                o[config['key_column']]:
-                    template.render({
-                        config['object_name']:
-                        cull_invalid_columns(o, permissions[sheet_name][wiki_key][group]["columns"])
-                    })
-                for o
-                in valid_objects
-            }
+            o[config['key_column']]:
+            template.render({
+                config['object_name']:
+                cull_invalid_columns(
+                    o, permissions[sheet_name][wiki_key][group]["columns"])
+            })
+            for o
+            in valid_objects
+        }
 
         return Template(template_str).render(template_data)
     else:
         raise Exception("Only mwiki format valid for toc")
 
-@app.route('/api/<sheet_name>/id/<key>.<fmt>')
-def row(sheet_name, key, fmt):
-    group = request.args.get("group")
-    wiki_key = request.args.get("wiki_key")
 
-    valid_id = False
-
+def is_valid_id(group, wiki_key, key, sheet_name):
     if wiki_key in permissions[sheet_name].keys() and group in permissions[sheet_name][wiki_key].keys():
         if "valid_ids" not in permissions[sheet_name][wiki_key][group].keys():
-            valid_id = True
+            return True
         else:
-            valid_id = (key in permissions[sheet_name][wiki_key][group]["valid_ids"])
+            return (key in permissions[sheet_name][wiki_key][group]["valid_ids"])
 
-    if not valid_id:
+
+def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
+    if not is_valid_id(group, wiki_key, key, sheet_name):
         if fmt == "json":
             return json.dumps({"error": "Invalid " + sheet_config[sheet_name]["key_column"]})
         else:
-            abort(403, "Invalid " + sheet_config[sheet_name]["key_column"]);
+            abort(403, "Invalid " + sheet_config[sheet_name]["key_column"])
 
     row = data[sheet_name][key]
 
     if "columns" in permissions[sheet_name][wiki_key][group]:
-        row = cull_invalid_columns(row, permissions[sheet_name][wiki_key][group]["columns"])
+        row = cull_invalid_columns(
+            row, permissions[sheet_name][wiki_key][group]["columns"])
+
+    row = update_row_with_edits(row, sheet_name, key)
 
     if fmt == "json":
         return json.dumps(row)
     elif fmt == "mwiki":
         mwiki_templates = templates[sheet_name][wiki_key]['View']
-        chosen_view = request.args.get("view", mwiki_templates['default'])
+        chosen_view = view or mwiki_templates['default']
         config = sheet_config[sheet_name]
         mwiki_template = mwiki_templates['templates'][chosen_view]
         template = Template(mwiki_template)
@@ -145,6 +154,40 @@ def row(sheet_name, key, fmt):
         return template.render({config["object_name"]: row})
     else:
         raise Exception("Invalid format: " + fmt)
+
+
+@app.route('/api/<sheet_name>/edit-record/<key>', methods=['POST'])
+def edit_record(sheet_name, key):
+    group = request.json.get("group")
+    wiki_key = request.json.get("wiki_key")
+    new_values = json.loads(request.json.get("new_values"))
+
+    if not is_valid_id(group, wiki_key, key, sheet_name):
+        abort(403)
+
+    for field, val in new_values.items():
+        edit = {
+            "new_value": val,
+            "edit_message": None,
+            "edit_timestamp": datetime.datetime.now(),
+            "editor": group,
+            "approver": None,
+            "approval_code": None,
+            "approval_timestamp": None,
+            "wiki_key": wiki_key
+        }
+        edits[sheet_name][key][field]["edits"].append(edit)
+    return get_row(group, wiki_key, key, "mwiki", sheet_name)
+
+
+@app.route('/api/<sheet_name>/id/<key>.<fmt>')
+def row(sheet_name, key, fmt):
+    group = request.args.get("group")
+    wiki_key = request.args.get("wiki_key")
+
+    return get_row(group, wiki_key, key, fmt, sheet_name,
+                   request.args.get("view", None))
+
 
 @app.route('/api/<sheet_name>/attachment/<key>/<attachment>')
 def attachment(sheet_name, key, attachment):
@@ -160,7 +203,8 @@ def attachment(sheet_name, key, attachment):
         if "valid_ids" not in permissions[sheet_name][wiki_key][group].keys():
             valid_id = True
         else:
-            valid_id = (key in permissions[sheet_name][wiki_key][group]["valid_ids"])
+            valid_id = (key in permissions[sheet_name]
+                        [wiki_key][group]["valid_ids"])
 
     if not valid_id:
         return "Invalid " + sheet_config[sheet_name]["key_column"]
@@ -177,7 +221,8 @@ def attachment(sheet_name, key, attachment):
         return "Invalid attachment: " + attachment_name
 
     with open(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments", attachment_name), "rb") as file:
-        return send_file(io.BytesIO(file.read()), attachment_filename = attachment_name)
+        return send_file(io.BytesIO(file.read()), attachment_filename=attachment_name)
+
 
 @app.route('/upload/sheet', methods=['POST'])
 def upload_sheet():
@@ -197,28 +242,33 @@ def upload_sheet():
         sheet_name = secure_filename(request.form['sheet_name'])
 
         try:
-            os.mkdir(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name))
+            os.mkdir(os.path.join(
+                app.config['SPREADSHEET_FOLDER'], sheet_name))
         except FileExistsError:
             pass
 
         try:
-            os.mkdir(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs"))
+            os.mkdir(os.path.join(
+                app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs"))
         except FileExistsError:
             pass
 
         try:
-            dir = os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "indices")
+            dir = os.path.join(
+                app.config['SPREADSHEET_FOLDER'], sheet_name, "indices")
             shutil.rmtree(dir, True)
             os.mkdir(dir)
         except FileExistsError:
             pass
 
         try:
-            os.mkdir(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments"))
+            os.mkdir(os.path.join(
+                app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments"))
         except FileExistsError:
             pass
 
-        file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, sheet_name + ".csv"))
+        file.save(os.path.join(
+            app.config['SPREADSHEET_FOLDER'], sheet_name, sheet_name + ".csv"))
 
         sheet_config[sheet_name] = {}
         sheet_config[sheet_name]["object_name"] = request.form['object_name']
@@ -230,6 +280,7 @@ def upload_sheet():
         load_sheet(sheet_name)
 
     return ""
+
 
 @app.route('/config/<sheet_name>/<wiki_key>/reset')
 def reset_config(sheet_name, wiki_key):
@@ -243,6 +294,7 @@ def reset_config(sheet_name, wiki_key):
         pickle.dump(templates, f)
 
     return ''
+
 
 @app.route('/config/<sheet_name>/<wiki_key>/group', methods=['POST'])
 def set_group_config(sheet_name, wiki_key):
@@ -275,6 +327,7 @@ def set_group_config(sheet_name, wiki_key):
 
     return ''
 
+
 @app.route('/config/<sheet_name>/<wiki_key>/template', methods=['POST'])
 def set_template_config(sheet_name, wiki_key):
     new_config = request.json
@@ -294,9 +347,9 @@ def set_template_config(sheet_name, wiki_key):
     template_type = new_config['type']
     if template_type not in templates[sheet_name][wiki_key]:
         templates[sheet_name][wiki_key][template_type] = {
-                'default': None,
-                'templates': {}
-                }
+            'default': None,
+            'templates': {}
+        }
 
     name = new_config['name']
     if name not in templates[sheet_name][wiki_key][template_type]['templates']:
@@ -309,6 +362,7 @@ def set_template_config(sheet_name, wiki_key):
         pickle.dump(templates, f)
 
     return ''
+
 
 @app.route('/upload/toc', methods=['POST'])
 def upload_toc():
@@ -331,16 +385,20 @@ def upload_toc():
     if json_file.filename == '':
         raise Exception("json_file must have a filename associated with it")
     if template_file.filename == '':
-        raise Exception("template_file must have a filename associated with it")
+        raise Exception(
+            "template_file must have a filename associated with it")
     if sheet_name not in sheet_config.keys():
         raise Exception(sheet_name + " is not an existing sheet")
     if json_file and template_file:
         secure_sheet_name = secure_filename(request.form['sheet_name'])
 
-        json_file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".json"))
-        template_file.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".j2"))
+        json_file.save(os.path.join(
+            app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".json"))
+        template_file.save(os.path.join(
+            app.config['SPREADSHEET_FOLDER'], sheet_name, "tocs", toc_name + ".j2"))
 
     return ""
+
 
 @app.route('/upload/attachment', methods=['POST'])
 def upload_attachment():
@@ -370,27 +428,31 @@ def upload_attachment():
     object_id = request.form['object_id']
 
     attachment_config[attachment_name] = {
-            'permissions_column': permissions_column,
-            'object_id': object_id
-            }
+        'permissions_column': permissions_column,
+        'object_id': object_id
+    }
 
     with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "attachment_config"), 'wb') as f:
         pickle.dump(attachment_config, f)
 
-    attachment.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments", attachment_name))
+    attachment.save(os.path.join(
+        app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments", attachment_name))
 
     return ""
+
 
 # We need a lock because we have incrementing ids.
 # This should really be in a database....
 userlock = threading.Lock()
+
 
 @app.route('/users/username/<username>')
 def find_user_by_username(username):
     if username not in users.keys():
         with userlock:
             # We start on 14 because then no one is user 13
-            users[username] = {"username": username, "id": len(users.items()) + 14}
+            users[username] = {"username": username,
+                               "id": len(users.items()) + 14}
 
             # With help from https://stackoverflow.com/questions/2333872/atomic-writing-to-file-with-python
             filepath = os.path.join(app.config['SPREADSHEET_FOLDER'], "users")

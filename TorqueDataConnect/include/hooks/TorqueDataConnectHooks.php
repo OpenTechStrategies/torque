@@ -6,7 +6,10 @@ class TorqueDataConnectHooks {
 	}
 
 	public static function loadLocation($parser, $location, $view = false) {
-  	$parser->disableCache();
+    $parser->disableCache();
+    $po = $parser->getOutput();
+    $po->addModules('ext.torquedataconnect.js');
+    $po->addModuleStyles('ext.torquedataconnect.css');
 
     global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView,
       $wgTorqueDataConnectRaw, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
@@ -26,6 +29,8 @@ class TorqueDataConnectHooks {
       $wgTorqueDataConnectWikiKey .
       ($view ? "&view=" . $view : "")
       );
+    
+    $contents = $contents . '<span id="page-info" data-location="' . $location . '"></span>';
 
     # If there are parser hooks in the output of the template, then
     # then we need to parse it fully, and let mediawiki know that

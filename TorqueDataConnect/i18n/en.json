@@ -17,5 +17,6 @@
   "torquedataconnect-datachangeslog-header": "Logs events happening in the torque system regarding data changes",
   "logentry-torquedataconnect-apiaccess-apiaccess": "$1 accessed the api with path $4",
   "logentry-torquedataconnect-datachanges-sheetupload": "$1 uploaded a new version of the spreadsheet",
+  "logentry-torquedataconnect-datachanges-edit": "$1 edited field \"$4\" on page $3",
   "torquedataconnect-sidebar-configpage": "Torque Configuration"
 }
