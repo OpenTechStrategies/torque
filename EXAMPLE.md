@@ -121,7 +121,7 @@ import mwclient
 host = "yourdomain.tld"
 path = "wiki/"
 scheme = "https"
-attachment_file = "SupportingData.csv"
+attachment_file = "SupportingData.txt"
 
 site = mwclient.Site(host, path=path, scheme=scheme)
 site.login(username, password)
