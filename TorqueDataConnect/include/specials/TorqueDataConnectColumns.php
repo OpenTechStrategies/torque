@@ -10,26 +10,29 @@ class TorqueDataConnectColumns extends SpecialPage {
   }
 
   public function execute($subPage) {
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectWikiKey;
+    global $wgTorqueDataConnectGroup;
+    global $wgTorqueDataConnectWikiKey;
+    global $wgTorqueDataConnectSheetName;
+
     $this->setHeaders();
     $ch = curl_init();
     curl_setopt(
       $ch,
       CURLOPT_URL,
-      'http:/localhost:5000/api/sheets' .
+      'http:/localhost:5000/api/' .
+      $wgTorqueDataConnectSheetName . '.json' .
       '?group=' . $wgTorqueDataConnectGroup .
       '&wiki_key=' . $wgTorqueDataConnectWikiKey
     );
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $sheets = json_decode(curl_exec($ch), true);
+    $sheet = json_decode(curl_exec($ch), true)[$wgTorqueDataConnectSheetName];
+    curl_close($ch);
 
-    $out = '';
+    $out = "== " . $wgTorqueDataConnectSheetName . " ==\n";
 
-    foreach ($sheets as $sheet) {
-      $out .= "== " . $sheet['name'] . " ==\n";
-      foreach ($sheet['columns'] as $column) {
-        $out .= "* " . $column . "\n";
-      }
+    // this assumes there is at least one row in the spreadsheet
+    foreach (array_keys($sheet[0]) as $column) {
+      $out .= "* " . $column . "\n";
     }
 
     $this->getOutput()->addWikiTextAsInterface($out);
