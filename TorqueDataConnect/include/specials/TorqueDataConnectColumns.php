@@ -6,7 +6,7 @@
 
 class TorqueDataConnectColumns extends SpecialPage {
   public function __construct() {
-    parent::__construct('TorqueDataConnectColumns');
+    parent::__construct('TorqueDataConnectColumns', 'torquedataconnect-admin');
   }
 
   public function execute($subPage) {
@@ -15,6 +15,7 @@ class TorqueDataConnectColumns extends SpecialPage {
     global $wgTorqueDataConnectSheetName;
 
     $this->setHeaders();
+    $this->checkPermissions();
     $ch = curl_init();
     curl_setopt(
       $ch,
