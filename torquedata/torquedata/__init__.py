@@ -37,6 +37,12 @@ try:
 except Exception:
     attachment_config = {}
 
+try:
+    with open(os.path.join(app.config['SPREADSHEET_FOLDER'], "users"), 'rb') as f:
+        users = pickle.load(f)
+except Exception:
+    users = {}
+
 data = {}
 indices = {}
 def cull_invalid_columns(o, valid_fields):

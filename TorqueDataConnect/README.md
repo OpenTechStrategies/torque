@@ -204,6 +204,13 @@ Parameters:
 * `sheet_name` - The name of the sheet this attachment is part of
 * `attachment` - The name of the attachment specified at upload time
 
+### User Lookup
+
+You can access the list of TorqueDataConnect users through the TorqueDataConnectUserLookup
+class.  It only has one method, `lookupByUsername`, but this will allow you to access a
+json object representing the user in MediaWiki.  This user object is currently only a
+username and id, but may get built out later.
+
 ### Search override
 
 Currently TorqueDataConnect takes over the search results and only searches
