@@ -10,6 +10,7 @@
   "mwiki-template-ne": "$1 does not exist, but is referenced in config as a template.",
   "data-config-alert": "Torque Data Configuration Alert!",
   "config-ne": "Config page $1 does not exist.",
+  "torquedataconnect-config-ns": "Config page variable ($wgTorqueDataConnectConfigPage) not set.",
   "torquedataconnect-apiaccesslog": "Torque Api Access Log",
   "torquedataconnect-apiaccesslog-header": "Logs events happening in the torque system regarding api access",
   "torquedataconnect-datachangeslog": "Torque Data Changes Log",

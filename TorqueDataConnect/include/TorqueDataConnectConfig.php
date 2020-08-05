@@ -85,6 +85,11 @@ class TorqueDataConnectConfig {
 
   private static function parseConfig() {
     global $wgTorqueDataConnectConfigPage;
+    if(!$wgTorqueDataConnectConfigPage) {
+      array_push(self::$errors, wfMessage("torquedataconnect-config-ns", $wgTorqueDataConnectConfigPage)->parse());
+      return [];
+    }
+
     $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
 
     if(!$configPage->exists()) {
