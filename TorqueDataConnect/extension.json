@@ -34,7 +34,8 @@
     "PageContentSaveComplete": "TorqueDataConnectHooks::onPageContentSaveComplete",
     "SiteNoticeAfter": "TorqueDataConnectHooks::siteNoticeAfter",
     "SpecialSearchResultsPrepend": "TorqueDataConnectHooks::onSpecialSearchResultsPrepend",
-    "SidebarBeforeOutput": "TorqueDataConnectHooks::onSidebarBeforeOutput"
+    "SidebarBeforeOutput": "TorqueDataConnectHooks::onSidebarBeforeOutput",
+    "BaseTemplateToolbox": "TorqueDataConnectHooks::onBaseTemplateToolbox"
   },
   "APIModules": {
     "torquedataconnect": "TorqueDataConnectQuery",

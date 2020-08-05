@@ -135,6 +135,25 @@ class TorqueDataConnectHooks {
 
     return true;
   }
+
+  # This will stop working in mediawiki 1.35, however this is the only way to make this work
+  # in mediawiki 1.33 which is what we're currently targeting.  The recommended way to attack
+  # this in 1.35 isn't set up yet (using onSidebarBeforeOutput)
+  #
+  # See https://www.mediawiki.org/wiki/Manual:Hooks/BaseTemplateToolbox
+  public static function onBaseTemplateToolbox(BaseTemplate $baseTemplate, array &$toolbox) {
+    global $wgTorqueDataConnectConfigPage;
+
+    $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
+    if($wgTorqueDataConnetConfigPage && $configPage->exists()) {
+      $toolbox["torqueconfig"] = [
+        "msg" => "torquedataconnect-sidebar-configpage",
+        "href" => $configPage->getLocalUrl()
+      ];
+    }
+
+    return true;
+  }
 }
 
 ?>
