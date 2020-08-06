@@ -3,6 +3,7 @@ from jinja2 import Template
 from flask import request, send_file, abort
 from werkzeug.utils import secure_filename
 
+import threading
 import json
 import os
 import re
@@ -379,3 +380,25 @@ def upload_attachment():
     attachment.save(os.path.join(app.config['SPREADSHEET_FOLDER'], sheet_name, "attachments", attachment_name))
 
     return ""
+
+# We need a lock because we have incrementing ids.
+# This should really be in a database....
+userlock = threading.Lock()
+
+@app.route('/users/username/<username>')
+def find_user_by_username(username):
+    if username not in users.keys():
+        with userlock:
+            # We start on 14 because then no one is user 13
+            users[username] = {"username": username, "id": len(users.items()) + 14}
+
+            # With help from https://stackoverflow.com/questions/2333872/atomic-writing-to-file-with-python
+            filepath = os.path.join(app.config['SPREADSHEET_FOLDER'], "users")
+            tmppath = filepath + '~'
+            with open(tmppath, 'wb') as f:
+                pickle.dump(users, f)
+                f.flush()
+                os.fsync(f.fileno())
+            os.rename(tmppath, filepath)
+
+    return json.dumps(users[username])
