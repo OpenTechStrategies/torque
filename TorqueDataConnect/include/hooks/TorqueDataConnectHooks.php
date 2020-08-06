@@ -145,7 +145,7 @@ class TorqueDataConnectHooks {
     global $wgTorqueDataConnectConfigPage;
 
     $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
-    if($wgTorqueDataConnetConfigPage && $configPage->exists()) {
+    if($wgTorqueDataConnectConfigPage && $configPage->exists()) {
       $toolbox["torqueconfig"] = [
         "msg" => "torquedataconnect-sidebar-configpage",
         "href" => $configPage->getLocalUrl()
