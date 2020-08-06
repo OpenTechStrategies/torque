@@ -79,7 +79,7 @@ class TorqueDataConnectHooks {
     if(sizeof($configErrors) > 0) {
       $html = "";
       $html .= "<div style='border:2px solid #AA3333;padding:10px;text-align:left;margin-top:10px;background-color:#FFEEEE'>";
-      $html .= "<h2 style='margin-top:0px;border-bottom:0px'>" . wfMessage("data-config-alert")->plain() . "</h2>";
+      $html .= "<h2 style='margin-top:0px;border-bottom:0px'>" . wfMessage("torquedataconnect-data-config-alert")->plain() . "</h2>";
 
       $html .= "<ul>";
       foreach($configErrors as $configError) {
@@ -132,6 +132,25 @@ class TorqueDataConnectHooks {
     $out .= "</select>";
     $out .= "</div>";
     $bar['View'] = $out;
+
+    return true;
+  }
+
+  # This will stop working in mediawiki 1.35, however this is the only way to make this work
+  # in mediawiki 1.33 which is what we're currently targeting.  The recommended way to attack
+  # this in 1.35 isn't set up yet (using onSidebarBeforeOutput)
+  #
+  # See https://www.mediawiki.org/wiki/Manual:Hooks/BaseTemplateToolbox
+  public static function onBaseTemplateToolbox(BaseTemplate $baseTemplate, array &$toolbox) {
+    global $wgTorqueDataConnectConfigPage;
+
+    $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
+    if($wgTorqueDataConnetConfigPage && $configPage->exists()) {
+      $toolbox["torqueconfig"] = [
+        "msg" => "torquedataconnect-sidebar-configpage",
+        "href" => $configPage->getLocalUrl()
+      ];
+    }
 
     return true;
   }

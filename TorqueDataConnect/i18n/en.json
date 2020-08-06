@@ -5,15 +5,17 @@
     ]
   },
   "torquedataconnectattachment": "TorqueDataConnect Attachment",
-  "convert-column-page-ne": "$1 does not exist, but is referenced in config as a column config.",
-  "convert-id-page-ne": "$1 does not exist, but is referenced in config as a keys config.",
-  "mwiki-template-ne": "$1 does not exist, but is referenced in config as a template.",
-  "data-config-alert": "Torque Data Configuration Alert!",
-  "config-ne": "Config page $1 does not exist.",
+  "torquedataconnect-convert-column-page-ne": "$1 does not exist, but is referenced in config as a column config.",
+  "torquedataconnect-convert-id-page-ne": "$1 does not exist, but is referenced in config as a keys config.",
+  "torquedataconnect-mwiki-template-ne": "$1 does not exist, but is referenced in config as a template.",
+  "torquedataconnect-data-config-alert": "Torque Data Configuration Alert!",
+  "torquedataconnect-config-ne": "Config page $1 does not exist.",
+  "torquedataconnect-config-ns": "Config page variable ($wgTorqueDataConnectConfigPage) not set.",
   "torquedataconnect-apiaccesslog": "Torque Api Access Log",
   "torquedataconnect-apiaccesslog-header": "Logs events happening in the torque system regarding api access",
   "torquedataconnect-datachangeslog": "Torque Data Changes Log",
   "torquedataconnect-datachangeslog-header": "Logs events happening in the torque system regarding data changes",
   "logentry-torquedataconnect-apiaccess-apiaccess": "$1 accessed the api with path $4",
-  "logentry-torquedataconnect-datachanges-sheetupload": "$1 uploaded a new version of the spreadsheet"
+  "logentry-torquedataconnect-datachanges-sheetupload": "$1 uploaded a new version of the spreadsheet",
+  "torquedataconnect-sidebar-configpage": "Torque Configuration"
 }
