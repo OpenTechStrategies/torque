@@ -9,7 +9,7 @@ class TorqueDataConnectHooks {
   	$parser->disableCache();
 
     global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView,
-      $wgTorqueDataConnectRaw, $wgTorqueDataConnectWikiKey;
+      $wgTorqueDataConnectRaw, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
 
     // Let the tdcrender view be top priority
     if(!$view) {
@@ -17,7 +17,8 @@ class TorqueDataConnectHooks {
     }
 
     $contents = file_get_contents(
-      "http://localhost:5000/api/" .
+      $wgTorqueDataConnectServerLocation .
+      "/api/" .
       $location .
       "?group=" .
       $wgTorqueDataConnectGroup .
@@ -94,10 +95,12 @@ class TorqueDataConnectHooks {
   }
 
   public static function onSpecialSearchResultsPrepend($specialSearch, $output, $term) {
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey;
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectSheetName,
+      $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
 
     $results = file_get_contents(
-      "http://localhost:5000/search/" .
+      $wgTorqueDataConnectServerLocation .
+      "/search/" .
       $wgTorqueDataConnectSheetName.
       "?group=" .
       $wgTorqueDataConnectGroup .

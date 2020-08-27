@@ -23,6 +23,8 @@ wfLoadExtension('TorqueDataConnect');
 
 * `$wgTorqueDataConnectConfigPage` - The central [configuration page](#WikiPage configuration).
   It's a good idea to make this in a restricted access namespace of the wiki.
+* `$wgTorqueDataConnectServerLocation` - the location of the torquedata server, in order to make
+  queries.  Defaults to "http://localhost:5000".
 * `$wgTorqueDataConnectGroup` - The group representing this user that's sent to the torquedata.
   server.  This defaults to the first group that is in the list of known Torque groups that
   is also a group the current user is in.  Overriding it can be useful to view data

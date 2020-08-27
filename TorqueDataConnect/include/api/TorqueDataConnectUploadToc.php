@@ -6,6 +6,7 @@ class TorqueDataConnectUploadToc extends APIBase {
   }
 
   public function execute() {
+    global $wgTorqueDataConnectServerLocation;
     parent::checkUserRightsAny(["torquedataconnect-admin"]);
     # We use phpcurl here because it's really straightforward, and
     # research (stackoverflow) didn't produce a compelling native php method.
@@ -19,7 +20,7 @@ class TorqueDataConnectUploadToc extends APIBase {
     ];
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'http://localhost:5000/upload/toc');
+    curl_setopt($ch, CURLOPT_URL, "$wgTorqueDataConnectServerLocation/upload/toc");
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_exec ($ch);
     curl_close ($ch);

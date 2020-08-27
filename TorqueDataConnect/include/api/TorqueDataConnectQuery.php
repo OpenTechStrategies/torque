@@ -11,10 +11,11 @@ class TorqueDataConnectQuery extends APIBase {
 
     $valid_group = TorqueDataConnectConfig::getValidGroup($this->getUser());
 
-    global $wgTorqueDataConnectWikiKey;
+    global $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
 
     $contents = file_get_contents(
-      "http://localhost:5000/api" .
+      $wgTorqueDataConnectServerLocation;
+      "/api" .
       $this->getParameter("path") .
       ".json" .
       "?group=" .

@@ -47,9 +47,15 @@ class TorqueDataConnectConfig {
   }
 
   public static function commitGroupConfig($groupName, $columnPage, $proposalPage) {
-    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey;
+    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "http://localhost:5000/config/${wgTorqueDataConnectSheetName}/${wgTorqueDataConnectWikiKey}/group");
+    curl_setopt($ch, CURLOPT_URL,
+      $wgTorqueDataConnectServerLocation .
+      "/config/" .
+      $wgTorqueDataConnectSheetName .
+      "/" .
+      $wgTorqueDataConnectWikiKey .
+      "/group");
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
       [
         "group" => $groupName,
@@ -63,9 +69,15 @@ class TorqueDataConnectConfig {
   }
 
   public static function commitTemplateConfig($templateName, $templatePage, $templateType) {
-    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey;
+    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "http://localhost:5000/config/${wgTorqueDataConnectSheetName}/${wgTorqueDataConnectWikiKey}/template");
+    curl_setopt($ch, CURLOPT_URL,
+      $wgTorqueDataConnectServerLocation .
+      "/config/" .
+      $wgTorqueDataConnectSheetName .
+      "/" .
+      $wgTorqueDataConnectWikiKey .
+      "/template");
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
       [
         "name" => $templateName,
@@ -79,8 +91,14 @@ class TorqueDataConnectConfig {
   }
 
   public static function resetConfig() {
-    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey;
-    file_get_contents("http://localhost:5000/config/${wgTorqueDataConnectSheetName}/${wgTorqueDataConnectWikiKey}/reset");
+    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
+    file_get_contents(
+      $wgTorqueDataConnectServerLocation .
+      "/config/" .
+      $wgTorqueDataConnectSheetName .
+      "/" .
+      $wgTorqueDataConnectWikiKey .
+      "/reset");
   }
 
   private static function parseConfig() {

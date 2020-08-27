@@ -53,6 +53,7 @@
   },
   "config": {
     "TorqueDataConnectConfigPage": "",
+    "TorqueDataConnectServerLocation": "http://localhost:5000",
     "TorqueDataConnectGroup": false,
     "TorqueDataConnectView": false,
     "TorqueDataConnectSheetName": "",

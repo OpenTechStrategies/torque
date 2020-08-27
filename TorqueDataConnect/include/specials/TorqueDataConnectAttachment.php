@@ -14,14 +14,15 @@ class TorqueDataConnectAttachment extends SpecialPage {
   }
 
   public function execute($subPage) {
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectWikiKey;
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
     $id = $this->getRequest()->getVal('id');
     $attachment = $this->getRequest()->getVal('attachment');
     $sheet_name = $this->getRequest()->getVal('sheet_name');
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 
-      'http://localhost:5000/api/' .
+    curl_setopt($ch, CURLOPT_URL,
+      $wgTorqueDataConnectServerLocation .
+      '/api/' .
       $sheet_name .
       '/attachment/' .
       $id .

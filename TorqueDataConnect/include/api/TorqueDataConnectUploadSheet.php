@@ -6,6 +6,7 @@ class TorqueDataConnectUploadSheet extends APIBase {
   }
 
   public function execute() {
+    global $wgTorqueDataConnectServerLocation;
     $log = new LogPage('torquedataconnect-datachanges', false);
     $log->addEntry('sheetupload', $this->getTitle(), null);
 
@@ -21,7 +22,7 @@ class TorqueDataConnectUploadSheet extends APIBase {
     ];
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'http://localhost:5000/upload/sheet');
+    curl_setopt($ch, CURLOPT_URL, "$wgTorqueDataConnectServerLocation/upload/sheet");
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_exec ($ch);
     curl_close ($ch);
