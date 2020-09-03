@@ -160,6 +160,7 @@ def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
 def edit_record(sheet_name, key):
     group = request.json.get("group")
     wiki_key = request.json.get("wiki_key")
+    title = request.json.get("title")
     new_values = json.loads(request.json.get("new_values"))
 
     if not is_valid_id(group, wiki_key, key, sheet_name):
@@ -174,11 +175,42 @@ def edit_record(sheet_name, key):
             "approver": None,
             "approval_code": None,
             "approval_timestamp": None,
-            "wiki_key": wiki_key
+            "wiki_key": wiki_key,
+            "title": title,
+            "id": len(edits[sheet_name][key][field]["edits"])
         }
         edits[sheet_name][key][field]["edits"].append(edit)
     return get_row(group, wiki_key, key, "mwiki", sheet_name)
 
+
+@app.route('/api/<sheet_name>/edit-record/<key>/<field>/<id>/', methods=['PUT'])
+def approve_edits(sheet_name, key, field, id):
+    group = request.json.get("group")
+    wiki_key = request.json.get("wiki_key")
+    approved = request.json.get("approved")
+
+    if not is_valid_id(group, wiki_key, key, sheet_name):
+        abort(403)
+
+    edits[sheet_name][key][field]["edits"][id]["approval_code"] = True
+    edits[sheet_name][key][field]["edits"][id]["approval_timestamp"] = datetime.datetime.now()
+    edits[sheet_name][key][field]["edits"][id]["approver"] = group
+
+@app.route('/api/<sheet_name>/edit-record/', methods=['GET'])
+def get_edits(sheet_name):
+    new_edits = []
+
+    for sheet_key, edit_sheet in edits[sheet_name].items():
+        for field, sheet in edit_sheet.items():
+            sheet_edits = list(map(
+                lambda edit: {"key": sheet_key, "field": field, **edit},
+                sheet["edits"]
+            ))
+            new_edits.extend(sheet_edits)
+
+    return {
+        "edits": new_edits
+    }
 
 @app.route('/api/<sheet_name>/id/<key>.<fmt>')
 def row(sheet_name, key, fmt):

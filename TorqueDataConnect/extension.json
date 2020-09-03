@@ -28,7 +28,8 @@
     "TorqueDataConnectUploadToc": "include/api/TorqueDataConnectUploadToc.php",
     "TorqueDataConnectUploadAttachment": "include/api/TorqueDataConnectUploadAttachment.php",
     "TorqueDataConnectAttachment": "include/specials/TorqueDataConnectAttachment.php",
-    "TorqueDataConnectHooks": "include/hooks/TorqueDataConnectHooks.php"
+    "TorqueDataConnectHooks": "include/hooks/TorqueDataConnectHooks.php",
+    "TorqueDataConnectEdit": "include/specials/TorqueDataConnectEdit.php"
   },
   "Hooks": {
     "ParserFirstCallInit": "TorqueDataConnectHooks::onParserFirstCallInit",
@@ -51,7 +52,8 @@
     "TorqueDataConnectAlias": "TorqueDataConnect.i18n.alias.php"
 	},
   "SpecialPages": {
-    "TorqueDataConnectAttachment": "TorqueDataConnectAttachment"
+    "TorqueDataConnectAttachment": "TorqueDataConnectAttachment",
+    "TorqueDataConnectEdit": "TorqueDataConnectEdit"
   },
   "config": {
     "TorqueDataConnectConfigPage": "",
@@ -88,8 +90,25 @@
         "mobile"
       ]
     },
+    "ext.torquedataconnecteditspecial.css": {
+      "styles": "resources/css/TorqueDataconnectEditSpecial.css",
+      "targets": [
+        "desktop",
+        "mobile"
+      ]
+    },
     "ext.torquedataconnect.js": {
       "scripts": "resources/js/TorqueDataConnectEdit.js",
+      "dependencies": [ "mediawiki.api" ],
+      "messages": [
+      ],
+      "targets": [
+        "desktop",
+        "mobile"
+      ]
+    },
+    "ext.torquedataconnecteditspecial.js": {
+      "scripts": "resources/js/TorqueDataConnectEditSpecial.js",
       "dependencies": [ "mediawiki.api" ],
       "messages": [
       ],

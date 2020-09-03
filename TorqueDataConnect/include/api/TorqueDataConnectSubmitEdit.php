@@ -31,6 +31,7 @@ class TorqueDataConnectSubmitEdit extends APIBase {
         "new_values" => $newValues,
         "wiki_key" => $wgTorqueDataConnectWikiKey,
         "group" => $valid_group,
+        "title" => $title,
       )
     );
     curl_setopt( $ch, CURLOPT_POSTFIELDS, $payload );
