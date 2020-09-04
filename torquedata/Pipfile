@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 flask = "*"
 whoosh = "*"
+django = "*"
 
 [dev-packages]
 
