@@ -1,0 +1,13 @@
+# Using sqlite3 for debugging purposes at the moment. To be changed to postgres in a later commit.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3',
+    }
+}
+
+INSTALLED_APPS = (
+    'torquedata.db',
+)
+
+SECRET_KEY = 'REPLACE_ME'
