@@ -1,1 +1,2 @@
-config.py
+djangosettings.py
+flasksettings.py
