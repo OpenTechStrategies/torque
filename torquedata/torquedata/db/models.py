@@ -13,6 +13,28 @@ class Spreadsheet(models.Model):
     def columns(self):
         return csv.reader([self._columns]).__next__()
 
+    @classmethod
+    def from_csv(cls, name, object_name, key_column, file):
+        sheet = cls(
+            name=name,
+            object_name=object_name,
+            key_column=key_column,
+            _columns=file.readline()
+        )
+        key_col_index = sheet.columns.index(sheet.key_column)
+
+        rows = []
+        for row_number, line in enumerate(file):
+            data = csv.reader([line])
+            row = Row(
+                sheet=sheet,
+                key=data[key_col_index],
+                row_number=row_number,
+                _raw=line
+            )
+            rows.append(row)
+        return sheet, rows
+
 
 class Row(models.Model):
     """ A single row in a spreadsheet """
