@@ -208,7 +208,7 @@ def edit_record(sheet_name, key):
     with open(os.path.join(app.config["SPREADSHEET_FOLDER"], "edits"), "wb") as f:
         pickle.dump(edits, f)
 
-    return get_row(group, wiki_key, key, "mwiki", sheet_name)
+    return True
 
 
 @app.route("/api/<sheet_name>/id/<key>.<fmt>")

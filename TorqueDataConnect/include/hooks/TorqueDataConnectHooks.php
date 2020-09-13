@@ -19,6 +19,13 @@ class TorqueDataConnectHooks {
       $view = $wgTorqueDataConnectView;
     }
 
+    // If this isn't set, that means we've gotten here through some other means, and we
+    // should just grab whatever group is correct for the current user.
+    if(!$wgTorqueDataConnectGroup) {
+      global $wgUser;
+      $wgTorqueDataConnectGroup = TorqueDataConnectConfig::getValidGroup($wgUser);
+    }
+
     $contents = file_get_contents(
       $wgTorqueDataConnectServerLocation .
       "/api/" .

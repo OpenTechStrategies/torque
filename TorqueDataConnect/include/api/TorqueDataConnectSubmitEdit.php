@@ -42,7 +42,8 @@ class TorqueDataConnectSubmitEdit extends APIBase {
     curl_close($ch);
 
     $parser = \MediaWiki\MediaWikiServices::getInstance()->getParser();
-    $po= $parser->parse($result, $title, ParserOptions::newCanonical());
+    $text = (new WikiPage($title))->getContent()->getText();
+    $po= $parser->parse($text, $title, ParserOptions::newFromUser($this->getUser()));
     $this->getResult()->addValue(null, 'html', $po->getText());
   }
 
