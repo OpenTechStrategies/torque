@@ -170,7 +170,6 @@ def load_sheet(sheet_name):
     column_types = next(reader)
     for row in reader:
         o = {}
-        edit_o = {}
         for (field, column_type, cell) in zip(header, column_types, row):
             if column_type == "list":
                 # This may be reversed as a decision at some point, but the empty cell

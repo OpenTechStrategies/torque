@@ -148,6 +148,7 @@ def is_valid_id(group, wiki_key, key, sheet_name):
             return True
         else:
             return key in permissions[sheet_name][wiki_key][group]["valid_ids"]
+    return False
 
 
 def get_row(group, wiki_key, key, fmt, sheet_name, view=None):

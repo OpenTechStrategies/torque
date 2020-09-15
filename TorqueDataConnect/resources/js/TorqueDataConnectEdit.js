@@ -84,7 +84,6 @@ const handleParagraphEdit = (e) => {
     );
 
     newInput[0].style.height = `${newInput[0].scrollHeight}px`;
-    console.log($(`#${$.escapeSelector(field)} > .torque-save`).data("field"));
 };
 
 const substituteParagraphValue = (sibling, target, newValue, field) => {
@@ -99,8 +98,6 @@ const handleParagraphSaveCancel = (e) => {
     const sibling = $(e.target).parent().prev();
     const newValue = target.data("original");
     const field = target.next().data("field");
-    console.log($(`#${$.escapeSelector(field)} > .torque-save`).data("field"));
-    console.log(field);
     substituteParagraphValue(sibling, target.parent(), newValue, field);
 };
 
@@ -109,7 +106,6 @@ const handleParagraphSave = (e) => {
     const sibling = $(e.target).parent().prev();
     const newValue = sibling[0].value;
     const field = target.data("field");
-    console.log($(`#${$.escapeSelector(field)} > .torque-save`).data("field"));
     submitEdit(field, newValue);
     substituteParagraphValue(sibling, target.parent(), newValue, field);
 };
@@ -142,7 +138,6 @@ const handleListEdit = (e) => {
 
     clickedButton.replaceWith(newInput);
     newInput[0].style.height = `${newInput[0].scrollHeight}px`;
-    console.log($(`#${$.escapeSelector(field)} > .torque-save`).data("field"));
 };
 
 const substituteListValue = (sibling, target, newValue, field) => {
@@ -161,7 +156,6 @@ const handleListSaveCancel = (e) => {
     const sibling = $(e.target).parent().prev();
     const newValue = target.data("original");
     const field = target.next().data("field");
-    console.log($(`#${$.escapeSelector(field)} > .torque-save`).data("field"));
     substituteListValue(sibling, target.parent(), newValue, field);
 };
 
@@ -170,7 +164,6 @@ const handleListSave = (e) => {
     const sibling = $(e.target).parent().prev();
     const newValue = sibling[0].value;
     const field = target.data("field");
-    console.log($(`#${$.escapeSelector(field)} > .torque-save`).data("field"));
     submitEdit(field, newValue.split("\n"));
     substituteListValue(sibling, target.parent(), newValue, field);
 };
@@ -193,7 +186,6 @@ const handleInlineEdit = (e) => {
     );
 
     newInput[0].style.height = `${newInput[0].scrollHeight}px`;
-    console.log($(`#${$.escapeSelector(field)} > .torque-save`).data("field"));
 };
 
 const substituteInlineValue = (sibling, target, newValue, field) => {
@@ -208,8 +200,6 @@ const handleInlineSaveCancel = (e) => {
     const sibling = $(e.target).parent().prev();
     const newValue = target.data("original");
     const field = target.next().data("field");
-    console.log($(`#${$.escapeSelector(field)} > .torque-save`).data("field"));
-    console.log(field);
     substituteParagraphValue(sibling, target.parent(), newValue, field);
 };
 
@@ -218,7 +208,6 @@ const handleInlineSave = (e) => {
     const sibling = $(e.target).parent().prev();
     const newValue = sibling[0].value;
     const field = target.data("field");
-    console.log($(`#${$.escapeSelector(field)} > .torque-save`).data("field"));
     submitEdit(field, newValue);
     substituteParagraphValue(sibling, target.parent(), newValue, field);
 };
