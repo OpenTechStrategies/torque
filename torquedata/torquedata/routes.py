@@ -179,8 +179,19 @@ def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
         template = Template(mwiki_template)
 
         return template.render({config["object_name"]: row})
+    elif fmt == "dict":
+        return row
     else:
         raise Exception("Invalid format: " + fmt)
+
+
+@app.route("/api/<sheet_name>/id/<key>/<field>")
+def get_cell(sheet_name, key, field):
+    group = request.args.get("group")
+    wiki_key = request.args.get("wiki_key")
+
+    row = get_row(group, wiki_key, key, "dict", sheet_name, None)
+    return json.dumps({"field": row[field]})
 
 
 @app.route("/api/<sheet_name>/edit-record/<key>", methods=["POST"])

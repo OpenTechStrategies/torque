@@ -15,7 +15,7 @@ $(document).ready(() => {
     addEditButtonListeners();
 });
 
-async function submitEdit (field, value, callback) {
+async function submitEdit (field, value) {
     const postData = {
         newValues: JSON.stringify({ [field]: value }),
         sheetName: window.sheetName,
@@ -45,6 +45,25 @@ async function submitEdit (field, value, callback) {
     }
 }
 
+async function getFieldValue (field) {
+    const actionName = "torquedataconnectquerycell";
+    const results = await $.ajax({
+        type: "GET",
+        url: `${mw.config.values.wgScriptPath}/api.php`,
+        data: {
+            action: actionName,
+            format: "json",
+            sheetName: window.sheetName,
+            key: window.key,
+            field: field
+        }
+    })
+    if (Array.isArray(results.field)) {
+        return results.field.join("\n");
+    }
+    return results.field;
+}
+
 const textArea = (v) => $(`<textarea name="" type="text">${v}</textarea>`);
 // Returns a jquery cancel and save button side-by-side
 const saveButtons = (fieldName, originalValue, onCancel, onSave) => {
@@ -66,39 +85,47 @@ const editButton = (type, field) => {
         .data("field", field);
 };
 
-// Paragraph event listeners
-const handleParagraphEdit = (e) => {
-    const target = $(e.currentTarget);
-    const sibling = $(e.currentTarget.previousSibling);
-    const text = sibling[0].innerText;
-    const field = target.data("field");
-    const newInput = textArea(text)
-    sibling.replaceWith(newInput);
-    target.replaceWith(
+const handleEdit = async (e, handleSave, type) => {
+    const editButtonClicked = $(e.currentTarget);
+    const field = editButtonClicked.data("field");
+    const elementToEdit = editButtonClicked.prev('.editable');
+
+    const html = elementToEdit[0].outerHTML;
+    const wikitext = await getFieldValue(field);
+
+    const newInput = textArea(wikitext);
+
+    elementToEdit.replaceWith(newInput);
+    editButtonClicked.replaceWith(
         saveButtons(
             field,
-            text,
-            handleParagraphSaveCancel,
-            handleParagraphSave
+            html,
+            handleSaveCancel.bind(type),
+            handleSave
         )
     );
 
     newInput[0].style.height = `${newInput[0].scrollHeight}px`;
-};
+}
 
-const substituteParagraphValue = (sibling, target, newValue, field) => {
-    sibling.replaceWith(`<p>${newValue}</p>`);
-    const editBtn = editButton("paragraph", field);
+const substituteValue = (sibling, target, newValue, field, type) => {
+    sibling.replaceWith(newValue);
+    const editBtn = editButton(type, field);
     editBtn.click(handleParagraphEdit);
     target.replaceWith(editBtn);
 };
 
-const handleParagraphSaveCancel = (e) => {
+const handleSaveCancel = (e, type) => {
     const target = $(e.target);
     const sibling = $(e.target).parent().prev();
     const newValue = target.data("original");
     const field = target.next().data("field");
-    substituteParagraphValue(sibling, target.parent(), newValue, field);
+    substituteValue(sibling, target.parent(), newValue, field, type);
+};
+
+// Paragraph event listeners
+const handleParagraphEdit = async (e) => {
+    handleEdit(e, handleParagraphSave, "paragraph");
 };
 
 const handleParagraphSave = (e) => {
@@ -107,56 +134,11 @@ const handleParagraphSave = (e) => {
     const newValue = sibling[0].value;
     const field = target.data("field");
     submitEdit(field, newValue);
-    substituteParagraphValue(sibling, target.parent(), newValue, field);
 };
 
-// Unordered list event listeners
-const handleListEdit = (e) => {
-    const clickedButton = $(e.currentTarget);
-    let dataField = $(e.currentTarget).prev();
-    let listElements = [];
-    while (dataField[0].nodeName == "UL") {
-        listElements.unshift(dataField);
-        dataField = dataField.prev();
-    }
-
-    const val = listElements.map((e) => e[0].querySelector('.editable').innerText);
-    const field = clickedButton.data("field");
-
-    for (let e of listElements) {
-        e.remove();
-    }
-
-    const newInput = textArea(val.join("\n")).add(
-        saveButtons(
-            field,
-            listElements.map(e => e.find('li').html()).join('\n'),
-            handleListSaveCancel,
-            handleListSave
-        )
-    )
-
-    clickedButton.replaceWith(newInput);
-    newInput[0].style.height = `${newInput[0].scrollHeight}px`;
-};
-
-const substituteListValue = (sibling, target, newValue, field) => {
-    let listElements = "";
-    for (let l of newValue.split("\n")) {
-        listElements += `<ul><li>${l}</li></ul>`;
-    }
-    sibling.replaceWith(listElements);
-    const btn = $(editButton("list", field));
-    btn.click(handleListEdit);
-    target.replaceWith(btn);
-};
-
-const handleListSaveCancel = (e) => {
-    const target = $(e.target);
-    const sibling = $(e.target).parent().prev();
-    const newValue = target.data("original");
-    const field = target.next().data("field");
-    substituteListValue(sibling, target.parent(), newValue, field);
+// List event listeners
+const handleListEdit = async (e) => {
+    handleEdit(e, handleListSave, "list");
 };
 
 const handleListSave = (e) => {
@@ -165,49 +147,4 @@ const handleListSave = (e) => {
     const newValue = sibling[0].value;
     const field = target.data("field");
     submitEdit(field, newValue.split("\n"));
-    substituteListValue(sibling, target.parent(), newValue, field);
-};
-
-// Paragraph event listeners
-const handleInlineEdit = (e) => {
-    const target = $(e.currentTarget);
-    const sibling = $(e.currentTarget.previousSibling);
-    const text = sibling[0].innerText;
-    const field = target.data("field");
-    const newInput = textArea(text)
-    sibling.replaceWith(newInput);
-    target.replaceWith(
-        saveButtons(
-            field,
-            text,
-            handleParagraphSaveCancel,
-            handleParagraphSave
-        )
-    );
-
-    newInput[0].style.height = `${newInput[0].scrollHeight}px`;
-};
-
-const substituteInlineValue = (sibling, target, newValue, field) => {
-    sibling.replaceWith(`<p>${newValue}</p>`);
-    const editBtn = editButton("paragraph", field);
-    editBtn.click(handleParagraphEdit);
-    target.replaceWith(editBtn);
-};
-
-const handleInlineSaveCancel = (e) => {
-    const target = $(e.target);
-    const sibling = $(e.target).parent().prev();
-    const newValue = target.data("original");
-    const field = target.next().data("field");
-    substituteParagraphValue(sibling, target.parent(), newValue, field);
-};
-
-const handleInlineSave = (e) => {
-    const target = $(e.target);
-    const sibling = $(e.target).parent().prev();
-    const newValue = sibling[0].value;
-    const field = target.data("field");
-    submitEdit(field, newValue);
-    substituteParagraphValue(sibling, target.parent(), newValue, field);
 };
