@@ -1,0 +1,16 @@
+{#
+  This template links to the page, but also adds some styling to make
+  it look somewhat like the normal mediawiki results:
+#}
+
+<div style='max-width:38em'>
+[[{{ proposal['MediaWiki Title'] }}]]
+<div style='max-height:6.5em;line-height:1.5em;overflow:hidden;'>
+'''{{ proposal["Project Description"] }}'''
+</div>
+<div style='max-height:6.5em;line-height:1.5em;overflow:hidden;'>
+{{ proposal["Executive Summary"] }}
+</div>
+
+<hr>
+</div>
