@@ -17,7 +17,8 @@
     ]
   },
   "AvailableRights": [
-    "torquedataconnect-admin"
+    "torquedataconnect-admin",
+    "torquedataconnect-edit"
   ],
   "AutoloadClasses": {
     "TorqueDataConnectConfig": "include/TorqueDataConnectConfig.php",
@@ -38,7 +39,8 @@
     "SiteNoticeAfter": "TorqueDataConnectHooks::siteNoticeAfter",
     "SpecialSearchResultsPrepend": "TorqueDataConnectHooks::onSpecialSearchResultsPrepend",
     "SidebarBeforeOutput": "TorqueDataConnectHooks::onSidebarBeforeOutput",
-    "BaseTemplateToolbox": "TorqueDataConnectHooks::onBaseTemplateToolbox"
+    "BaseTemplateToolbox": "TorqueDataConnectHooks::onBaseTemplateToolbox",
+    "BeforePageDisplay": "TorqueDataConnectHooks::onBeforePageDisplay"
   },
   "APIModules": {
     "torquedataconnect": "TorqueDataConnectQuery",

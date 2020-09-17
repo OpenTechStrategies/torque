@@ -10,6 +10,7 @@ class TorqueDataConnectSubmitEdit extends APIBase {
     $valid_group = TorqueDataConnectConfig::getValidGroup($this->getUser());
     global $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
 
+    parent::checkUserRightsAny(["torquedataconnect-edit"]);
     $newValues = $this->getParameter('newValues');
     $field = array_keys(json_decode($newValues, true))[0];
     $sheetName = $this->getParameter('sheetName');

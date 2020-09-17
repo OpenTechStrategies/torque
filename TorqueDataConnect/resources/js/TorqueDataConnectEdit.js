@@ -12,7 +12,10 @@ function addEditButtonListeners () {
 }
 
 $(document).ready(() => {
-    addEditButtonListeners();
+    if (window.userRights.includes("torquedataconnect-edit")) {
+        $('body').toggleClass('show-edit');
+        addEditButtonListeners();
+    }
 });
 
 async function submitEdit (field, value) {
@@ -39,6 +42,7 @@ async function submitEdit (field, value) {
             dataType: "json",
         });
         $('.torque-wrapper').replaceWith(results.html);
+        $('.torque-edit-button').css("visibility", "visible");
         addEditButtonListeners();
     } catch (error) {
         console.error(error);

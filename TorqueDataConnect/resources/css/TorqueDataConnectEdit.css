@@ -11,9 +11,14 @@
     color: black;
 }
 
+body.show-edit .torque-edit-button {
+    visibility: visible !important;
+}
+
 .torque-edit-button {
     color: #0645ad;
     display: inline-block;
+    visibility: hidden;
 }
 
 .torque-edit-button.paragraph {

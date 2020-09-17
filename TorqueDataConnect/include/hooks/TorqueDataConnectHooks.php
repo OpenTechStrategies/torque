@@ -169,6 +169,12 @@ class TorqueDataConnectHooks {
 
     return true;
   }
+
+  public static function onBeforePageDisplay(OutputPage $out, Skin $skin) {
+    $rights = $skin->getUser()->getRights();
+    $script = "<script>window.userRights = [\"" . implode("\",\"", $rights) . "\"];</script>";
+    $out->addScript($script);
+  }
 }
 
 ?>
