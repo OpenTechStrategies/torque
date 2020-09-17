@@ -1,0 +1,438 @@
+#!/usr/bin/env python3
+
+# This is the master composer and deployer.  In this file, the tasks being run
+# are largely split into two concerns:
+#
+# * composing three csvs, Applications, Evaluations and AdminReview into one larger sheet
+# * uploading these csvs and all the supporting attachments to a running torque server
+#
+# The former of these will go away at some point, but for now, this mirrors how our
+# actual ETL pipelines work.
+
+__doc__ = """\
+Deploy the example spreadsheets
+
+Usage:
+    $ deploy
+"""
+
+import csv
+import sys
+import os
+import json
+import mwclient
+import config
+
+# These are traits that appear in the Evaluations.  We have the defined globally
+# in order to sanity check the sheet and build the headers before we have a chance
+# to look at the sheet.
+valid_traits = [ "Likelihood of Success", "Magnitude of Impact", "Potential for Scale", "Strength of Evidence" ]
+
+# The three csvs that will be composed, and the output created by them
+proposals = "Applications_MOCK.csv"
+judge_eval = "Evaluations_MOCK.csv"
+admin_review = "AdminReview_MOCK.csv"
+output = "Example_Spreadsheet.csv"
+
+# The directory we put toc data into, and also where the toc templates reside
+# Look in there at the .j2 files to see how tocs can be built
+toc_dir = "tocs"
+
+# The variable to hold the connection to the mediawiki instance
+site = None
+
+# Because titles that come from data sources may not be valid wiki titles,
+# you often need to escape them, and in this case, we just replace offending
+# characters with hyphens
+def wiki_escape_page_title(s):
+    import unidecode
+    """Return a wiki-escaped version of STRING."""
+    for c in ["#", "<", ">", "[", "]", "{", "|", "}",]:
+        if s.find(c) != -1:
+            s = s.replace(c, "-")
+    while len(bytes(s, "UTF-8")) > 255:
+        s = s[:-1]
+
+    # Also convert non unicode because we do this with titles on the other side
+    return unidecode.unidecode_expect_nonascii(s).strip()
+
+# Part of the composition.  As we add and generate columns to the main
+# sheet, we want to extend the header row by the same amount.
+def build_header_row(proposals_reader):
+    header_row = next(proposals_reader)
+    header_row.append("Valid")
+    header_row.append("View Attachments")
+    header_row.append("MediaWiki Title")
+    header_row.append("Judge Overall Score Rank Normalized")
+    header_row.append("Judge Sum of Scores Normalized")
+    for trait in valid_traits:
+        header_row.append("Judge " + trait)
+        header_row.append("Judge " + trait + " Score Normalized")
+        header_row.append("Judge " + trait + " Comments")
+        header_row.append("Judge " + trait + " Comment Scores Normalized")
+    return header_row
+
+# More ETL pipeline work.  This takes a many to one relationship
+# with the main spreadsheet data and combines it to create cells
+# representing the whole data.  These cells will be transformed
+# into lists later on.
+def build_judge_data():
+    """Loads the JUDGE_EVAL data (a csv), and turns that into a dict of
+       dicts in the following form:
+
+      EVALUATION_DATA[app_id] = {
+        overall_score_rank_normalized: string,
+        sum_of_scores_normalized: string,
+        traits: array of TRAIT (below)
+      }
+
+      TRAIT = {
+        name: string,
+        score_normalized: string
+        comments: concatenated string, ready for list type
+        comment_scores: concatenated string, ready for list type
+      }
+
+    The evaluation data coming in has many comments in their own row to one
+    application.  There are N traits, and M judges per trait, with things like
+    overall_score_rank_normalized being duplicated for all NxM rows.
+
+    The name of the trait has to be one of the VALID_TRAITS defined globally.
+    """
+    judge_eval_reader = csv.reader(open(judge_eval, encoding='utf-8'), delimiter=',', quotechar='"')
+    judge_data = {}
+    next(judge_eval_reader)
+    for row in judge_eval_reader:
+        application_id = row[3]
+        if not application_id in judge_data:
+            judge_data[application_id] = {
+                    "overall_score_rank_normalized": row[8],
+                    "sum_of_scores_normalized": row[10],
+                    "traits": [{ "name": trait, "score_normalized": 0, "comments": "", "comment_scores": "" } for trait in valid_traits],
+                    }
+        judge_datum = judge_data[application_id]
+        if row[15] not in valid_traits:
+            raise Exception("Trait is not a valid trait: " + row[15])
+        for trait in judge_datum["traits"]:
+            if trait["name"] == row[15]:
+                trait["score_normalized"] += float(row[13])
+                trait["comments"] += row[14] + "\n"
+                trait["comment_scores"] += row[13] + "\n"
+    return judge_data
+
+# Like above, this takes a secondary spreadsheet and loads a specific part of the
+# data into it, whether a proposal is valid or not.
+def build_valid_proposals():
+    admin_review_reader = csv.reader(open(admin_review, encoding='utf-8'), delimiter=',', quotechar='"')
+
+    next(admin_review_reader) # Don't look at header
+    acceptable_application_numbers = { row[3]: row[7] for row in admin_review_reader }
+
+    return acceptable_application_numbers
+
+# Builds a TOC for the population column.
+#
+# The way TOCs work is that there are four items that get combined to create
+# a TOC.  The first is a jinja remplate (see the `tocs` directory for Population.j2).
+# The second is a list of data available to the TOC, given the permission of the user,
+# which is put into the variable named the same as the sheet ("proposals" for this setup).
+# The third is a list of rendered lines from the TOC template, in the variable "toc_lines",
+# indexed by whatever primary key is established for this sheet.  The fourth is a set
+# of data uploaded at the same time as the jinja template, as specified by the uploader.
+#
+# That fourth item is what we are creating in this method.  We take the population data,
+# which was already transformed into a newline separate list, and build up a dictionary
+# where the key of each dict is a population type, and the value is an array of
+# proposals that include that population type.  This will be iterated over in the template,
+# while checking for whether the user has access to that proposal, to create a TOC
+# that is grouped by the population type.
+#
+# This can be generated at upload time (as below) from the spreadsheet, or hand curated.
+# Because Torque can't know anything specific about data, these kinds of relations have
+# to be built at data upload time, rather than dynamically.
+def build_populate_toc(rows):
+    population_data = {}
+    for row in rows:
+        for population in row[53].split("\n"):
+            if population not in population_data:
+                population_data[population] = []
+            population_data[population].append(row[3])
+    with open(os.path.join(toc_dir, "Population.json"), 'w') as f:
+        f.writelines(json.dumps({"groups": population_data}))
+
+# Similar to the above, this creates the same kind of json file as the Population data
+# for a different TOC.  The only difference is that the topic is not a list of multiple
+# items (a proposal can have only one topic), which simplifies the loop.
+def build_topic_toc(rows):
+    topic_data = {}
+    for row in rows:
+        if row[56] not in topic_data:
+            topic_data[row[56]] = []
+        topic_data[row[56]].append(row[3])
+    with open(os.path.join(toc_dir, "Topic.json"), 'w') as f:
+        f.writelines(json.dumps({"groups": topic_data}))
+
+# For a different kind of TOC, which is just a list of all proposals, this
+# creates a simple object with a list of all the proposal ID numbers, in order.
+#
+# This is the simplest kind of TOC, and shows how the four parts work together
+# to create the output.
+def build_list_toc(rows):
+    with open(os.path.join(toc_dir, "AllProposals.json"), 'w') as f:
+        f.writelines(json.dumps({"proposal_ids": [row[3] for row in rows]}))
+
+# Processes all the rows, combining the different data sources into one new
+# spreadsheet, and returning it.  This will be removed later as it clutters up
+# this example.
+def process_rows(proposals_reader, acceptable_application_numbers, judge_data):
+    new_rows = []
+
+    for row in proposals_reader:
+        # Population
+        row[53] = "\n".join([pop.strip() for pop in row[53].split(",")])
+
+        row.append(acceptable_application_numbers[row[3]])
+        row.append("Attachments Viewable")
+
+        mwiki_title = wiki_escape_page_title("{30} ({3})".format(*row))
+
+        row.append(mwiki_title)
+
+        if row[3] in judge_data:
+            row.extend([
+                judge_data[row[3]]["overall_score_rank_normalized"],
+                judge_data[row[3]]["sum_of_scores_normalized"] ])
+
+            for valid_trait in valid_traits:
+                for trait in judge_data[row[3]]["traits"]:
+                    if trait["name"] == valid_trait:
+                        row.append(trait["name"])
+                        row.append("{0:.1f}".format(trait["score_normalized"]))
+                        row.append(trait["comments"])
+                        row.append(trait["comment_scores"])
+
+        else:
+            row.extend([9999, ""])
+
+            for _ in range(len(valid_traits)):
+                row.extend(["", "", ""])
+
+        new_rows.append(row)
+
+    new_rows.sort(key=lambda row: int(row[173])) # Sort by judge rank
+    return new_rows
+
+def build_column_types(header_row):
+    column_types = {
+        "Priority Populations": "list",
+    }
+
+    column_types.update({ "Judge " + trait + " Comments": "list" for trait in valid_traits})
+    column_types.update({ "Judge " + trait + " Comment Scores Normalized": "list" for trait in valid_traits})
+
+    column_types_row = [ (column_types[col] if col in column_types else "") for col in header_row ]
+    return column_types_row
+
+# For creating the TorqueConfig, we dynamically generate the proposals and
+# columns for all.
+def create_tdc_config(header_row, rows):
+    """Helper method to write out base config files to TDC_CONFIG_DIR.
+
+    Needs HEADER_ROW and NEW_ROWS to generate the column and proposal
+    data.  Generates the following:
+
+      - allproposals - All the proposals generated
+      - allcolumns - All the available columns
+      """
+
+    def row_to_title_line(row):
+        return "* {3}: ".format(*row) + "[[" + row[172] + "]]\n"
+
+    # This is a list of all the columns.  There's nothing special about the name
+    # other than self documenting what the list should be.  The columns should
+    # be a simple mediawiki list on this page:
+    with open(os.path.join("torqueconfiguration/allcolumns"), 'w') as f:
+        for column in header_row:
+            f.writelines("* %s\n" % column)
+
+    # Similarly, here's a list of all the proposals in the system.  Note that
+    # the only thing Torque cares about is the id before the colon.  For
+    # what comes after, this convention is to provide links to the pages
+    # having those proposals themselves.  These links will be red becase
+    # we haven't added the pages with those proposals to the wiki yet,
+    # even though the data is in Torque.
+    with open(os.path.join("torqueconfiguration/allproposals"), 'w') as f:
+        f.writelines([row_to_title_line(row) for row in rows])
+
+# This is the body of the ETL pipeline, which combines all the spreadsheets
+# into one and then outputs that to disk.  The reason we do that, rather than
+# keeping in memory and passing along, is that this section will later get removed.
+def compose_csv():
+    proposals_reader = csv.reader(open(proposals, encoding='utf-8'), delimiter=',', quotechar='"')
+
+    header_row = build_header_row(proposals_reader)
+    acceptable_application_numbers = build_valid_proposals()
+    judge_data = build_judge_data()
+    rows = process_rows(proposals_reader, acceptable_application_numbers, judge_data)
+    build_populate_toc(rows)
+    build_topic_toc(rows)
+    build_list_toc(rows)
+    create_tdc_config(header_row, rows)
+    column_types_row = build_column_types(header_row)
+
+    with open(output, 'w') as out:
+        csv_writer = csv.writer(out, delimiter=',', quotechar='"', lineterminator="\n")
+
+        csv_writer.writerow(header_row)
+        csv_writer.writerow(column_types_row)
+
+        for row in rows:
+            csv_writer.writerow(row)
+
+# Log into the mediawiki server.  See 
+# https://mwclient.readthedocs.io/en/latest/reference/site.html
+# for general information on mwclient (which this script uses)
+def login():
+    global site
+    wiki_url = config.site
+    username = config.user
+    password = config.password
+
+    (scheme, host) = wiki_url.split("://")
+    # We need a very large timeout because uploading reindexes everything!
+    site = mwclient.Site(host, path="/", scheme=scheme, reqs={'timeout': 300})
+    site.login(username, password)
+
+# For each proposal, we want to have a mediawiki page that displays only
+# that proposal.  While each mediawiki page could have more information on it,
+# the most straightforward way is to have a single call to #tdcrender, as below
+def create_pages():
+    reader = csv.reader(open(output, encoding='utf-8'), delimiter=',', quotechar='"')
+
+    next(reader)
+    next(reader)
+    for row in reader:
+        # Index 172 is the sanitized mediawiki title we made above
+        p = site.pages[row[172]]
+        
+        # the (very small) content of the page
+        p.save("{{ #tdcrender:proposals/id/" + row[3] + ".mwiki }}")
+
+# This uploads the spreadsheet to the running torque instance
+# 
+# Some hard coded values that should be changed when working with other data:
+# 
+# * The object_name is "proposal" and the sheet_name is "proposals".  These will
+#   be the names of the objects in the templates later
+#   * Note: the sheet_name has to be unique, so using something general like "proposals"
+#     is generally a bad idea.
+# * The key_column is the "Application #"
+
+def upload_csv():
+    with open(output) as f:
+        site.raw_call(
+        'api',
+        {
+            "action": "torquedataconnectuploadsheet",
+            "format": 'json',
+            "object_name": 'proposal',
+            "sheet_name": 'proposals',
+            "key_column": 'Application #'
+        },
+        { "data_file": f.read() }
+        )
+
+# This uploads a small text file as an attachment for each proposal in the sample
+# data.  The "attachment" section here could easily be replaced by loading a file
+# with code like:
+# 
+#   with open(attachment_file) as attachment:
+#     attachment_data = attachment.read()
+def upload_attachments():
+    reader = csv.reader(open(output, encoding='utf-8'), delimiter=',', quotechar='"')
+
+    next(reader)
+    next(reader)
+    for row in reader:
+        site.raw_call(
+        'api',
+        {
+            "action": "torquedataconnectuploadattachment",
+            "format": 'json',
+            "sheet_name": 'proposals',
+            "object_id": row[3],
+            "permissions_column": "View Attachments",
+            "attachment_name": row[3] + "_attachment.txt"
+        },
+        {
+            "attachment": "This is an attachment for proposal " + row[3]
+        }
+        )
+
+# This code uploads the TOCs.  For the example, it walks over every jinja template
+# in the tocs directory, and uploads that template and the corresponding json file
+# (which we have created in this script!)  The toc_name is generated from that
+# file name, and can be hard coded or generated to something else.  That name is
+# the one #tdcrender calls will want to reference, and the name by which the
+# data is stored on the torque server (and so must be unique)
+#
+# This also creates corresponding mediawiki pages that will render the content.
+def upload_tocs():
+    toc_names = [ os.path.splitext(f)[0] for f in os.listdir(toc_dir) if f.endswith(".j2") ]
+    for toc_name in toc_names:
+        template_file_name = toc_name + ".j2"
+        json_file_name = toc_name + ".json"
+        with open(os.path.join(toc_dir, template_file_name)) as template_file, \
+            open(os.path.join(toc_dir, json_file_name)) as json_file:
+                site.raw_call(
+                'api',
+                {
+                    "action": "torquedataconnectuploadtoc",
+                    "format": 'json',
+                    "sheet_name": 'proposals',
+                    "toc_name": toc_name
+                },
+                {
+                    "template": template_file.read(),
+                    "json": json_file.read()
+                }
+                )
+
+        # Save a mediawiki page that loads this uploaded TOC.  Use the
+        # same name as the file name for the upload.
+        p = site.pages[toc_name]
+        p.save("{{ #tdcrender:proposals/toc/" + toc_name + ".mwiki }}")
+
+# These are the different torque configuration files.  See each of them
+# for comments on what's in them.
+def upload_torque_configuration():
+    pages = [
+        ["TorqueConfig:MainConfig", "torqueconfiguration/mainconfig"],
+        ["TorqueConfig:FullTemplate", "torqueconfiguration/fulltemplate"],
+        ["TorqueConfig:SearchTemplate", "torqueconfiguration/searchtemplate"],
+        ["TorqueConfig:TOCTemplate", "torqueconfiguration/toctemplate"],
+        ["Main_Page", "torqueconfiguration/mainpage"],
+
+        # These two are generated by this script
+        ["TorqueConfig:AllProposals", "torqueconfiguration/allproposals"],
+        ["TorqueConfig:AllColumns", "torqueconfiguration/allcolumns"],
+    ]
+
+    for page in pages:
+        p = site.pages[page[0]]
+        with open(page[1]) as f:
+            file_contents = f.readlines()
+        p.save("".join(file_contents))
+
+# Run all the parts!
+def main():
+    compose_csv()
+    login()
+    upload_csv()
+    upload_attachments()
+    upload_tocs()
+    upload_torque_configuration()
+    create_pages()
+
+if __name__ == '__main__':
+    main()

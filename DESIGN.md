@@ -266,7 +266,7 @@ set to the name defined when
 That object is a dictionary with the column headers of the spreadsheet
 being indices to get the cell data for that row.  This is an
 instance where demonstration is more informative than information, so see the
-[example](EXAMPLE.md) for a concrete example.
+[example](example/INSTALL.md) for a concrete example.
 
 The variable `$wgTorqueDataConnectView` is set and passed along to torquedata
 based on the user selection.
@@ -350,7 +350,7 @@ Torque allows torqueadmin's to upload three kinds of files:
 
 These are done through the MediaWiki API (most likely through a bot account).
 
-See the [example](EXAMPLE.md) for a better demonstration of how one might
+See the [example](example/INSTALL.md) for a better demonstration of how one might
 upload these files.
 
 ### API usage
