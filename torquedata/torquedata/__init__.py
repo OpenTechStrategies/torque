@@ -48,12 +48,9 @@ except Exception:
 try:
     with open(os.path.join(app.config["SPREADSHEET_FOLDER"], "edits"), "rb") as f:
         edits = pickle.load(f)
-        load_edits = False
 except Exception:
     edits = {}
-    load_edits = True
 
-loaded_edits = {}
 data = {}
 indices = {}
 
@@ -148,7 +145,12 @@ def index_search(group, sheet_name, wiki_key):
 
 def load_sheet(sheet_name):
     data[sheet_name] = {}
-    loaded_edits = {}
+
+    if sheet_name not in edits.keys():
+        edits[sheet_name] = {}
+
+    loaded_edits = edits[sheet_name]
+
     reader = csv.reader(
         open(
             os.path.join(
@@ -185,17 +187,19 @@ def load_sheet(sheet_name):
                 else:
                     cell = json.loads(cell)
             o[field] = cell
-        data[sheet_name][o[sheet_config[sheet_name]["key_column"]]] = o
-        loaded_edits[o[sheet_config[sheet_name]["key_column"]]] = {}
+
+        object_key = o[sheet_config[sheet_name]["key_column"]]
+        data[sheet_name][object_key] = o
+
+        if object_key not in loaded_edits.keys():
+            loaded_edits[object_key] = {}
 
         for k, v in o.items():
-            loaded_edits[o[sheet_config[sheet_name]["key_column"]]][k] = {
-                "original": v,
-                "edits": [],
-            }
-
-    if load_edits:
-        edits[sheet_name] = loaded_edits
+            if k not in loaded_edits[object_key].keys():
+                loaded_edits[object_key][k] = {
+                    "original": v,
+                    "edits": [],
+                }
 
     for wiki_key in permissions[sheet_name].keys():
         for group in permissions[sheet_name][wiki_key].keys():
