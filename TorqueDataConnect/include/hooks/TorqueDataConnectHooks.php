@@ -121,7 +121,7 @@ class TorqueDataConnectHooks {
       "&q=" .
       urlencode($term)
       );
-    $output->addWikiText($results);
+    $output->addWikiTextAsInterface($results);
 
     return false;
   }
