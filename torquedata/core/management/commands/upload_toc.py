@@ -1,6 +1,6 @@
 from pathlib import Path
 from django.core.management import BaseCommand
-from torquedata.db.models import Spreadsheet, TableOfContents
+from core.models import Spreadsheet, TableOfContents
 
 
 class Command(BaseCommand):
@@ -10,6 +10,7 @@ class Command(BaseCommand):
         parser.add_argument('sheet')
         parser.add_argument('json_file', type=Path)
         parser.add_argument('template_file', type=Path)
+        parser.add_argument('--name')
 
     def handle(self, *args, **options):
         try:
@@ -31,6 +32,7 @@ class Command(BaseCommand):
 
         toc = TableOfContents(
             sheet=sheet,
+            name=options['name'],
             json_file=json_file,
             template_file=template_file
         )
