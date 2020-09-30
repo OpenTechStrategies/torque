@@ -1,13 +1,18 @@
 import json
 import urllib.parse
 from werkzeug.utils import secure_filename
+from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 from jinja2 import Template as JinjaTemplate
 from core import models
 
 
 def search(request, sheet_name):
+    q = request.GET("q")
+    group = request.GET("group")
+    wiki_key = request.GET("wiki_key")
     raise NotImplementedError
 
 
@@ -17,7 +22,9 @@ def get_sheet(request, sheet_name, fmt):
 
     sheet = models.Spreadsheet.objects.get(sheet=sheet_name)
     sheet_config = models.SheetConfig.objects.get(
-        sheet=sheet, wiki_key=wiki_key, group_name=group,
+        sheet=sheet,
+        wiki_key=wiki_key,
+        group=group,
     )
 
     return JsonResponse({sheet.name: sheet.clean_rows(sheet_config)})
@@ -27,10 +34,19 @@ def get_toc(request, sheet_name, toc_name, fmt):
     group = request.GET["group"]
     wiki_key = request.GET["wiki_key"]
 
+    if group == "":
+        return HttpResponse(status=403)
+
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
-    sheet_config = models.SheetConfig.objects.get(
-        sheet=sheet, wiki_key=wiki_key, group_name=group,
-    )
+    try:
+        sheet_config = models.SheetConfig.objects.get(
+            sheet=sheet,
+            wiki_key=wiki_key,
+            group=group,
+        )
+    except:
+        return HttpResponse(status=403)
+
     toc = models.TableOfContents.objects.get(sheet=sheet, name=toc_name)
 
     rows = sheet.clean_rows(sheet_config)
@@ -38,8 +54,10 @@ def get_toc(request, sheet_name, toc_name, fmt):
     data = json.loads(toc.json_file)
     data[sheet.name] = {row[sheet.key_column]: row for row in rows}
 
-    toc_templates = models.Template.objects.get(
-        sheet=sheet, wiki_key=wiki_key, type="TOC",
+    toc_templates = models.Template.objects.filter(
+        sheet=sheet,
+        wiki_key=wiki_key,
+        type="toc",
     )
     try:
         template = toc_templates.get(name=request.GET.get("view"))
@@ -62,25 +80,34 @@ def get_row(request, sheet_name, key, fmt):
 
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     sheet_config = models.SheetConfig.objects.get(
-        sheet=sheet, wiki_key=wiki_key, group_name=group,
+        sheet=sheet,
+        wiki_key=wiki_key,
+        group=group,
     )
     # todo: fails if row not found, but not obvious why from the error msg
     # you would get
-    row = [row for row in sheet.clean_rows(sheet_config) if row.key == key][0]
+    row = [row for row in sheet.clean_rows(sheet_config) if row["key"] == key][0]
 
     if fmt == "json":
         return JsonResponse(row)
     elif fmt == "mwiki":
         templates = models.Template.objects.filter(
-            sheet=sheet, wiki_key=wiki_key, type="View",
+            sheet=sheet,
+            wiki_key=wiki_key,
+            type="View",
         )
         if "view" in request.GET:
             template = templates.get(name=request.GET["view"])
         else:
             template = templates.get(is_default=True)
-        return HttpResponse(
-            JinjaTemplate(template.template_file).render({sheet.object_name: row})
+
+        template_contents = b"".join(template.template_file.open().readlines()).decode(
+            "utf-8"
         )
+        rendered_template = JinjaTemplate(template_contents).render(
+            {sheet.object_name: row}
+        )
+        return HttpResponse(rendered_template)
     else:
         raise Exception(f"Invalid format {fmt}")
 
@@ -92,7 +119,9 @@ def get_attachment(request, sheet_name, key, attachment):
 
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     sheet_config = models.SheetConfig.objects.get(
-        sheet=sheet, wiki_key=wiki_key, group_name=group,
+        sheet=sheet,
+        wiki_key=wiki_key,
+        group=group,
     )
     attachment = models.Attachment.objects.get(name=attachment_name, object_id=key)
 
@@ -111,39 +140,45 @@ def reset_config(request, sheet_name, wiki_key):
     return HttpResponse(status=200)
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def set_group_config(request, sheet_name, wiki_key):
     new_config = json.loads(request.body)
 
     try:
         config = models.SheetConfig.objects.get(
-            sheet__name=sheet_name, wiki_key=wiki_key, group_name=new_config["group"]
+            sheet__name=sheet_name, wiki_key=wiki_key, group=new_config["group"]
         )
     except models.SheetConfig.DoesNotExist:
         # create if does not exist
         sheet = models.Spreadsheet.objects.get(name=sheet_name)
         config = models.SheetConfig(
-            sheet=sheet, wiki_key=wiki_key, group_name=new_config["group"]
+            sheet=sheet, wiki_key=wiki_key, group=new_config["group"]
         )
 
-    config.valid_ids = new_config.get("valid_ids")
-    config.valid_columns = new_config.get("columns")
-
     config.save()
+
+    valid_rows = models.Row.objects.filter(key__in=new_config.get("valid_ids"))
+    valid_columns = models.Column.objects.filter(name__in=new_config.get("columns"))
+    config.valid_ids.add(*valid_rows)
+    config.valid_columns.add(*valid_columns)
 
     return HttpResponse(status=200)
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def set_template_config(request, sheet_name, wiki_key):
     new_config = json.loads(request.body)
 
+    conf_name = new_config["name"]
+    conf_type = new_config["type"]
     try:
         config = models.Template.objects.get(
             sheet__name=sheet_name,
             wiki_key=wiki_key,
-            type=new_config["type"],
-            name=new_config["name"],
+            type=conf_type,
+            name=conf_name,
         )
     except models.Template.DoesNotExist:
         # create if does not exist
@@ -151,25 +186,28 @@ def set_template_config(request, sheet_name, wiki_key):
         config = models.Template(
             sheet=sheet,
             wiki_key=wiki_key,
-            type=new_config["type"],
-            name=new_config["name"],
+            type=conf_type,
+            name=conf_name,
             # set as default if first template of this type
-            is_default=models.Template.objects.filter(
-                sheet__name=sheet.name, wiki_key=wiki_key, type=new_config["type"],
-            ).count()
-            == 0,
+            is_default=not models.Template.objects.filter(
+                sheet__name=sheet.name,
+                wiki_key=wiki_key,
+                type=conf_type,
+            ).exists(),
         )
 
-    config.template = new_config["template"]
-
+    config.template_file.save(
+        f"{wiki_key}-{conf_name}", ContentFile(new_config["template"])
+    )
     config.save()
 
     return HttpResponse(status=200)
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def upload_sheet(request):
-    with request.FILES["data_file"].open() as f:
+    with request.FILES["data_file"].open(mode="rt") as f:
         sheet, rows = models.Spreadsheet.from_csv(
             name=request.POST["sheet_name"],
             object_name=request.POST["object_name"],
@@ -183,20 +221,30 @@ def upload_sheet(request):
     return HttpResponse(status=200)
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def upload_toc(request):
     sheet = models.Spreadsheet.objects.get(name=request.POST["sheet_name"])
+    print(request.FILES["template"])
+    template = models.Template(
+        sheet=sheet,
+        type="toc",
+        name=request.POST["toc_name"],
+        template_file=request.FILES["template"],
+    )
+    template.save()
     toc = models.TableOfContents(
         sheet=sheet,
         name=request.POST["toc_name"],
-        json_file=request.FILES["json"].read(),
-        template_file=request.FILES["template"].read(),
+        json_file=request.FILES["json"].read().decode("utf-8"),
+        template=template,
     )
     toc.save()
 
     return HttpResponse(status=200)
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def upload_attachment(request):
     sheet = models.Spreadsheet.objects.get(name=request.POST["sheet_name"])
@@ -221,4 +269,3 @@ def user_by_username(request, username):
         user.save()
 
     return JsonResponse({"username": user.username, "id": user.pk})
-

@@ -9,6 +9,7 @@ verify_ssl = true
 django = "*"
 jinja2 = "*"
 werkzeug = "*"
+psycopg2-binary = "*"
 
 [requires]
 python_version = "3.7"
