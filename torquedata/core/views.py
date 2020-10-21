@@ -1,6 +1,7 @@
 import json
 import urllib.parse
 from werkzeug.utils import secure_filename
+from datetime import datetime
 from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.http import require_http_methods
@@ -10,10 +11,26 @@ from core import models
 
 
 def search(request, sheet_name):
-    q = request.GET("q")
-    group = request.GET("group")
-    wiki_key = request.GET("wiki_key")
-    raise NotImplementedError
+    q = request.GET["q"]
+    group = request.GET["group"]
+    wiki_key = request.GET["wiki_key"]
+    sheet = models.Spreadsheet.objects.get(name=sheet_name)
+    config = models.SheetConfig.objects.get(sheet=sheet, wiki_key=wiki_key, group=group)
+
+    template = JinjaTemplate(
+        models.Template.objects.get(name="Search", sheet=sheet).get_file_contents()
+    )
+
+    results = models.SearchCacheRow.objects.filter(
+        sheet=sheet, wiki_key=wiki_key, group=group, sheet_config=config, data__search=q
+    ).select_related("row")
+
+    resp = f"== {results.count()} results for '{q}' == \n\n"
+    for result in results:
+        resp += template.render({sheet.object_name: result.row.to_dict(config)})
+        resp += "\n\n"
+
+    return HttpResponse(resp)
 
 
 def get_sheet(request, sheet_name, fmt):
@@ -101,10 +118,7 @@ def get_row(request, sheet_name, key, fmt):
         else:
             template = templates.get(is_default=True)
 
-        template_contents = b"".join(template.template_file.open().readlines()).decode(
-            "utf-8"
-        )
-        rendered_template = JinjaTemplate(template_contents).render(
+        rendered_template = JinjaTemplate(template.get_file_contents()).render(
             {sheet.object_name: row}
         )
         return HttpResponse(rendered_template)
@@ -144,6 +158,7 @@ def reset_config(request, sheet_name, wiki_key):
 @require_http_methods(["POST"])
 def set_group_config(request, sheet_name, wiki_key):
     new_config = json.loads(request.body)
+    sheet = models.Spreadsheet.objects.get(name=sheet_name)
 
     try:
         config = models.SheetConfig.objects.get(
@@ -151,7 +166,6 @@ def set_group_config(request, sheet_name, wiki_key):
         )
     except models.SheetConfig.DoesNotExist:
         # create if does not exist
-        sheet = models.Spreadsheet.objects.get(name=sheet_name)
         config = models.SheetConfig(
             sheet=sheet, wiki_key=wiki_key, group=new_config["group"]
         )
@@ -162,6 +176,8 @@ def set_group_config(request, sheet_name, wiki_key):
     valid_columns = models.Column.objects.filter(name__in=new_config.get("columns"))
     config.valid_ids.add(*valid_rows)
     config.valid_columns.add(*valid_columns)
+
+    config.create_search_index(sheet)
 
     return HttpResponse(status=200)
 
@@ -215,9 +231,6 @@ def upload_sheet(request):
             file=f,
         )
     sheet.save()
-    for row in rows:
-        row.save()
-
     return HttpResponse(status=200)
 
 
@@ -225,7 +238,6 @@ def upload_sheet(request):
 @require_http_methods(["POST"])
 def upload_toc(request):
     sheet = models.Spreadsheet.objects.get(name=request.POST["sheet_name"])
-    print(request.FILES["template"])
     template = models.Template(
         sheet=sheet,
         type="toc",

@@ -10,6 +10,8 @@ django = "*"
 jinja2 = "*"
 werkzeug = "*"
 psycopg2-binary = "*"
+whoosh = "*"
+django-extensions = "*"
 
 [requires]
 python_version = "3.7"
