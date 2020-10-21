@@ -31,7 +31,12 @@ ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
-INSTALLED_APPS = ["django.contrib.contenttypes", "django.contrib.postgres", "core"]
+INSTALLED_APPS = [
+    "django.contrib.contenttypes",
+    "django.contrib.postgres",
+    "django_extensions",
+    "core",
+]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -50,8 +55,11 @@ WSGI_APPLICATION = "torquedata.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": os.environ.get("POSTGRES_DB_NAME"),
+        "USER": os.environ.get("POSTGRES_DB_USER"),
+        "PASSWORD": os.environ.get("POSTGRES_DB_PASSWORD"),
+        "HOST": "localhost",
     }
 }
 

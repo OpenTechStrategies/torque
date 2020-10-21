@@ -1,5 +1,8 @@
 import csv
+import hashlib
 import io
+import os
+import pathlib
 from django.db import models
 from django.conf import settings
 
@@ -14,19 +17,9 @@ class Spreadsheet(models.Model):
     def clean_rows(self, config):
         # return a reduced list of rows based on permissions defined in config
         # (SheetConfig instance)
-        # TODO: Optimize
         new_rows = []
         for row in config.valid_ids.all():
-            new_row = {"row_number": row.row_number, "key": row.key}
-            for cell in row.cells.filter(
-                column__in=config.valid_columns.all()
-            ).select_related("column"):
-                if cell.column.type == "list":
-                    cell_value = cell.value.split("\n")
-                else:
-                    cell_value = cell.value
-                new_row[cell.column.name] = cell_value
-            new_rows.append(new_row)
+            new_rows.append(row.to_dict(config))
         return new_rows
 
     @classmethod
@@ -76,6 +69,24 @@ class SheetConfig(models.Model):
     wiki_key = models.TextField()
     group = models.TextField()
 
+    def create_search_index(self, sheet):
+        sc_rows = []
+        for row_dict in sheet.clean_rows(self):
+            row = Row.objects.get(row_number=row_dict["row_number"], sheet=self.sheet)
+            if not SearchCacheRow.objects.filter(row=row, sheet_config=self).exists():
+                sc_rows.append(
+                    SearchCacheRow(
+                        row=row,
+                        sheet=self.sheet,
+                        wiki_key=self.wiki_key,
+                        group=self.group,
+                        sheet_config=self,
+                        data=" ".join(list(map(str, row_dict.values()))),
+                    )
+                )
+
+        SearchCacheRow.objects.bulk_create(sc_rows)
+
 
 class Row(models.Model):
     """ A single row in a spreadsheet """
@@ -87,6 +98,24 @@ class Row(models.Model):
     key = models.TextField()
     row_number = models.PositiveIntegerField()
     sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_ids")
+
+    def to_dict(self, config):
+        new_row = {"row_number": self.row_number, "key": self.key}
+        for cell in (
+            self.cells.filter(column__in=config.valid_columns.all())
+            .select_related("column")
+            .select_related("edits")
+        ):
+            if cell.edits.count > 0:
+                cell_value = cell.edits.order_by("-edit_timestamp").first().value
+            else:
+                cell_value = cell.value
+
+            if cell.column.type == "list":
+                cell_value = value.split("\n")
+
+            new_row[cell.column.name] = cell_value
+        return new_row
 
     def __getitem__(self, key):
         return self.data[key]
@@ -121,7 +150,7 @@ class Column(models.Model):
 
 class Cell(models.Model):
     column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="column")
-    value = models.CharField(max_length=255, null=True)
+    value = models.TextField(null=True)
     row = models.ForeignKey(Row, on_delete=models.CASCADE, related_name="cells")
 
 
@@ -134,6 +163,9 @@ class Template(models.Model):
     name = models.TextField()
     is_default = models.BooleanField(default=False)
     template_file = models.FileField(upload_to="templates/", null=False, blank=False)
+
+    def get_file_contents(self):
+        return b"".join(self.template_file.open().readlines()).decode("utf-8")
 
 
 class TableOfContents(models.Model):
@@ -165,6 +197,18 @@ class User(models.Model):
 
 class Permission(models.Model):
     permission_type = models.CharField(max_length=255)
+
+
+class SearchCacheRow(models.Model):
+    sheet = models.ForeignKey(
+        Spreadsheet,
+        on_delete=models.CASCADE,
+    )
+    sheet_config = models.ForeignKey(SheetConfig, on_delete=models.CASCADE)
+    row = models.ForeignKey(Row, on_delete=models.CASCADE)
+    wiki_key = models.TextField()
+    group = models.TextField()
+    data = models.TextField()
 
 
 class PermissionGroup(models.Model):
