@@ -53,7 +53,12 @@ class Spreadsheet(models.Model):
             row.save()
             rows.append(row)
             for col_name, cell_value in line.items():
-                cell = Cell(column=cols[col_name], value=cell_value, row=row)
+                cell = Cell(
+                    column=cols[col_name],
+                    original_value=cell_value,
+                    latest_value=cell_value,
+                    row=row,
+                )
                 cells.append(cell)
 
         Cell.objects.bulk_create(cells)
@@ -101,18 +106,13 @@ class Row(models.Model):
 
     def to_dict(self, config):
         new_row = {"row_number": self.row_number, "key": self.key}
-        for cell in (
-            self.cells.filter(column__in=config.valid_columns.all())
-            .select_related("column")
-            .select_related("edits")
-        ):
-            if cell.edits.count > 0:
-                cell_value = cell.edits.order_by("-edit_timestamp").first().value
-            else:
-                cell_value = cell.value
+        for cell in self.cells.filter(
+            column__in=config.valid_columns.all()
+        ).select_related("column"):
+            cell_value = cell.latest_value
 
             if cell.column.type == "list":
-                cell_value = value.split("\n")
+                cell_value = cell_value.split("\n")
 
             new_row[cell.column.name] = cell_value
         return new_row
@@ -150,8 +150,19 @@ class Column(models.Model):
 
 class Cell(models.Model):
     column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="column")
-    value = models.TextField(null=True)
+    original_value = models.TextField(null=True)
+    latest_value = models.TextField(null=True)
     row = models.ForeignKey(Row, on_delete=models.CASCADE, related_name="cells")
+
+
+class CellEdit(models.Model):
+    cell = models.ForeignKey(Cell, on_delete=models.CASCADE, related_name="edits")
+    value = models.CharField(max_length=255)
+    message = models.CharField(max_length=255, null=True)
+    edit_timestamp = models.DateTimeField(auto_now=True)
+    approval_timestamp = models.DateTimeField(null=True)
+    config = models.ForeignKey(SheetConfig, on_delete=models.CASCADE)
+    approval_code = models.CharField(max_length=255, null=True)
 
 
 class Template(models.Model):
