@@ -33,6 +33,27 @@ def search(request, sheet_name):
     return HttpResponse(resp)
 
 
+def edit_record(request, sheet_name, row_number):
+    post_fields = json.loads(request.body)
+    group = post_fields["group"]
+    wiki_key = post_fields["wiki_key"]
+    new_values = json.loads(post_fields["new_values"])
+    sheet = models.Spreadsheet.objects.get(name=sheet_name)
+    config = models.SheetConfig.objects.get(sheet=sheet, wiki_key=wiki_key, group=group)
+    row = models.Row.objects.get(sheet=sheet, row_number=row_number)
+
+    for field, val in new_values.items():
+        cell = row.cells.get(column__name=field)
+        cell.latest_value = val
+        cell.save()
+        edit_record = models.CellEdit(
+            config=config, cell=cell, value=val, message="", edit_timestamp=datetime.now
+        )
+        edit_record.save()
+
+    return HttpResponse(201)
+
+
 def get_sheet(request, sheet_name, fmt):
     group = request.GET["group"]
     wiki_key = request.GET["wiki_key"]
@@ -91,19 +112,14 @@ def get_toc(request, sheet_name, toc_name, fmt):
     return HttpResponse(JinjaTemplate(toc.template_file).render(data))
 
 
-def get_row(request, sheet_name, key, fmt):
-    group = request.GET["group"]
-    wiki_key = request.GET["wiki_key"]
-
+def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     sheet_config = models.SheetConfig.objects.get(
         sheet=sheet,
         wiki_key=wiki_key,
         group=group,
     )
-    # todo: fails if row not found, but not obvious why from the error msg
-    # you would get
-    row = [row for row in sheet.clean_rows(sheet_config) if row["key"] == key][0]
+    row = models.Row.objects.get(key=key, sheet=sheet).to_dict(sheet_config)
 
     if fmt == "json":
         return JsonResponse(row)
@@ -113,8 +129,8 @@ def get_row(request, sheet_name, key, fmt):
             wiki_key=wiki_key,
             type="View",
         )
-        if "view" in request.GET:
-            template = templates.get(name=request.GET["view"])
+        if view is not None:
+            template = templates.get(name=view)
         else:
             template = templates.get(is_default=True)
 
@@ -122,8 +138,25 @@ def get_row(request, sheet_name, key, fmt):
             {sheet.object_name: row}
         )
         return HttpResponse(rendered_template)
+    elif fmt == "dict":
+        return row
     else:
         raise Exception(f"Invalid format {fmt}")
+
+
+def get_row_view(request, sheet_name, key, fmt):
+    group = request.GET["group"]
+    wiki_key = request.GET["wiki_key"]
+
+    return get_row(group, wiki_key, key, fmt, sheet_name, request.GET.get("view", None))
+
+
+def get_cell_view(request, sheet_name, key, field):
+    group = request.GET["group"]
+    wiki_key = request.GET["wiki_key"]
+
+    row = get_row(group, wiki_key, key, "dict", sheet_name, None)
+    return JsonResponse({"field": row[field]})
 
 
 def get_attachment(request, sheet_name, key, attachment):
