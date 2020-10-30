@@ -1,87 +1,34 @@
 {#
 
-  The main template for viewing.  A standard jinja template where the object data
-  was handed to it with the name `proposal` because that's how we configured it when
-  uploading it.  It mixes html, wiki markup, and jinja commands to create a complicated
-  page.
+The main template for viewing.  A standard jinja template where the object data
+was handed to it with the name `proposal` because that's how we configured it when
+uploading it.  It mixes html, wiki markup, and jinja commands to create a complicated
+page.
 
-  Some notes:
+Some notes:
 
-  * When checking for data, use `proposal['column']` if you want to check if the data 
-    is non empty.  Use `'column' in proposal.keys()` to check if the data exists at all,
-    i.e. the user has access to that data.
-  * For list types, the list will be broken apart in python so you can just iterate over them
-  * For `{{` and `}}` which are sometimes needed in wiki markup, and in order to do that
-    in jinja, you need to put them inside an expression
-  * If you want to do indenting, you need to add a lot of `-` to the brackets so that jinja
-    strips the whitespace.  Otherwise, the wiki will interpret your indenting as important
-    to the markup.
-  * For linking into the SpecialPage for the attachment, a full url is required as it's
-    not a native MediaWiki page.
+* When checking for data, use `proposal['column']` if you want to check if the data 
+is non empty.  Use `'column' in proposal.keys()` to check if the data exists at all,
+i.e. the user has access to that data.
+* For list types, the list will be broken apart in python so you can just iterate over them
+* For `{{` and `}}` which are sometimes needed in wiki markup, and in order to do that
+in jinja, you need to put them inside an expression
+* If you want to do indenting, you need to add a lot of `-` to the brackets so that jinja
+strips the whitespace.  Otherwise, the wiki will interpret your indenting as important
+to the markup.
+* For linking into the SpecialPage for the attachment, a full url is required as it's
+not a native MediaWiki page.
 
 #}
-<div class="noprint" style="float:right;">
-<div style="border:1px solid black;width:400px;margin-left:10px;padding:10px">
-<div style="text-align: center">
-<h1 style="margin-top:0px">Snapshot</h1>
-'''{{ proposal['Project Title'] }} ({{ proposal['Application #'] }})'''
-</div>
-<div style="font-size:80%">
-{{ "{{" }} #evu:{{ proposal['Video'] }}|dimensions=400{{ "}}" }}
-{|
-|-
-|style="vertical-align:top;width:150px" |'''Rank:'''
-|{{ proposal['Judge Overall Score Rank Normalized'] }}'''
-|-
-|style="vertical-align:top;width:150px" |'''Judge Panel Score:'''
-|{{ proposal['Judge Sum of Scores Normalized'] }}
-{% if proposal['LFC Recommendation'] %}
-|-
-|style="vertical-align:top;width:150px" |'''[[Lever_for_Change_Analysis|LFC Recommendation]]:'''
-|{{ proposal['LFC Recommendation'] }}
-{% endif %}
-|-
-|style="vertical-align:top;width:150px" |'''Organization:'''
-|{{ proposal['Organization Name'] }}
-|-
-|style="vertical-align:top;" | '''Project Description:'''
-| {{ proposal['Project Description'] }}
-|-
-|style="vertical-align:top;" | '''Priority populations:'''
-| {% for pop in proposal['Priority Populations'] %}
-[[Population#{{ pop }}|{{ pop }}]]
-{% endfor %}
-|-
-|style="vertical-align:top;" | '''Primary Subject Area:'''
-| [[Topic#{{ proposal['Primary Subject Area'] }}|{{ proposal['Primary Subject Area'] }}]]
-|-
-|style="vertical-align:top;" | '''Current solution location(s):'''
-| {{ proposal['Location of Current Work #1 Nation'] }}<br />
-|-
-|style="vertical-align:top;" | '''Future work location(s):'''
-| {{ proposal['Location of Future Work #1 Nation'] }}<br />
-|-
-|style="vertical-align:top;" | '''Key words:'''
-| {{ proposal['Key Words'] }}
-|-
-|style="vertical-align:top;" | '''Annual operating budget:'''
-| {{ proposal['Annual Operating Budget'] }}
-|-
-|style="vertical-align:top;" | '''Number of employees:'''
-| {{ proposal['Number of Employees'] }}
-|-
-|style="vertical-align:top;" | '''Attachments:'''
-| <span class="plainlinks">[{{ "{{" }}fullurl:Special:TorqueDataConnectAttachment|sheet_name=proposals&id={{proposal['Application #']}}&attachment={{ proposal['Application #'] }}_attachment.txt {{ "}}" }} Attachment]</span>
-|}
-</div>
-</div>
-</div>
-
-'''{{ proposal['Project Description'] }}'''
+<div class="page-wrapper" style="display: flex; flex-direction: row;">
+<div class="main-content" style="display: flex; flex-direction: column;">
+'''<span class="editable">{{ proposal['Project Description'] }}</span><span class="torque-edit-button paragraph"
+data-field="Project Description"><span class="torque-edit">edit</span></span>'''
 = Executive Summary =
-<p style="padding-left: 30px;">{{ proposal['Executive Summary'] }}</p>
+<p style="padding-left: 30px;"><span class="editable">{{ proposal['Executive Summary'] }}</span><span class="torque-edit-button paragraph" data-field="Executive Summary"><span class="torque-edit">edit</span></span>
+</p>
 
-<hr/>
+<hr />
 
 
 
@@ -89,9 +36,9 @@ __TOC__
 = Problem and Solution =
 <div style="padding-left: 30px;">
 
-{{ proposal['Challenge Statement'] }}
+<span class="editable">{{ proposal['Challenge Statement'] }}</span><span class="torque-edit-button paragraph" data-field="Challenge Statement"><span class="torque-edit">edit</span></span>
 
-{{ proposal['Solution Overview'] }}
+<span class="editable">{{ proposal['Solution Overview'] }}</span><span class="torque-edit-button paragraph" data-field="Solution Overview"><span class="torque-edit">edit</span></span>
 
 </div>
 = Video =
@@ -104,76 +51,84 @@ __TOC__
 = Key Staff Biographies =
 <div style="padding-left: 30px;">
 
-'''{{ proposal['Key Staff #1 First Name'] }} {{ proposal['Key Staff #1 Last Name'] }}, {{ proposal['Key Staff #1 Affiliation'] }}'''
+'''{{ proposal['Key Staff #1 First Name'] }} {{ proposal['Key Staff #1 Last Name'] }},
+<span class="editable">{{ proposal['Key Staff #1 Affiliation'] }}</span><span class="torque-edit-button paragraph" data-field="Key Staff #1 Affiliation"><span class="torque-edit">edit</span></span>'''
 
-{{ proposal['Key Staff #1 Biography'] }}
+<span class="editable">{{ proposal['Key Staff #1 Biography'] }}</span><span class="torque-edit-button paragraph" data-field="Key Staff #1 Biography"><span class="torque-edit">edit</span></span>
 
-'''{{ proposal['Key Staff #2 First Name'] }} {{ proposal['Key Staff #2 Last Name'] }}, {{ proposal['Key Staff #2 Affiliation'] }}'''
+'''{{ proposal['Key Staff #2 First Name'] }} {{ proposal['Key Staff #2 Last Name'] }},
+<span class="editable">{{ proposal['Key Staff #2 Affiliation'] }}</span><span class="torque-edit-button paragraph" data-field="Key Staff #2 Affiliation"><span class="torque-edit">edit</span></span>'''
 
-{{ proposal['Key Staff #2 Biography'] }}
+<span class="editable">{{ proposal['Key Staff #2 Biography'] }}</span><span class="torque-edit-button paragraph" data-field="Key Staff #2 Biography"><span class="torque-edit">edit</span></span>
 
-'''{{ proposal['Key Staff #3 First Name'] }} {{ proposal['Key Staff #3 Last Name'] }}, {{ proposal['Key Staff #3 Affiliation'] }}'''
+'''{{ proposal['Key Staff #3 First Name'] }} {{ proposal['Key Staff #3 Last Name'] }},
+{{ proposal['Key Staff #3 Affiliation'] }}'''
 
 {{ proposal['Key Staff #3 Biography'] }}
 
 </div>
 = Diversity Equity and Inclusion =
-<p style="padding-left: 30px;">{{ proposal['Diversity-Equity-Inclusion'] }}</p>
+<p style="padding-left: 30px;"><span class="editable">{{ proposal['Diversity-Equity-Inclusion'] }}</span><span class="torque-edit-button paragraph" data-field="Diversity-Equity-Inclusion"><span class="torque-edit">edit</span></span></p>
 = Evidence of Effectiveness =
-<p style="padding-left: 30px;">{{ proposal['Evidence of Effectiveness'] }}</p>
+<p style="padding-left: 30px;"><span class="editable">{{ proposal['Evidence of Effectiveness'] }}</span><span class="torque-edit-button paragraph" data-field="Evidence of Effectivenes"><span class="torque-edit">edit</span></span></p>
 = Scaling =
-<p style="padding-left: 30px;">{{ proposal['Ability to Scale'] }}</p>
+<p style="padding-left: 30px;"><span class="editable">{{ proposal['Ability to Scale'] }}</span><span class="torque-edit-button paragraph" data-field="Ability to Scale"><span class="torque-edit">edit</span></span></p>
 = Budget Narrative, Financial Sustainability, and Funders =
-<p style="padding-left: 30px;">{{ proposal['Budget Narrative'] }}</p>
+<p style="padding-left: 30px;"><span class="editable">{{ proposal['Budget Narrative'] }}</span><span class="torque-edit-button paragraph" data-field="Budget Narrative"><span class="torque-edit">edit</span></span></p>
 {%- if proposal['Budget Notes'] %}
 == Budget Notes / Line Item Notes ==
-<p style="padding-left: 30px;">{{ proposal['Budget Notes'] }}</p>
+<p style="padding-left: 30px;"><span class="editable">{{ proposal['Budget Notes'] }}</span><span class="torque-edit-button paragraph" data-field="Budget Notes"><span class="torque-edit">edit</span></span></p>
 {%- endif %}
 
 = Other Considerations =
-<p style="padding-left: 30px;">{{ proposal['Other Considerations'] }}</p>
+<p style="padding-left: 30px;"><span class="editable">{{ proposal['Other Considerations'] }}</span><span class="torque-edit-button paragraph" data-field="Other Considerations"><span class="torque-edit">edit</span></span></p>
 = Timeline, Milestones, and Measurement of Results =
-<p style="padding-left: 30px;">{{ proposal['Timeline-Milestones-Measurement of Results'] }}</p>
+<p style="padding-left: 30px;"><span class="editable">{{ proposal['Timeline-Milestones-Measurement of Results'] }}</span><span class="torque-edit-button paragraph" data-field="Timeline-Milestones-Measurement of Result"><span class="torque-edit">edit</span></span></p>
 = Barrier Assessment and Risk Mitigation =
-<p style="padding-left: 30px;">{{ proposal['Barrier Assessment & Risk Mitigation'] }}</p>
+<p style="padding-left: 30px;"><span class="editable">{{ proposal['Barrier Assessment & Risk Mitigation'] }}</span><span class="torque-edit-button paragraph" data-field="Barrier Assessment & Risk Mitigation"><span class="torque-edit">edit</span></span></p>
 = Evaluation Panel Review =
 '''Rank: {{ proposal['Judge Overall Score Rank Normalized'] }}'''
 
 '''Total Score: {{ proposal['Judge Sum of Scores Normalized'] }}'''
 == Comments ==
 === {{ proposal['Judge Magnitude of Impact'] }} ({{ proposal['Judge Magnitude of Impact Score Normalized'] }}) ===
-
+<div class="editable">
 <p style="padding-left: 30px;">
 {% for comment in proposal['Judge Magnitude of Impact Comments'] %}
 * {{ comment }} ({{proposal['Judge Magnitude of Impact Comment Scores Normalized'][loop.index0] }})
 {% endfor %}
 </p>
-
-<p style="padding-left: 30px;">{{ proposal['Judge Magnitude of Impact Comments'] }}</p>
+</div><span class="torque-edit-button paragraph" data-field="Judge Magnitude of Impact Comments"><span class="torque-edit">edit</span></span>
 
 === {{ proposal['Judge Strength of Evidence'] }} ({{ proposal['Judge Strength of Evidence Score Normalized'] }}) ===
 
+<div class="editable">
 <p style="padding-left: 30px;">
 {% for comment in proposal['Judge Strength of Evidence Comments'] %}
 * {{ comment }} ({{proposal['Judge Strength of Evidence Comment Scores Normalized'][loop.index0] }})
 {% endfor %}
 </p>
+</div><span class="torque-edit-button paragraph" data-field="Judge Strength of Evidence Comments"><span class="torque-edit">edit</span></span>
 
 === {{ proposal['Judge Likelihood of Success'] }} ({{ proposal['Judge Likelihood of Success Score Normalized'] }}) ===
 
+<div class="editable">
 <p style="padding-left: 30px;">
 {% for comment in proposal['Judge Likelihood of Success Comments'] %}
 * {{ comment }} ({{proposal['Judge Likelihood of Success Comment Scores Normalized'][loop.index0] }})
 {% endfor %}
 </p>
+</div><span class="torque-edit-button paragraph" data-field="Judge Likelihood of Success Comments"><span class="torque-edit">edit</span></span>
 
 === {{ proposal['Judge Potential for Scale'] }} ({{ proposal['Judge Potential for Scale Score Normalized'] }}) ===
 
+<div class="editable">
 <p style="padding-left: 30px;">
 {% for comment in proposal['Judge Potential for Scale Comments'] %}
 * {{ comment }} ({{proposal['Judge Potential for Scale Comment Scores Normalized'][loop.index0] }})
 {% endfor %}
 </p>
+</div><span class="torque-edit-button paragraph" data-field="Judge Potential for Scale Comments"><span class="torque-edit">edit</span></span>
 
 = Legal and Financial Data =
 <p style="padding-left: 30px;">
@@ -191,48 +146,50 @@ __TOC__
 == Primary Contact ==
 <p style="padding-left: 30px;">
 
-{{ proposal['Primary Contact First Name'] }} {{ proposal['Primary Contact Last Name'] }} ({{ proposal['Primary Contact Title'] }})<br />
+<span class="editable">{{ proposal['Primary Contact First Name'] }}</span><span class="torque-edit-button paragraph" data-field="Primary Contact First Name"><span class="torque-edit">edit</span></span> {{ proposal['Primary Contact Last Name'] }}
+(<span class="editable">{{ proposal['Primary Contact Title'] }}</span><span class="torque-edit-button paragraph" data-field="Primary Contact Title"><span class="torque-edit">edit</span></span>)<br />
 
-{{ proposal['Primary Contact Phone'] }}<br />
+<span class="editable">{{ proposal['Primary Contact Phone'] }}</span><span class="torque-edit-button paragraph" data-field="Primary Contact Phone"><span class="torque-edit">edit</span></span><br />
 
-{{ proposal['Primary Contact Email'] }}
+<span class="editable">{{ proposal['Primary Contact Email'] }}</span><span class="torque-edit-button paragraph" data-field="Primary Contact Email"><span class="torque-edit">edit</span></span>
 
 </p>
 == Secondary Contact ==
 <p style="padding-left: 30px;">
 
-{{ proposal['Secondary Contact First Name'] }} {{ proposal['Secondary Contact Last Name'] }} ({{ proposal['Secondary Contact Title'] }})<br />
+<span class="editable">{{ proposal['Secondary Contact First Name'] }}</span><span class="torque-edit-button paragraph" data-field="Secondary Contact First Name"><span class="torque-edit">edit</span></span> {{ proposal['Secondary Contact Last Name'] }}
+(<span class="editable">{{ proposal['Secondary Contact Title'] }}</span><span class="torque-edit-button paragraph" data-field="Secondary Contact Title"><span class="torque-edit">edit</span></span>)<br />
 
-{{ proposal['Secondary Contact Phone'] }}<br />
+<span class="editable">{{ proposal['Secondary Contact Phone'] }}</span><span class="torque-edit-button paragraph" data-field="Secondary Contact Phone"><span class="torque-edit">edit</span></span><br />
 
-{{ proposal['Secondary Contact Email'] }}
+<span class="editable">{{ proposal['Secondary Contact Email'] }}</span><span class="torque-edit-button paragraph" data-field="Secondary Contact Email"><span class="torque-edit">edit</span></span>
 
 </p>
 == Organization Information ==
 <p style="padding-left: 30px;">
 
-{{ proposal['Org Website'] }}<br />
+<span class="editable">{{ proposal['Org Website'] }}</span><span class="torque-edit-button paragraph" data-field="Org Website"><span class="torque-edit">edit</span></span><br />
 
-{{ proposal['Project Website'] }}<br />
+<span class="editable">{{ proposal['Project Website'] }}</span><span class="torque-edit-button paragraph" data-field="Project Website"><span class="torque-edit">edit</span></span><br />
 
-{{ proposal['Organization Name'] }}<br />
+<span class="editable">{{ proposal['Organization Name'] }}</span><span class="torque-edit-button paragraph" data-field="Organization Name"><span class="torque-edit">edit</span></span><br />
 
-{{ proposal['Street Address'] }}<br />
+<span class="editable">{{ proposal['Street Address'] }}</span><span class="torque-edit-button paragraph" data-field="Street Address"><span class="torque-edit">edit</span></span><br />
 
-{{ proposal['Address Line 2'] }}<br />
+<span class="editable">{{ proposal['Address Line 2'] }}</span><span class="torque-edit-button paragraph" data-field="Address Line 2"><span class="torque-edit">edit</span></span><br />
 
-{{ proposal['City'] }}, {{ proposal['State / Province'] }} {{ proposal['Zip / Postal Code'] }} <br />
+<span class="editable">{{ proposal['City'] }}</span><span class="torque-edit-button paragraph" data-field="City"><span class="torque-edit">edit</span></span>, <span class="editable">{{ proposal['State / Province'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span> <span class="editable">{{ proposal['Zip / Postal Code'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span> <br />
 
-{{ proposal['Nation'] }}
+<span class="editable">{{ proposal['Nation'] }}</span><span class="torque-edit-button paragraph" data-field="Nation"><span class="torque-edit">edit</span></span>
 
 </p>
 = Coding (subject, population, location) =
-'''Organizational Area of Expertise:''' {{ proposal['Org Primary Area of Expertise'] }}
+'''Organizational Area of Expertise:''' <span class="editable">{{ proposal['Org Primary Area of Expertise'] }}</span><span class="torque-edit-button paragraph" data-field="Org Primary Area of Expertise"><span class="torque-edit">edit</span></span>
 
-'''Application Subject Area(s):''' {{ proposal['Primary Subject Area'] }}
-'''Primary Subject Area:''' [[Topic#{{ proposal['Primary Subject Area'] }}|{{ proposal['Primary Subject Area'] }}]]
+'''Application Subject Area(s):''' <span class="editable">{{ proposal['Primary Subject Area'] }}</span><span class="torque-edit-button paragraph" data-field="Primary Subject Area"><span class="torque-edit">edit</span></span>
+'''Primary Subject Area:''' [[Topic#{{ proposal['Primary Subject Area'] }}|<span class="editable">{{ proposal['Primary Subject Area'] }}</span><span class="torque-edit-button paragraph" data-field="Primary Subject Area"><span class="torque-edit">edit</span></span>]]
 
-'''Key Words:''' {{ proposal['Key Words'] }}
+'''Key Words:''' <span class="editable">{{ proposal['Key Words'] }}</span><span class="torque-edit-button paragraph" data-field="Key Words"><span class="torque-edit">edit</span></span>
 
 '''Priority Populations:'''
 
@@ -244,37 +201,118 @@ __TOC__
 
 == Current Solution Location(s) ==
 <p style="padding-left: 30px;">
-* Location 1: {{ proposal['Location of Current Work #1 Locality / County / District'] }}, {{ proposal['Location of Current Work #1 State / Province'] }}, {{ proposal['Location of Current Work #1 Nation'] }}{%- if proposal['Location of Current Work #2 Nation'] %}
-* Location 2: {{ proposal['Location of Current Work #2 Locality / County / District'] }}, {{ proposal['Location of Current Work #2 State / Province'] }}, {{ proposal['Location of Current Work #2 Nation'] }}{% endif %}
+* Location 1: <span class="editable">{{ proposal['Location of Current Work #1 Locality / County / District'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #1 Locality / County / District"><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Current Work #1 State / Province'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #1 State / Province"><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Current Work #1 Nation'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #1 Nation"><span class="torque-edit">edit</span></span>{%- if proposal['Location of Current Work #2 Nation'] %}
+* Location 2: {{ proposal['Location of Current Work #2 Locality / County / District'] }},
+<span class="editable">{{ proposal['Location of Current Work #2 State / Province'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #2 State / Province"><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Current Work #2 Nation'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #2 Nation"><span class="torque-edit">edit</span></span>{% endif %}
 {%- if proposal['Location of Current Work #3 Nation'] %}
-* Location 3: {{ proposal['Location of Current Work #3 Locality / County / District'] }}, {{ proposal['Location of Current Work #3 State / Province'] }}, {{ proposal['Location of Current Work #3 Nation'] }}{% endif %}
+* Location 3: <span class="editable">{{ proposal['Location of Current Work #3 Locality / County / District'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Current Work #3 State / Province'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #3 State / Province"><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Current Work #3 Nation'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #3 Nation"><span class="torque-edit">edit</span></span>{% endif %}
 {%- if proposal['Location of Current Work #4 Nation'] %}
-* Location 4: {{ proposal['Location of Current Work #4 Locality / County / District'] }}, {{ proposal['Location of Current Work #4 State / Province'] }}, {{ proposal['Location of Current Work #4 Nation'] }}{% endif %}
+* Location 4: <span class="editable">{{ proposal['Location of Current Work #4 Locality / County / District'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #4 Locality / County / District"><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Current Work #4 State / Province'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #4 State / Province"><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Current Work #4 Nation'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #4 Nation"><span class="torque-edit">edit</span></span>{% endif %}
 {%- if proposal['Location of Current Work #5 Nation'] %}
-* Location 5: {{ proposal['Location of Current Work #5 Locality / County / District'] }}, {{ proposal['Location of Current Work #5 State / Province'] }}, {{ proposal['Location of Current Work #5 Nation'] }}{% endif %}
+* Location 5: <span class="editable">{{ proposal['Location of Current Work #5 Locality / County / District'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #5 Locality / County / District"><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Current Work #5 State / Province'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #5 State / Province"><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Current Work #5 Nation'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #5 Nation"><span class="torque-edit">edit</span></span>{% endif %}
 </p>
 == Future Work Location(s) ==
 <p style="padding-left: 30px;">
-* Location 1: {{ proposal['Location of Future Work #1 Locality / County / District'] }}, {{ proposal['Location of Future Work #1 State / Province'] }}, {{ proposal['Location of Future Work #1 Nation'] }}
+* Location 1: <span class="editable">{{ proposal['Location of Future Work #1 Locality / County / District'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Future Work #1 State / Province'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>, <span class="editable">{{ proposal['Location of Future Work #1 Nation'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>
 {%- if proposal['Location of Future Work #2 Nation'] %}
-* Location 2: {{ proposal['Location of Future Work #2 Locality / County / District'] }}, {{ proposal['Location of Future Work #2 State / Province'] }}, {{ proposal['Location of Future Work #2 Nation'] }}{% endif %}
+* Location 2: <span class="editable">{{ proposal['Location of Future Work #2 Locality / County / District'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Future Work #2 State / Province'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Future Work #2 Nation'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>{% endif %}
 {%- if proposal['Location of Future Work #3 Nation'] %}
-* Location 3: {{ proposal['Location of Future Work #3 Locality / County / District'] }}, {{ proposal['Location of Future Work #3 State / Province'] }}, {{ proposal['Location of Future Work #3 Nation'] }}{% endif %}
+* Location 3: <span class="editable">{{ proposal['Location of Future Work #3 Locality / County / District'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Future Work #3 State / Province'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Future Work #3 Nation'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>{% endif %}
 {%- if proposal['Location of Future Work #4 Nation'] %}
-* Location 4: {{ proposal['Location of Future Work #4 Locality / County / District'] }}, {{ proposal['Location of Future Work #4 State / Province'] }}, {{ proposal['Location of Future Work #4 Nation'] }}{% endif %}
+* Location 4: <span class="editable">{{ proposal['Location of Future Work #4 Locality / County / District'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Future Work #4 State / Province'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Future Work #4 Nation'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>{% endif %}
 {%- if proposal['Location of Future Work #5 Nation'] %}
-* Location 5: {{ proposal['Location of Future Work #5 Locality / County / District'] }}, {{ proposal['Location of Future Work #5 State / Province'] }}, {{ proposal['Location of Future Work #5 Nation'] }}{% endif %}
+* Location 5: <span class="editable">{{ proposal['Location of Future Work #5 Locality / County / District'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Future Work #5 State / Province'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>,
+<span class="editable">{{ proposal['Location of Future Work #5 Nation'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>{% endif %}
 </p>
 
 == Competition Information ==
 <p style="padding-left: 30px;">
 
-'''Review Number:''' {{ proposal['Application #'] }}<br />
+'''Review Number:''' <span class="editable">{{ proposal['Application #'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span><br />
 
 </p>
 = Bibliography =
 <p style="padding-left: 30px;">
 
-{{ proposal['Bibliography'] }}
+<span class="editable">{{ proposal['Bibliography'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>
 
 </p>
+</div>
+<div class="side-bar" style="display: flex; flex-direction: column;">
+<div class="noprint" style="float:right;">
+<div style="border:1px solid black;width:400px;margin-left:10px;padding:10px">
+<div style="text-align: center">
+<h1 style="margin-top:0px">Snapshot</h1>
+'''<span class="editable">{{ proposal['Project Title'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span> (<span class="editable">{{ proposal['Application #'] }}</span><span class="torque-edit-button paragraph" data-field=""><span class="torque-edit">edit</span></span>)'''
+</div>
+<div style="font-size:80%">
+{{ "{{" }} #evu:{{ proposal['Video'] }}|dimensions=400{{ "}}" }}
+{|
+|-
+|style="vertical-align:top;width:150px" |'''Rank:'''
+|<span class="editable">{{ proposal['Judge Overall Score Rank Normalized'] }}</span><span class="torque-edit-button paragraph" data-field="Judge Overall Score Rank Normalized"><span class="torque-edit">edit</span></span>'''
+|-
+|style="vertical-align:top;width:150px" |'''Judge Panel Score:'''
+|<span class="editable">{{ proposal['Judge Sum of Scores Normalized'] }}</span><span class="torque-edit-button paragraph" data-field="Judge Sum of Scores Normalized"><span class="torque-edit">edit</span></span>
+{% if proposal['LFC Recommendation'] %}
+|-
+|style="vertical-align:top;width:150px" |'''[[Lever_for_Change_Analysis|LFC Recommendation]]:'''
+|<span class="editable">{{ proposal['LFC Recommendation'] }}</span><span class="torque-edit-button paragraph" data-field="LFC Recommendation"><span class="torque-edit">edit</span></span>
+{% endif %}
+|-
+|style="vertical-align:top;width:150px" |'''Organization:'''
+|<span class="editable">{{ proposal['Organization Name'] }}</span><span class="torque-edit-button paragraph" data-field="Organization Name"><span class="torque-edit">edit</span></span>
+|-
+|style="vertical-align:top;" | '''Project Description:'''
+| <span class="editable">{{ proposal['Project Description'] }}</span><span class="torque-edit-button paragraph" data-field="Project Description"><span class="torque-edit">edit</span></span>
+|-
+|style="vertical-align:top;" | '''Priority populations:'''
+| {% for pop in proposal['Priority Populations'] %}
+[[Population#{{ pop }}|{{ pop }}]]
+{% endfor %}
+|-
+|style="vertical-align:top;" | '''Primary Subject Area:'''
+| [[Topic#<span class="editable">{{ proposal['Primary Subject Area'] }}|<span class="editable">{{ proposal['Primary Subject Area'] }}</span><span class="torque-edit-button paragraph" data-field="Primary Subject Area"><span class="torque-edit">edit</span></span>]]
+|-
+|style="vertical-align:top;" | '''Current solution location(s):'''
+| <span class="editable">{{ proposal['Location of Current Work #1 Nation'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Current Work #1 Nation"><span class="torque-edit">edit</span></span><br />
+|-
+|style="vertical-align:top;" | '''Future work location(s):'''
+| <span class="editable">{{ proposal['Location of Future Work #1 Nation'] }}</span><span class="torque-edit-button paragraph" data-field="Location of Future Work #1 Nation"><span class="torque-edit">edit</span></span><br />
+|-
+|style="vertical-align:top;" | '''Key words:'''
+| <span class="editable">{{ proposal['Key Words'] }}</span><span class="torque-edit-button paragraph" data-field="Key Words"><span class="torque-edit">edit</span></span>
+|-
+|style="vertical-align:top;" | '''Annual operating budget:'''
+| <span class="editable">{{ proposal['Annual Operating Budget'] }}</span><span class="torque-edit-button paragraph" data-field="Annual Operating Budget"><span class="torque-edit">edit</span></span>
+|-
+|style="vertical-align:top;" | '''Number of employees:'''
+| <span class="editable">{{ proposal['Number of Employees'] }}</span><span class="torque-edit-button paragraph" data-field="Number of Employees"><span class="torque-edit">edit</span></span>
+|-
+|style="vertical-align:top;" | '''Attachments:'''
+| <span
+class="plainlinks">[{{ "{{" }}fullurl:Special:TorqueDataConnectAttachment|sheet_name=proposals&id={{proposal['Application #']}}&attachment={{ proposal['Application #'] }}_attachment.txt
+{{ "}}" }} Attachment]</span>
+|}
+</div>
+</div>
+</div>
+</div>
+</div>
