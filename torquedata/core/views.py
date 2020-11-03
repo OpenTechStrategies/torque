@@ -10,27 +10,56 @@ from jinja2 import Template as JinjaTemplate
 from core import models
 
 
-def search(request, sheet_name):
-    q = request.GET["q"]
-    group = request.GET["group"]
-    wiki_key = request.GET["wiki_key"]
-    sheet = models.Spreadsheet.objects.get(name=sheet_name)
-    config = models.SheetConfig.objects.get(sheet=sheet, wiki_key=wiki_key, group=group)
-
-    template = JinjaTemplate(
-        models.Template.objects.get(name="Search", sheet=sheet).get_file_contents()
+def search(q, sheet_configs):
+    results = (
+        models.SearchCacheRow.objects.filter(
+            sheet__in=sheet_configs.values_list("sheet", flat=True),
+            wiki_key__in=sheet_configs.values_list("wiki_key", flat=True),
+            group__in=sheet_configs.values_list("group", flat=True),
+            sheet_config__in=sheet_configs,
+            data__search=q,
+        )
+        .select_related("row")
+        .select_related("sheet")
     )
 
-    results = models.SearchCacheRow.objects.filter(
-        sheet=sheet, wiki_key=wiki_key, group=group, sheet_config=config, data__search=q
-    ).select_related("row")
-
     resp = f"== {results.count()} results for '{q}' == \n\n"
+
     for result in results:
-        resp += template.render({sheet.object_name: result.row.to_dict(config)})
+        template = JinjaTemplate(
+            models.Template.objects.get(
+                name="Search", sheet=result.sheet
+            ).get_file_contents()
+        )
+        resp += template.render(
+            {result.sheet.object_name: result.row.to_dict(result.sheet_config)}
+        )
         resp += "\n\n"
 
     return HttpResponse(resp)
+
+
+def search_global(request):
+    q = request.GET["q"]
+    groups = request.GET["groups"].split(",")
+    wiki_keys = request.GET["wiki_keys"].split(",")
+    sheet_names = request.GET["sheet_names"].split(",")
+    configs = models.SheetConfig.all()
+    for group, wiki_key, sheet_name in zip(groups, wiki_keys, sheet_names):
+        configs.filter(
+            sheet__name=sheet_name, wiki_key=wiki_key, group=group
+        )
+    return search(q, configs)
+
+
+def search_sheet(request, sheet_name):
+    q = request.GET["q"]
+    group = request.GET["group"]
+    wiki_key = request.GET["wiki_key"]
+    config = models.SheetConfig.objects.filter(
+        sheet__name=sheet_name, wiki_key=wiki_key, group=group
+    )
+    return search(q, config)
 
 
 def edit_record(request, sheet_name, row_number):
