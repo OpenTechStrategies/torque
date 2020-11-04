@@ -3,6 +3,7 @@ import urllib.parse
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from django.core.files.base import ContentFile
+from django.db.models import Q
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -46,9 +47,7 @@ def search_global(request):
     sheet_names = request.GET["sheet_names"].split(",")
     configs = models.SheetConfig.all()
     for group, wiki_key, sheet_name in zip(groups, wiki_keys, sheet_names):
-        configs.filter(
-            sheet__name=sheet_name, wiki_key=wiki_key, group=group
-        )
+        configs.filter(sheet__name=sheet_name, wiki_key=wiki_key, group=group)
     return search(q, configs)
 
 
@@ -97,6 +96,39 @@ def get_sheet(request, sheet_name, fmt):
     return JsonResponse({sheet.name: sheet.clean_rows(sheet_config)})
 
 
+def get_global_view_toc(request):
+    group = request.GET["group"]
+    wiki_keys = request.GET["wiki_keys"].split(",")
+    sheet_names = request.GET["sheet_names"].split(",")
+    configs = models.SheetConfig.all()
+
+    global_toc = None  # TODO: load globalview TOC
+    data = json.loads(global_toc.json_file)
+
+    for wiki_key, sheet_name in zip(wiki_keys, sheet_names):
+        configs.filter(sheet__name=sheet_name, wiki_key=wiki_key, group=group)
+
+    # For each sheet, we load in the associated rows
+    for config in configs:
+        rows = config.sheet.clean_rows(config)
+        template = models.Template.objects.get(
+            sheet=config.sheet, type="toc", is_default=True
+        ).select_related("toc")
+
+        # For each row - we store the template rendering in toc_lines
+        data[config.sheet.name] = {row[config.sheet.key_column]: row for row in rows}
+        data["toc_lines"][config.sheet_name] = {
+            {
+                row[sheet.key_column]: JinjaTemplate(template.template_file).render(
+                    {sheet.object_name: row}
+                )
+                for row in rows
+            }
+        }
+
+    return HttpResponse(JinjaTemplate(global_toc.template.template_file).render(data))
+
+
 def get_toc(request, sheet_name, toc_name, fmt):
     group = request.GET["group"]
     wiki_key = request.GET["wiki_key"]
@@ -104,7 +136,6 @@ def get_toc(request, sheet_name, toc_name, fmt):
     if group == "":
         return HttpResponse(status=403)
 
-    sheet = models.Spreadsheet.objects.get(name=sheet_name)
     try:
         sheet_config = models.SheetConfig.objects.get(
             sheet=sheet,

@@ -187,8 +187,8 @@ class TableOfContents(models.Model):
     )
     name = models.TextField()
     json_file = models.TextField()
-    template = models.ForeignKey(
-        Template, on_delete=models.CASCADE, related_name="tocs"
+    template = models.OneToOneField(
+        Template, on_delete=models.CASCADE, primary_key=True
     )
 
 
