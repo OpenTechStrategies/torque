@@ -11,7 +11,7 @@ from jinja2 import Template as JinjaTemplate
 from core import models
 
 
-def search(q, sheet_configs):
+def search(q, template_config, sheet_configs):
     results = (
         models.SearchCacheRow.objects.filter(
             sheet__in=sheet_configs.values_list("sheet", flat=True),
@@ -29,11 +29,11 @@ def search(q, sheet_configs):
     for result in results:
         template = JinjaTemplate(
             models.Template.objects.get(
-                name="Search", sheet=result.sheet
+                name="Search", sheet=template_config.sheet
             ).get_file_contents()
         )
         resp += template.render(
-            {result.sheet.object_name: result.row.to_dict(result.sheet_config)}
+            {template_config.sheet.object_name: result.row.to_dict(result.sheet_config)}
         )
         resp += "\n\n"
 
@@ -42,23 +42,28 @@ def search(q, sheet_configs):
 
 def search_global(request):
     q = request.GET["q"]
-    groups = request.GET["groups"].split(",")
+    group = request.GET["group"]
+    global_wiki_key = request.GET["wiki_key"]
+    global_sheet_name = request.GET["sheet_name"]
     wiki_keys = request.GET["wiki_keys"].split(",")
     sheet_names = request.GET["sheet_names"].split(",")
-    configs = models.SheetConfig.all()
-    for group, wiki_key, sheet_name in zip(groups, wiki_keys, sheet_names):
+    global_config = models.SheetConfig.objects.get(
+        sheet__name=global_sheet_name, wiki_key=global_wiki_key, group=group
+    )
+    configs = models.SheetConfig.objects.all()
+    for wiki_key, sheet_name in zip(wiki_keys, sheet_names):
         configs.filter(sheet__name=sheet_name, wiki_key=wiki_key, group=group)
-    return search(q, configs)
+    return search(q, global_config, configs)
 
 
 def search_sheet(request, sheet_name):
     q = request.GET["q"]
     group = request.GET["group"]
     wiki_key = request.GET["wiki_key"]
-    config = models.SheetConfig.objects.filter(
+    configs = models.SheetConfig.objects.filter(
         sheet__name=sheet_name, wiki_key=wiki_key, group=group
     )
-    return search(q, config)
+    return search(q, config.first(), configs)
 
 
 def edit_record(request, sheet_name, row_number):
