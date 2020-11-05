@@ -5,18 +5,28 @@ class TorqueDataConnectHooks {
 		$parser->setFunctionHook('tdcrender', [ self::class, 'loadLocation' ]);
 	}
 
-	public static function loadLocation($parser, $location, $view = false) {
+	public static function loadLocation($parser, $location, $view = false, $wiki_key = false) {
     $parser->disableCache();
     $po = $parser->getOutput();
     $po->addModules('ext.torquedataconnect.js');
     $po->addModuleStyles('ext.torquedataconnect.css');
 
     global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView,
-      $wgTorqueDataConnectRaw, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
+      $wgTorqueDataConnectRaw, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
+      $wgTorqueDataConnectMultiWikiConfig;
 
     // Let the tdcrender view be top priority
-    if(!$view) {
+    if(!$view || $view == "false") {
       $view = $wgTorqueDataConnectView;
+    }
+
+    // We only allow wiki_key to be passed in if it's in the multi wiki config
+    if(!$wiki_key ||
+        !(
+          $wgTorqueDataConnectMultiWikiConfig &&
+          array_key_exists($wiki_key, $wgTorqueDataConnectMultiWikiConfig)
+        )) {
+      $wiki_key = $wgTorqueDataConnectWikiKey;
     }
 
     // If this isn't set, that means we've gotten here through some other means, and we
@@ -33,7 +43,7 @@ class TorqueDataConnectHooks {
       "?group=" .
       $wgTorqueDataConnectGroup .
       "&wiki_key=" .
-      $wgTorqueDataConnectWikiKey .
+      $wiki_key .
       ($view ? "&view=" . $view : "")
       );
     
@@ -108,19 +118,36 @@ class TorqueDataConnectHooks {
 
   public static function onSpecialSearchResultsPrepend($specialSearch, $output, $term) {
     global $wgTorqueDataConnectGroup, $wgTorqueDataConnectSheetName,
-      $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
+      $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
+      $wgTorqueDataConnectMultiWikiConfig;
 
-    $results = file_get_contents(
-      $wgTorqueDataConnectServerLocation .
-      "/search/" .
-      $wgTorqueDataConnectSheetName.
-      "?group=" .
-      $wgTorqueDataConnectGroup .
-      "&wiki_key=" .
-      $wgTorqueDataConnectWikiKey .
-      "&q=" .
-      urlencode($term)
-      );
+    if($wgTorqueDataConnectMultiWikiConfig) {
+      $wiki_keys = "";
+      $sheet_names = "";
+      foreach($wgTorqueDataConnectMultiWikiConfig as $wiki_key => $sheet_name) {
+        $wiki_keys .= "$wiki_key,";
+        $sheet_names .= "$sheet_name,";
+      }
+      $results = file_get_contents(
+        $wgTorqueDataConnectServerLocation .
+        "/search" .
+        "?group=" . $wgTorqueDataConnectGroup .
+        "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
+        "&sheet_name=" . $wgTorqueDataConnectSheetName .
+        "&wiki_keys=" . $wiki_keys .
+        "&sheet_names=" . $sheet_names .
+        "&q=" .  urlencode($term)
+        );
+    } else {
+      $results = file_get_contents(
+        $wgTorqueDataConnectServerLocation .
+        "/search/" .  $wgTorqueDataConnectSheetName .
+        "?group=" .  $wgTorqueDataConnectGroup .
+        "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
+        "&q=" .  urlencode($term)
+        );
+    }
+
     $output->addWikiTextAsInterface($results);
 
     return false;

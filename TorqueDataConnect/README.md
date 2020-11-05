@@ -44,6 +44,8 @@ wfLoadExtension('TorqueDataConnect');
 * `$wgTorqueDataConnectRenderToHTML` - Whether to render the wiki markup to HTML or not.  If
   TorqueDataConnect does the rendering, then things like inner tags will get parsed.  However,
   some users, especially API users, may want the wiki markup to do things like pdf rendering.
+* `$wgTorqueDataConnectMultiWikiConfig` - This is an associative array of `WikiKey` to `SheetName` as
+  above.  See [below](#MultiWiki support) for more information.
 
 ### WikiPage configuration
 
@@ -188,10 +190,14 @@ Parameters:
 TorqueDataConnect provides a single hook for pages to use to ask Torque to render
 data for them.  The path will get `api` prepended to it so that users can't use it to
 access Torque's control areas.  The view, when provided, will tell torquedata to 
-render the page/toc with a specific view that was configured in the MainConfig
+render the page/toc with a specific view that was configured in the MainConfig.  If the
+`wiki_key` is included, it will use a different set of permissions for rendering, notably
+the ones configured by the wiki who defines the `$wgTorqueDataConnectWikiKey` to be the
+same as the `wiki_key` passed in here.  Requires `wiki_key` to be in
+`$wgTorqueDataConnectMultiWikiConfig`
 
 ```
-{{ #tdcrender:<path>|<view> }}
+{{ #tdcrender:<path>|<view>|<wiki_key> }}
 ```
 
 The paths available from Torque are:
@@ -222,6 +228,48 @@ username and id, but may get built out later.
 Currently TorqueDataConnect takes over the search results and only searches
 against data.  This section is here to be filled out when there's more nuance
 to how it manages integrating wiki search results.
+
+## MultiWiki support
+
+While the normal operation for torque is to define a sheet (or N sheets) to work with
+this wiki, the configuration for the wiki is singular.  Things like the allowed columns,
+the available objects to view, and so on, are tied to the MainConfig for this.  If there
+are more than one sheet, then the configuration has to work for the union of all sheets.
+
+However, there arise situations where there are multiple independent wikis, each with
+their own permissions and template setups.  Having a meta wiki that is able to search,
+build tables of contents, and render pages from these disparate wikis is useful.  The
+basic need is to handle these wikis, sometimes from the viewpoint of the overarching
+wiki, and sometimes from the viewpoint of the wikis themselves.
+
+Permissions are pulled from the other wikis (though the group the person has on the
+meta wiki is used), as well as view templates.  However, Search and TOC templates
+come from the metawiki.
+
+In order to fascilitate this, a number of things need to happen.
+
+### Setting up configuration variables
+
+You need to add wikis to `$wgTorqueDataConnectMultiWikiConfig`, with the keys
+being the wiki key, while the values being the sheet that wiki key should be used for:
+
+```
+$wgTorqueDataConnectMultiWikiConfig["Wiki1"] = "Sheet1";
+$wgTorqueDataConnectMultiWikiConfig["Wiki2"] = "Sheet2";
+```
+
+### MainConfig file on the Meta Wiki
+
+Groups must still be added to the MainConfig file, as well templates for the TOC lines
+and Search results.  Because those templates are going to be applied to multiple
+sheets, they may require more conditional checks, or require those sheets to have certain
+columns in common.
+
+### Rendering pages
+
+When rendering pages, the `wiki_key` option should be used to render the page with
+the permissions and templates of the target wiki.  The view can still be specified,
+but will match to the templates available on that wiki.
 
 ## User Rights
 
