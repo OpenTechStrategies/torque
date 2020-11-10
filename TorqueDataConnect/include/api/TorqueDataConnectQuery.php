@@ -14,7 +14,7 @@ class TorqueDataConnectQuery extends APIBase {
     global $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
 
     $contents = file_get_contents(
-      $wgTorqueDataConnectServerLocation;
+      $wgTorqueDataConnectServerLocation .
       "/api" .
       $this->getParameter("path") .
       ".json" .
