@@ -77,12 +77,12 @@ class SheetConfig(models.Model):
     def create_search_index(self, sheet):
         sc_rows = []
         for row_dict in sheet.clean_rows(self):
-            row = Row.objects.get(row_number=row_dict["row_number"], sheet=self.sheet)
+            row = Row.objects.get(key=row_dict["key"], sheet=sheet)
             if not SearchCacheRow.objects.filter(row=row, sheet_config=self).exists():
                 sc_rows.append(
                     SearchCacheRow(
                         row=row,
-                        sheet=self.sheet,
+                        sheet=sheet,
                         wiki_key=self.wiki_key,
                         group=self.group,
                         sheet_config=self,
