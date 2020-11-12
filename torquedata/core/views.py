@@ -63,7 +63,7 @@ def search_sheet(request, sheet_name):
     configs = models.SheetConfig.objects.filter(
         sheet__name=sheet_name, wiki_key=wiki_key, group=group
     )
-    return search(q, config.first(), configs)
+    return search(q, configs.first(), configs)
 
 
 def edit_record(request, sheet_name, row_number):
