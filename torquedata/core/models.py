@@ -26,8 +26,11 @@ class Spreadsheet(models.Model):
     def from_csv(cls, name, object_name, key_column, file):
         file_text = io.StringIO(file.read().decode())
         reader = csv.DictReader(file_text)
-        sheet = cls(name=name, object_name=object_name, key_column=key_column)
-        sheet.save()
+        if Spreadsheet.objects.filter(name=name).exists():
+            sheet = Spreadsheet.objects.get(name=name)
+        else:
+            sheet = cls(name=name, object_name=object_name, key_column=key_column)
+            sheet.save()
 
         cols = {}
         rows = []
@@ -36,7 +39,7 @@ class Spreadsheet(models.Model):
             if row_number == 0:
                 # Generate columns
                 for col_name, col_type in line.items():
-                    col = Column(
+                    col, created = Column.objects.update_or_create(
                         name=col_name,
                         type=col_type,
                         sheet=sheet,
@@ -45,22 +48,22 @@ class Spreadsheet(models.Model):
                     cols[col_name] = col
                 continue
 
-            row = Row(
+            row, created = Row.objects.update_or_create(
                 sheet=sheet,
                 key=line[sheet.key_column],
             )
             row.save()
             rows.append(row)
             for col_name, cell_value in line.items():
-                cell = Cell(
-                    column=cols[col_name],
-                    original_value=cell_value,
-                    latest_value=cell_value,
-                    row=row,
+                defaults = {
+                    "original_value": cell_value,
+                    "latest_value": cell_value,
+                }
+                cell, created = Cell.objects.update_or_create(
+                    row=row, column=cols[col_name], defaults=defaults
                 )
                 cells.append(cell)
 
-        Cell.objects.bulk_create(cells)
         return sheet, rows
 
 
