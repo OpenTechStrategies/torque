@@ -55,15 +55,23 @@ class Spreadsheet(models.Model):
             row.save()
             rows.append(row)
             for col_name, cell_value in line.items():
-                defaults = {
-                    "original_value": cell_value,
-                    "latest_value": cell_value,
-                }
-                cell, created = Cell.objects.update_or_create(
-                    row=row, column=cols[col_name], defaults=defaults
-                )
-                cells.append(cell)
+                try:
+                    cell = Cell.objects.get(row=row, column=cols[col_name])
+                    # Only update for cells whose value has changed
+                    if cell.original_value != cell_value:
+                        cell.original_value = cell_value
+                        cell.latest_value = cell_value
+                        cell.save()
+                except Cell.DoesNotExist:
+                    cell = Cell(
+                        column=cols[col_name],
+                        original_value=cell_value,
+                        latest_value=cell_value,
+                        row=row,
+                    )
+                    cells.append(cell)
 
+        Cell.objects.bulk_create(cells)
         return sheet, rows
 
 
