@@ -66,14 +66,14 @@ def search_sheet(request, sheet_name):
     return search(q, configs.first(), configs)
 
 
-def edit_record(request, sheet_name, row_number):
+def edit_record(request, sheet_name, key):
     post_fields = json.loads(request.body)
     group = post_fields["group"]
     wiki_key = post_fields["wiki_key"]
     new_values = json.loads(post_fields["new_values"])
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     config = models.SheetConfig.objects.get(sheet=sheet, wiki_key=wiki_key, group=group)
-    row = models.Row.objects.get(sheet=sheet, row_number=row_number)
+    row = models.Row.objects.get(sheet=sheet, key=key)
 
     for field, val in new_values.items():
         cell = row.cells.get(column__name=field)

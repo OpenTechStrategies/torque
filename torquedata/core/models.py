@@ -48,7 +48,6 @@ class Spreadsheet(models.Model):
             row = Row(
                 sheet=sheet,
                 key=line[sheet.key_column],
-                row_number=row_number,
             )
             row.save()
             rows.append(row)
@@ -101,11 +100,10 @@ class Row(models.Model):
     )
 
     key = models.TextField()
-    row_number = models.PositiveIntegerField()
     sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_ids")
 
     def to_dict(self, config):
-        new_row = {"row_number": self.row_number, "key": self.key}
+        new_row = {"key": self.key}
         for cell in self.cells.filter(
             column__in=config.valid_columns.all()
         ).select_related("column"):
@@ -124,16 +122,14 @@ class Row(models.Model):
         return self.data.items()
 
     def clone(self):
-        return Row(sheet=self.sheet, key=self.key, row_number=self.row_number)
+        return Row(sheet=self.sheet, key=self.key)
 
     class Meta:
         constraints = [
             # enforced on save()
             # useful for making sure any copies of a row can't be written to
             # the database (would probably create some awful bugs)
-            models.UniqueConstraint(
-                fields=["sheet", "row_number"], name="unique_row_number"
-            ),
+            models.UniqueConstraint(fields=["sheet", "key"], name="unique_key"),
         ]
 
 
