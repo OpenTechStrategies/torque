@@ -117,7 +117,7 @@ def get_global_view_toc(request):
     for config in configs:
         rows = config.sheet.clean_rows(config)
         template = models.Template.objects.get(
-            sheet=config.sheet, type="toc", is_default=True
+            sheet=config.sheet, type="TOC", is_default=True
         ).select_related("toc")
 
         # For each row - we store the template rendering in toc_lines
@@ -137,6 +137,7 @@ def get_global_view_toc(request):
 def get_toc(request, sheet_name, toc_name, fmt):
     group = request.GET["group"]
     wiki_key = request.GET["wiki_key"]
+    sheet = models.Spreadsheet.objects.get(name=sheet_name)
 
     if group == "":
         return HttpResponse(status=403)
@@ -160,21 +161,24 @@ def get_toc(request, sheet_name, toc_name, fmt):
     toc_templates = models.Template.objects.filter(
         sheet=sheet,
         wiki_key=wiki_key,
-        type="toc",
+        type="TOC",
     )
     try:
-        template = toc_templates.get(name=request.GET.get("view"))
+        line_template = toc_templates.get(name=request.GET.get("view"))
     except models.Template.DoesNotExist:
-        template = toc_templates.get(is_default=True)
+        line_template = toc_templates.get(is_default=True)
+
+    line_template_contents = line_template.template_file.read().decode("utf-8")
+    template_contents = toc.template.template_file.read().decode("utf-8")
 
     data["toc_lines"] = {
-        row[sheet.key_column]: JinjaTemplate(template.template_file).render(
+        row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
             {sheet.object_name: row}
         )
         for row in rows
     }
 
-    return HttpResponse(JinjaTemplate(toc.template_file).render(data))
+    return HttpResponse(JinjaTemplate(template_contents).render(data))
 
 
 def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
@@ -338,7 +342,7 @@ def upload_toc(request):
     sheet = models.Spreadsheet.objects.get(name=request.POST["sheet_name"])
     template = models.Template(
         sheet=sheet,
-        type="toc",
+        type="TOC",
         name=request.POST["toc_name"],
         template_file=request.FILES["template"],
     )

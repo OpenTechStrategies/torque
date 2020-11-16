@@ -198,6 +198,14 @@ class TableOfContents(models.Model):
         Template, on_delete=models.CASCADE, primary_key=True
     )
 
+    class Meta:
+        constraints = [
+            # enforced on save()
+            # useful for making sure any copies of a row can't be written to
+            # the database (would probably create some awful bugs)
+            models.UniqueConstraint(fields=["sheet", "name"], name="unique_toc"),
+        ]
+
 
 class Attachment(models.Model):
     sheet = models.ForeignKey(
