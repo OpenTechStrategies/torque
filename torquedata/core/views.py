@@ -116,22 +116,25 @@ def get_global_view_toc(request):
     # For each sheet, we load in the associated rows
     for config in configs:
         rows = config.sheet.clean_rows(config)
-        template = models.Template.objects.get(
+        line_template = models.Template.objects.get(
             sheet=config.sheet, type="TOC", is_default=True
         ).select_related("toc")
+
+        line_template_contents = line_template.template_file.read().decode("utf-8")
+        template_contents = global_toc.template.template_file.read().decode("utf-8")
 
         # For each row - we store the template rendering in toc_lines
         data[config.sheet.name] = {row[config.sheet.key_column]: row for row in rows}
         data["toc_lines"][config.sheet_name] = {
             {
-                row[sheet.key_column]: JinjaTemplate(template.template_file).render(
+                row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
                     {sheet.object_name: row}
                 )
                 for row in rows
             }
         }
 
-    return HttpResponse(JinjaTemplate(global_toc.template.template_file).render(data))
+    return HttpResponse(JinjaTemplate(global_toc).render(data))
 
 
 def get_toc(request, sheet_name, toc_name, fmt):
