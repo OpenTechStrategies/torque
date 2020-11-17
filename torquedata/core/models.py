@@ -177,7 +177,7 @@ class Template(models.Model):
         Spreadsheet, on_delete=models.CASCADE, related_name="templates"
     )
     wiki_key = models.TextField(null=True)
-    type = models.TextField()  # enumeration?
+    type = models.TextField(null=True)  # enumeration?
     name = models.TextField()
     is_default = models.BooleanField(default=False)
     template_file = models.FileField(upload_to="templates/", null=False, blank=False)

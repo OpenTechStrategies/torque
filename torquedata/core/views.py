@@ -345,18 +345,19 @@ def upload_toc(request):
     sheet = models.Spreadsheet.objects.get(name=request.POST["sheet_name"])
     template = models.Template(
         sheet=sheet,
-        type="TOC",
+        type=None,
         name=request.POST["toc_name"],
         template_file=request.FILES["template"],
     )
     template.save()
-    toc = models.TableOfContents(
+    models.TableOfContents.objects.update_or_create(
         sheet=sheet,
         name=request.POST["toc_name"],
-        json_file=request.FILES["json"].read().decode("utf-8"),
-        template=template,
+        defaults={
+            "json_file": request.FILES["json"].read().decode("utf-8"),
+            "template": template,
+        }
     )
-    toc.save()
 
     return HttpResponse(status=200)
 
