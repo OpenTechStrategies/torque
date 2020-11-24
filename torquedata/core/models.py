@@ -3,6 +3,7 @@ import hashlib
 import io
 import os
 import pathlib
+import json
 from django.db import models
 from django.conf import settings
 
@@ -122,6 +123,11 @@ class Row(models.Model):
 
             if cell.column.type == "list":
                 cell_value = cell_value.split("\n")
+            elif cell.column.type == "json":
+                if cell_value == "":
+                    cell_value = {}
+                else:
+                    cell_value = json.loads(cell_value)
 
             new_row[cell.column.name] = cell_value
         return new_row
