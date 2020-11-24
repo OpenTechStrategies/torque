@@ -24,7 +24,7 @@ class TorqueDataConnectHooks {
     if(!$wiki_key ||
         !(
           $wgTorqueDataConnectMultiWikiConfig &&
-          array_key_exists($wiki_key, $wgTorqueDataConnectMultiWikiConfig)
+          in_array($wiki_key, $wgTorqueDataConnectMultiWikiConfig)
         )) {
       $wiki_key = $wgTorqueDataConnectWikiKey;
     }

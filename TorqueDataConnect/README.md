@@ -44,7 +44,7 @@ wfLoadExtension('TorqueDataConnect');
 * `$wgTorqueDataConnectRenderToHTML` - Whether to render the wiki markup to HTML or not.  If
   TorqueDataConnect does the rendering, then things like inner tags will get parsed.  However,
   some users, especially API users, may want the wiki markup to do things like pdf rendering.
-* `$wgTorqueDataConnectMultiWikiConfig` - This is an associative array of `WikiKey` to `SheetName` as
+* `$wgTorqueDataConnectMultiWikiConfig` - This is an associative array of `SheetName` to `WikiKey` as
   above.  See [below](#MultiWiki support) for more information.
 
 ### WikiPage configuration
@@ -193,7 +193,7 @@ access Torque's control areas.  The view, when provided, will tell torquedata to
 render the page/toc with a specific view that was configured in the MainConfig.  If the
 `wiki_key` is included, it will use a different set of permissions for rendering, notably
 the ones configured by the wiki who defines the `$wgTorqueDataConnectWikiKey` to be the
-same as the `wiki_key` passed in here.  Requires `wiki_key` to be in
+same as the `wiki_key` passed in here.  Requires `wiki_key` to be a value in
 `$wgTorqueDataConnectMultiWikiConfig`
 
 ```
@@ -251,11 +251,11 @@ In order to fascilitate this, a number of things need to happen.
 ### Setting up configuration variables
 
 You need to add wikis to `$wgTorqueDataConnectMultiWikiConfig`, with the keys
-being the wiki key, while the values being the sheet that wiki key should be used for:
+being the sheet, while the values being the wiki key that should be used for the sheet:
 
 ```
-$wgTorqueDataConnectMultiWikiConfig["Wiki1"] = "Sheet1";
-$wgTorqueDataConnectMultiWikiConfig["Wiki2"] = "Sheet2";
+$wgTorqueDataConnectMultiWikiConfig["Sheet1"] = "Wiki1";
+$wgTorqueDataConnectMultiWikiConfig["Sheet2"] = "Wiki2";
 ```
 
 ### MainConfig file on the Meta Wiki

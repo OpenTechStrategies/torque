@@ -14,10 +14,19 @@ class TorqueDataConnectAttachment extends SpecialPage {
   }
 
   public function execute($subPage) {
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
+      $wgTorqueDataConnectMultiWikiConfig;
     $id = $this->getRequest()->getVal('id');
     $attachment = $this->getRequest()->getVal('attachment');
     $sheet_name = $this->getRequest()->getVal('sheet_name');
+
+    $wiki_key = $wgTorqueDataConnectWikiKey;
+
+    // If we're in multi wiki mode, set the wiki key for this sheet
+    if($wgTorqueDataConnectMultiWikiConfig &&
+       array_key_exists($sheet_name, $wgTorqueDataConnectMultiWikiConfig)) {
+      $wiki_key = $wgTorqueDataConnectMultiWikiConfig[$sheet_name];
+    }
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL,
@@ -31,7 +40,7 @@ class TorqueDataConnectAttachment extends SpecialPage {
       "?group=" .
       $wgTorqueDataConnectGroup .
       "&wiki_key=" .
-      $wgTorqueDataConnectWikiKey);
+      $wiki_key);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $resp = curl_exec ($ch);
 
