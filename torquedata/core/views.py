@@ -244,7 +244,7 @@ def get_attachment(request, sheet_name, key, attachment):
     )
     attachment = models.Attachment.objects.get(name=attachment_name, object_id=key)
 
-    if attachment.permissions_column not in sheet_config.valid_columns:
+    if attachment.permissions_column not in [c.name for c in sheet_config.valid_columns.all()]:
         raise Exception("Not permitted to see this attachment.")
 
     return FileResponse(attachment.file.open("rb"))
