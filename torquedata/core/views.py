@@ -242,9 +242,12 @@ def get_attachment(request, sheet_name, key, attachment):
         wiki_key=wiki_key,
         group=group,
     )
-    attachment = models.Attachment.objects.get(name=attachment_name, object_id=key)
+    row = sheet.rows.get(key=key)
+    attachment = models.Attachment.objects.get(name=attachment_name, row=row)
 
-    if attachment.permissions_column not in [c.name for c in sheet_config.valid_columns.all()]:
+    if not sheet_config.valid_columns.filter(
+        id=attachment.permissions_column.id
+    ).exists():
         raise Exception("Not permitted to see this attachment.")
 
     return FileResponse(attachment.file.open("rb"))
@@ -356,7 +359,7 @@ def upload_toc(request):
         defaults={
             "json_file": request.FILES["json"].read().decode("utf-8"),
             "template": template,
-        }
+        },
     )
 
     return HttpResponse(status=200)
@@ -366,11 +369,15 @@ def upload_toc(request):
 @require_http_methods(["POST"])
 def upload_attachment(request):
     sheet = models.Spreadsheet.objects.get(name=request.POST["sheet_name"])
+    permissions_column = models.Column.objects.get(
+        sheet=sheet, name=request.POST["permissions_column"]
+    )
+    row = sheet.rows.get(key=request.POST["object_id"])
     attachment = models.Attachment(
         sheet=sheet,
         name=request.POST["attachment_name"],
-        object_id=request.POST["object_id"],
-        permissions_column=request.POST["permissions_column"],
+        row=row,
+        permissions_column=permissions_column,
         file=request.FILES["attachment"],
     )
     attachment.save()

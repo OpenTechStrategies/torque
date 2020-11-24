@@ -110,7 +110,6 @@ class Row(models.Model):
     sheet = models.ForeignKey(
         Spreadsheet, on_delete=models.CASCADE, related_name="rows"
     )
-
     key = models.TextField()
     sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_ids")
 
@@ -162,7 +161,7 @@ class Column(models.Model):
 
 
 class Cell(models.Model):
-    column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="column")
+    column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="cells")
     original_value = models.TextField(null=True)
     latest_value = models.TextField(null=True)
     row = models.ForeignKey(Row, on_delete=models.CASCADE, related_name="cells")
@@ -218,8 +217,12 @@ class Attachment(models.Model):
         Spreadsheet, on_delete=models.CASCADE, related_name="attachments", default=None
     )
     name = models.TextField()
-    object_id = models.TextField()
-    permissions_column = models.TextField()  # Foreign key permission
+    row = models.ForeignKey(
+        Row, on_delete=models.CASCADE, related_name="attachments", default=None
+    )
+    permissions_column = models.ForeignKey(
+        Column, on_delete=models.CASCADE, related_name="attachments", default=None
+    )
     file = models.FileField(upload_to="attachments")
 
 
