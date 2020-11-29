@@ -12,7 +12,7 @@ data with changes as needed.
 
 You can get MediaWiki from their
 [download site](https://www.mediawiki.org/wiki/Download) or as part of your
-package manager.  Torque requires MediaWiki version 1.33 or greater.
+package manager.  Torque requires MediaWiki version 1.35 or greater.
 Then set it up normally, either through the web interface or the command
 line.  This will usually include an admin user.  The simplest way to get
 MediaWiki installed is to unpack the tar file that you downloaded into your
