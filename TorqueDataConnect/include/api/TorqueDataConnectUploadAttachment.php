@@ -11,8 +11,10 @@ class TorqueDataConnectUploadAttachment extends APIBase {
     # We use phpcurl here because it's really straightforward, and
     # research (stackoverflow) didn't produce a compelling native php method.
     $attachment = $this->getParameter("attachment");
+    $temp = tempnam(sys_get_temp_dir(), 'TDC');
+    file_put_contents($temp, $attachment->getStream()->getContents());
     $data = [
-      'attachment' => curl_file_create($attachment->getTempName()),
+      'attachment' => curl_file_create($temp),
       'sheet_name' => $this->getParameter("sheet_name"),
       'attachment_name' => $this->getParameter("attachment_name"),
       'permissions_column' => $this->getParameter("permissions_column"),
@@ -24,6 +26,7 @@ class TorqueDataConnectUploadAttachment extends APIBase {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_exec ($ch);
     curl_close ($ch);
+    unlink($temp);
   }
 
   public function mustBePosted() {

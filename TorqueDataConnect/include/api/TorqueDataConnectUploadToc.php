@@ -12,9 +12,13 @@ class TorqueDataConnectUploadToc extends APIBase {
     # research (stackoverflow) didn't produce a compelling native php method.
     $json = $this->getParameter("json");
     $template = $this->getParameter("template");
+    $jsontemp = tempnam(sys_get_temp_dir(), 'TDC');
+    $templatetemp = tempnam(sys_get_temp_dir(), 'TDC');
+    file_put_contents($jsontemp, $json->getStream()->getContents());
+    file_put_contents($templatetemp, $template->getStream()->getContents());
     $data = [
-      'json' => curl_file_create($json->getTempName()),
-      'template' => curl_file_create($template->getTempName()),
+      'json' => curl_file_create($jsontemp),
+      'template' => curl_file_create($templatetemp),
       'sheet_name' => $this->getParameter("sheet_name"),
       'toc_name' => $this->getParameter("toc_name")
     ];
@@ -24,6 +28,8 @@ class TorqueDataConnectUploadToc extends APIBase {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_exec ($ch);
     curl_close ($ch);
+    unlink($jsontemp);
+    unlink($templatetemp);
   }
 
   public function mustBePosted() {
