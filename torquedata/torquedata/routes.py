@@ -83,6 +83,7 @@ def sheet(sheet_name, fmt):
 def sheet_toc(sheet_name, toc_name, fmt):
     group = request.args.get("group")
     wiki_key = request.args.get("wiki_key")
+    config = sheet_config[sheet_name]
 
     if not group:
         abort(403, "Group " + group + " invalid")
@@ -95,9 +96,14 @@ def sheet_toc(sheet_name, toc_name, fmt):
         for o in cull_invalid_objects(group, sheet_name, wiki_key)
     ]
 
+    # Pull in edits
+    valid_objects = [
+        update_row_with_edits(o, sheet_name, o[config["key_column"]])
+        for o in valid_objects
+    ]
+
     if fmt == "mwiki":
         toc_str = ""
-        config = sheet_config[sheet_name]
         with open(
             os.path.join(
                 app.config["SPREADSHEET_FOLDER"], sheet_name, "tocs", toc_name + ".j2"
