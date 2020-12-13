@@ -11,6 +11,7 @@
   "torquedataconnect-data-config-alert": "Torque Data Configuration Alert!",
   "torquedataconnect-config-ne": "Config page $1 does not exist.",
   "torquedataconnect-config-ns": "Config page variable ($wgTorqueDataConnectConfigPage) not set.",
+  "torquedataconnect-config-it": "Template $1 is invalid, must be 'View', 'Raw View', 'TOC', or 'Search'",
   "torquedataconnect-apiaccesslog": "Torque Api Access Log",
   "torquedataconnect-apiaccesslog-header": "Logs events happening in the torque system regarding api access",
   "torquedataconnect-datachangeslog": "Torque Data Changes Log",

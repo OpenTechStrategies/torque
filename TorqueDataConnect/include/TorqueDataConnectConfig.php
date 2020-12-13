@@ -1,6 +1,7 @@
 <?php
 class TorqueDataConnectConfig {
   private static $errors = [];
+  private static $validTemplateTypes = ["View", "TOC", "Search", "Raw View"];
 
   public static function convertPageToColumnConfig($page) {
     $title = Title::newFromText($page);
@@ -78,6 +79,12 @@ class TorqueDataConnectConfig {
       "/" .
       $wgTorqueDataConnectWikiKey .
       "/template");
+
+    // Raw View is a special type that's a view that's treated differently on the mediawiki side
+    if($templateType == "Raw View") {
+      $templateType = "View";
+    }
+
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
       [
         "name" => $templateName,
@@ -187,11 +194,16 @@ class TorqueDataConnectConfig {
             $templatePage = $matches[1];
           } else if(!$templateType) {
             $templateType = $line;
-            array_push($templateConfig, [
-              "templateName" => $templateName,
-              "templatePage" => $templatePage,
-              "templateType" => $templateType
-            ]);
+
+            if(in_array($templateType, self::$validTemplateTypes)) {
+              array_push($templateConfig, [
+                "templateName" => $templateName,
+                "templatePage" => $templatePage,
+                "templateType" => $templateType
+              ]);
+            } else {
+              array_push(self::$errors, wfMessage("torquedataconnect-config-it", $templateType)->parse());
+            }
           } else {
             // Do nothing here, since a fourth column is ok for user notes if they like
           }
@@ -265,6 +277,16 @@ class TorqueDataConnectConfig {
       }
     }
     return $views;
+  }
+
+  public static function isRawView($view) {
+    [$groupConfig, $templateConfig] = TorqueDataConnectConfig::parseConfig();
+    foreach($templateConfig as $config) {
+      if($config["templateName"] == $view && $config["templateType"] == "Raw View") {
+        return true;
+      }
+    }
+    return false;
   }
 
   public static function getCurrentView() {

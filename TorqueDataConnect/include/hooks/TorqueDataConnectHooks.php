@@ -48,7 +48,7 @@ class TorqueDataConnectHooks {
     if(!$contents) {
       global $wgTorqueDataConnectNotFoundMessage;
       return $wgTorqueDataConnectNotFoundMessage;
-    } else if($wgTorqueDataConnectRaw) {
+    } else if($wgTorqueDataConnectRaw || TorqueDataConnectConfig::isRawView($view)) {
       # We need to remove newlines and extra spaces because mediawiki adds a bunch of
       # <p> tags # when it hits them.  Since we want the output to be completely raw,
       # we trick mediawiki into doing just that by putting it all on one line

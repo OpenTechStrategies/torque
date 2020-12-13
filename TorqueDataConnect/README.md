@@ -114,7 +114,7 @@ In the "Permissions" table, the columns are:
 In the "Templates" table the three columns must be:
 * The template Name
 * A link to a wiki page which is a Jinja template file
-* The template type, which must be 'Search', 'TOC', or 'View'
+* The template type, which must be 'Search', 'TOC', 'View', or 'Raw View'
   * At this time, Search can really only have one template, but that may change in the future
   * The types are as follows:
     * Search: Search results are passed through this template before displaying on the results page
@@ -124,6 +124,10 @@ In the "Templates" table the three columns must be:
     * View: Different views for the page.  Having multiple leads to a dropdown on the sidebar
       allowing the user to choose what way they'd like to show the data.  It also allows the
       wiki page writers to choose the template to view a given `tdcrender` call with.
+    * Raw View: The same as View, but instead is raw html.  Use this when the template isn't
+      returning wiki text, but rather html that should just be put right out to the screen.
+      As a warning, this html is not sanitized, so ensure that the template lives in a protected
+      section of the wiki.
 
 ## Usage
 
