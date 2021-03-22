@@ -346,12 +346,12 @@ def upload_sheet(request):
 @require_http_methods(["POST"])
 def upload_toc(request):
     sheet = models.Spreadsheet.objects.get(name=request.POST["sheet_name"])
-    template = models.Template(
+    (template, created) = models.Template.objects.update_or_create(
         sheet=sheet,
-        type=None,
+        type="uploaded_template",
         name=request.POST["toc_name"],
-        template_file=request.FILES["template"],
     )
+    template.template_file = request.FILES["template"]
     template.save()
     models.TableOfContents.objects.update_or_create(
         sheet=sheet,
@@ -373,13 +373,13 @@ def upload_attachment(request):
         sheet=sheet, name=request.POST["permissions_column"]
     )
     row = sheet.rows.get(key=request.POST["object_id"])
-    attachment = models.Attachment(
+    (attachment, changed) = models.Attachment.objects.update_or_create(
         sheet=sheet,
         name=request.POST["attachment_name"],
         row=row,
-        permissions_column=permissions_column,
-        file=request.FILES["attachment"],
     )
+    attachment.file = request.FILES["attachment"]
+    attachment.permissions_column = permissions_column
     attachment.save()
 
     return HttpResponse(status=200)

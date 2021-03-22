@@ -190,6 +190,13 @@ class Template(models.Model):
     def get_file_contents(self):
         return b"".join(self.template_file.open().readlines()).decode("utf-8")
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["sheet", "type", "name"], name="unique_template"
+            ),
+        ]
+
 
 class TableOfContents(models.Model):
     sheet = models.ForeignKey(
@@ -224,6 +231,13 @@ class Attachment(models.Model):
         Column, on_delete=models.CASCADE, related_name="attachments", default=None
     )
     file = models.FileField(upload_to="attachments")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["sheet", "row", "name"], name="unique_attachment"
+            ),
+        ]
 
 
 class User(models.Model):

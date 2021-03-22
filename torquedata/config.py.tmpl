@@ -7,3 +7,8 @@ POSTGRES_DB_PASSWORD="__DATABASE_PASSWORD__"
 # https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-SECRET_KEY
 SECRET_KEY="__RANDOM_SECRET_KEY__"
 
+# This is where uploaded files go (like attachments).
+# See https://docs.djangoproject.com/en/3.1/ref/settings/#media-root
+# 
+# Note: Leaving this as is will probably clutter up your checkout
+MEDIA_ROOT=os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
