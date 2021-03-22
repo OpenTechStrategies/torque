@@ -280,7 +280,7 @@ def set_group_config(request, sheet_name, wiki_key):
 
     config.save()
 
-    valid_rows = models.Row.objects.filter(key__in=new_config.get("valid_ids"))
+    valid_rows = models.Row.objects.filter(sheet=sheet, key__in=new_config.get("valid_ids"))
     valid_columns = models.Column.objects.filter(name__in=new_config.get("columns"))
     config.valid_ids.add(*valid_rows)
     config.valid_columns.add(*valid_columns)
@@ -377,9 +377,9 @@ def upload_attachment(request):
         sheet=sheet,
         name=request.POST["attachment_name"],
         row=row,
+        permissions_column=permissions_column,
     )
     attachment.file = request.FILES["attachment"]
-    attachment.permissions_column = permissions_column
     attachment.save()
 
     return HttpResponse(status=200)
