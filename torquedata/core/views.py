@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.postgres.search import SearchVector
 from jinja2 import Template as JinjaTemplate
 from core import models
 
@@ -18,7 +19,7 @@ def search(q, template_config, sheet_configs):
             wiki_key__in=sheet_configs.values_list("wiki_key", flat=True),
             group__in=sheet_configs.values_list("group", flat=True),
             sheet_config__in=sheet_configs,
-            data__search=q,
+            data_vector=q,
         )
         .select_related("row")
         .select_related("sheet")
@@ -280,13 +281,20 @@ def set_group_config(request, sheet_name, wiki_key):
 
     config.save()
 
-    valid_rows = models.Row.objects.filter(sheet=sheet, key__in=new_config.get("valid_ids"))
+    valid_rows = models.Row.objects.filter(
+        sheet=sheet, key__in=new_config.get("valid_ids")
+    )
     valid_columns = models.Column.objects.filter(name__in=new_config.get("columns"))
     config.valid_ids.add(*valid_rows)
     config.valid_columns.add(*valid_columns)
 
     config.create_search_index(sheet)
 
+    return HttpResponse(status=200)
+
+
+def complete_config(request, sheet_name, wiki_key):
+    models.SearchCacheRow.objects.update(data_vector=SearchVector("data"))
     return HttpResponse(status=200)
 
 

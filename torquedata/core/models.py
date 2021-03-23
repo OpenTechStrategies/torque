@@ -7,6 +7,10 @@ import json
 from django.db import models
 from django.conf import settings
 
+from django.contrib.postgres.search import SearchVector
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
+
 
 class Spreadsheet(models.Model):
     """ An uploaded CSV file """
@@ -258,6 +262,10 @@ class SearchCacheRow(models.Model):
     wiki_key = models.TextField()
     group = models.TextField()
     data = models.TextField()
+    data_vector = SearchVectorField(null=True)
+
+    class Meta:
+        indexes = (GinIndex(fields=["data_vector"]),)
 
 
 class PermissionGroup(models.Model):

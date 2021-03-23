@@ -11,6 +11,7 @@ urlpatterns = [
     path("api/<sheet_name>/edit-record/<key>", views.edit_record),
     path("api/<sheet_name>/attachment/<key>/<attachment>", views.get_attachment),
     path("config/<sheet_name>/<wiki_key>/reset", views.reset_config),
+    path("config/<sheet_name>/<wiki_key>/complete", views.complete_config),
     path("config/<sheet_name>/<wiki_key>/group", views.set_group_config),
     path("config/<sheet_name>/<wiki_key>/template", views.set_template_config),
     path("upload/sheet", views.upload_sheet),
