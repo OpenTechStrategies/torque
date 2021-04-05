@@ -257,7 +257,7 @@ def get_attachment(request, sheet_name, key, attachment):
 def reset_config(request, sheet_name, wiki_key):
     models.SheetConfig.objects.filter(
         sheet__name=sheet_name, wiki_key=wiki_key
-    ).delete()
+    ).update(in_config=False)
     models.Template.objects.filter(sheet__name=sheet_name, wiki_key=wiki_key).delete()
 
     return HttpResponse(status=200)
@@ -266,6 +266,8 @@ def reset_config(request, sheet_name, wiki_key):
 @csrf_exempt
 @require_http_methods(["POST"])
 def set_group_config(request, sheet_name, wiki_key):
+    import hashlib
+
     new_config = json.loads(request.body)
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
 
@@ -274,27 +276,42 @@ def set_group_config(request, sheet_name, wiki_key):
             sheet__name=sheet_name, wiki_key=wiki_key, group=new_config["group"]
         )
     except models.SheetConfig.DoesNotExist:
-        # create if does not exist
+        config = None
+
+    permissions_sha = hashlib.sha224(
+            sheet_name.encode("utf-8")
+            + str(new_config.get("valid_ids")).encode("utf-8")
+            + str(new_config.get("columns")).encode("utf-8")
+            ).hexdigest()
+
+    if config is None or permissions_sha != config.search_cache_sha:
+        if config is not None:
+            config.delete()
+
         config = models.SheetConfig(
-            sheet=sheet, wiki_key=wiki_key, group=new_config["group"]
+            sheet=sheet, wiki_key=wiki_key, group=new_config["group"], search_cache_sha=permissions_sha
         )
+        valid_rows = models.Row.objects.filter(
+            sheet=sheet, key__in=new_config.get("valid_ids")
+        )
+        valid_columns = models.Column.objects.filter(name__in=new_config.get("columns"))
+        config.save()
+        config.valid_ids.add(*valid_rows)
+        config.valid_columns.add(*valid_columns)
 
+        config.create_search_index(sheet)
+
+    config.in_config = True
     config.save()
-
-    valid_rows = models.Row.objects.filter(
-        sheet=sheet, key__in=new_config.get("valid_ids")
-    )
-    valid_columns = models.Column.objects.filter(name__in=new_config.get("columns"))
-    config.valid_ids.add(*valid_rows)
-    config.valid_columns.add(*valid_columns)
-
-    config.create_search_index(sheet)
 
     return HttpResponse(status=200)
 
 
 def complete_config(request, sheet_name, wiki_key):
-    models.SearchCacheRow.objects.update(data_vector=SearchVector("data"))
+    models.SheetConfig.objects.filter(
+        sheet__name=sheet_name, wiki_key=wiki_key, in_config=False
+    ).delete()
+
     return HttpResponse(status=200)
 
 

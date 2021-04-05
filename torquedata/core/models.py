@@ -89,6 +89,24 @@ class SheetConfig(models.Model):
     wiki_key = models.TextField()
     group = models.TextField()
 
+    # This field holds a hash of the valid ids/valid columns for this group
+    # The reason is to quickly check to see if this group has been created
+    # identically before now.  Updating a group is an expensive operation
+    # due to the search cache needing to be re-created andd re-indexed, so
+    # this is a quick way to see if we actually need to do that.
+    search_cache_sha = models.CharField(max_length=255, default="")
+
+    # This is the second part of the above field.  When resetting the config,
+    # we need to note which groups should be removed at the end in the case
+    # that they were removed from the configuration.
+    #
+    # This is highly NOT threadsafe, and will probably cause annoying problems
+    # if two people are messing around with the configurations at the same time.
+    #
+    # Fortunately, that is highly unlikely, and the only real downside is that
+    # the search cache has to be re-indexed, which is not a catastrophic error.
+    in_config = models.BooleanField(default=False)
+
     def create_search_index(self, sheet):
         sc_rows = []
         for row_dict in sheet.clean_rows(self):
@@ -106,6 +124,7 @@ class SheetConfig(models.Model):
                 )
 
         SearchCacheRow.objects.bulk_create(sc_rows)
+        SearchCacheRow.objects.filter(sheet_config=self).update(data_vector=SearchVector("data"))
 
 
 class Row(models.Model):
