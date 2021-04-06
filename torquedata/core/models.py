@@ -107,6 +107,9 @@ class SheetConfig(models.Model):
     # the search cache has to be re-indexed, which is not a catastrophic error.
     in_config = models.BooleanField(default=False)
 
+    def delete_search_index(self):
+        SearchCacheRow.objects.filter(sheet_config=self).delete()
+
     def create_search_index(self, sheet):
         sc_rows = []
         for row_dict in sheet.clean_rows(self):

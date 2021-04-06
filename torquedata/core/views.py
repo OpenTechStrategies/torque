@@ -364,6 +364,16 @@ def upload_sheet(request):
             file=f,
         )
     sheet.save()
+
+    # Regenerate search caches in case data has changed.  We assume that the
+    # cache is invalid, making uploading a sheet be a very expensive operation,
+    # but that's probably better than attempting to analyze cache invalidation
+    # and failing.
+
+    for config in models.SheetConfig.objects.filter(sheet=sheet):
+        config.delete_search_index()
+        config.create_search_index(sheet)
+
     return HttpResponse(status=200)
 
 
