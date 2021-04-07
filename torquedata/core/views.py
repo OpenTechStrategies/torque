@@ -73,7 +73,6 @@ def edit_record(request, sheet_name, key):
     wiki_key = post_fields["wiki_key"]
     new_values = json.loads(post_fields["new_values"])
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
-    config = models.SheetConfig.objects.get(sheet=sheet, wiki_key=wiki_key, group=group)
     row = models.Row.objects.get(sheet=sheet, key=key)
 
     for field, val in new_values.items():
@@ -81,7 +80,7 @@ def edit_record(request, sheet_name, key):
         cell.latest_value = val
         cell.save()
         edit_record = models.CellEdit(
-            config=config, cell=cell, value=val, message="", edit_timestamp=datetime.now
+            sheet=sheet, cell=cell, value=val, message="", edit_timestamp=datetime.now, wiki_key=wiki_key
         )
         edit_record.save()
 

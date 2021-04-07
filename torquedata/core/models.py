@@ -195,11 +195,12 @@ class Cell(models.Model):
 
 class CellEdit(models.Model):
     cell = models.ForeignKey(Cell, on_delete=models.CASCADE, related_name="edits")
-    value = models.CharField(max_length=255)
+    value = models.TextField()
     message = models.CharField(max_length=255, null=True)
     edit_timestamp = models.DateTimeField(auto_now=True)
     approval_timestamp = models.DateTimeField(null=True)
-    config = models.ForeignKey(SheetConfig, on_delete=models.CASCADE)
+    sheet = models.ForeignKey(Spreadsheet, on_delete=models.CASCADE)
+    wiki_key = models.TextField(null=True)
     approval_code = models.CharField(max_length=255, null=True)
 
 
