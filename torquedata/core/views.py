@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.postgres.search import SearchVector
 from jinja2 import Template as JinjaTemplate
 from core import models
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 
 
 def search(q, template_config, sheet_configs):
@@ -23,11 +24,16 @@ def search(q, template_config, sheet_configs):
         )
         .select_related("row")
         .select_related("sheet")
+        .annotate(rank=SearchRank(SearchVector('data'), SearchQuery(q)))
+        .order_by("-rank")
     )
 
-    resp = f"== {results.count()} results for '{q}' == \n\n"
+    addendum = ""
+    if results.count() > 100:
+        addendum = " (showing top 100)"
+    resp = f"== {results.count()} results for '{q}'{addendum} == \n\n"
 
-    for result in results:
+    for result in results[:100]:
         template = JinjaTemplate(
             models.Template.objects.get(
                 name="Search", sheet=template_config.sheet

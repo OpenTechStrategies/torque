@@ -22,10 +22,19 @@ class Spreadsheet(models.Model):
     def clean_rows(self, config):
         # return a reduced list of rows based on permissions defined in config
         # (SheetConfig instance)
-        new_rows = []
-        for row in config.valid_ids.all():
-            new_rows.append(row.to_dict(config))
-        return new_rows
+        new_rows = {}
+        for cell in (
+            Cell.objects.filter(
+                row__in=config.valid_ids.all(), column__in=config.valid_columns.all()
+            )
+            .prefetch_related("column")
+            .prefetch_related("row")
+            .all()
+        ):
+            if cell.row.id not in new_rows:
+                new_rows[cell.row.id] = {"key": cell.row.key}
+            new_rows[cell.row.id][cell.column.name] = cell.formatted_value()
+        return new_rows.values()
 
     @classmethod
     def from_csv(cls, name, object_name, key_column, file):
@@ -40,6 +49,17 @@ class Spreadsheet(models.Model):
         cols = {}
         rows = []
         cells = []
+        sheet_cells = {}
+        for cell in (
+            Cell.objects.filter(row__in=Row.objects.filter(sheet=sheet))
+            .prefetch_related("column")
+            .prefetch_related("row")
+        ):
+            if cell.row not in sheet_cells:
+                sheet_cells[cell.row] = {}
+            if cell.column not in sheet_cells[cell.row]:
+                sheet_cells[cell.row][cell.column] = cell
+
         for row_number, line in enumerate(reader):
             if row_number == 0:
                 # Generate columns
@@ -60,14 +80,15 @@ class Spreadsheet(models.Model):
             row.save()
             rows.append(row)
             for col_name, cell_value in line.items():
-                try:
-                    cell = Cell.objects.get(row=row, column=cols[col_name])
+                # found_cell = None
+                if row in sheet_cells and cols[col_name] in sheet_cells[row]:
+                    cell = sheet_cells[row][cols[col_name]]
                     # Only update for cells whose value has changed
                     if cell.original_value != cell_value:
                         cell.original_value = cell_value
                         cell.latest_value = cell_value
                         cell.save()
-                except Cell.DoesNotExist:
+                else:
                     cell = Cell(
                         column=cols[col_name],
                         original_value=cell_value,
@@ -127,7 +148,9 @@ class SheetConfig(models.Model):
                 )
 
         SearchCacheRow.objects.bulk_create(sc_rows)
-        SearchCacheRow.objects.filter(sheet_config=self).update(data_vector=SearchVector("data"))
+        SearchCacheRow.objects.filter(sheet_config=self).update(
+            data_vector=SearchVector("data")
+        )
 
 
 class Row(models.Model):
@@ -141,20 +164,12 @@ class Row(models.Model):
 
     def to_dict(self, config):
         new_row = {"key": self.key}
-        for cell in self.cells.filter(
-            column__in=config.valid_columns.all()
-        ).select_related("column"):
-            cell_value = cell.latest_value
+        valid_columns = config.valid_columns.all()
+        for cell in self.cells.filter(column__in=valid_columns).select_related(
+            "column"
+        ):
+            new_row[cell.column.name] = cell.formatted_value()
 
-            if cell.column.type == "list":
-                cell_value = cell_value.split("\n")
-            elif cell.column.type == "json":
-                if cell_value == "":
-                    cell_value = {}
-                else:
-                    cell_value = json.loads(cell_value)
-
-            new_row[cell.column.name] = cell_value
         return new_row
 
     def __getitem__(self, key):
@@ -191,6 +206,19 @@ class Cell(models.Model):
     original_value = models.TextField(null=True)
     latest_value = models.TextField(null=True)
     row = models.ForeignKey(Row, on_delete=models.CASCADE, related_name="cells")
+
+    def formatted_value(self):
+        cell_value = self.latest_value
+
+        if self.column.type == "list":
+            cell_value = cell_value.split("\n")
+        elif self.column.type == "json":
+            if cell_value == "":
+                cell_value = {}
+            else:
+                cell_value = json.loads(cell_value)
+
+        return cell_value
 
 
 class CellEdit(models.Model):
