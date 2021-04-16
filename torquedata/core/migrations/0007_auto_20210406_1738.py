@@ -7,23 +7,27 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0006_auto_20210323_1623'),
+        ("core", "0006_auto_20210323_1623"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='celledit',
-            name='config',
+            model_name="celledit",
+            name="config",
         ),
         migrations.AddField(
-            model_name='celledit',
-            name='sheet',
-            field=models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, to='core.spreadsheet'),
+            model_name="celledit",
+            name="sheet",
+            field=models.ForeignKey(
+                default=0,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="core.spreadsheet",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='celledit',
-            name='wiki_key',
+            model_name="celledit",
+            name="wiki_key",
             field=models.TextField(null=True),
         ),
     ]

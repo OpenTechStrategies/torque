@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0005_auto_20210323_1303'),
+        ("core", "0005_auto_20210323_1303"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='sheetconfig',
-            name='in_config',
+            model_name="sheetconfig",
+            name="in_config",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='sheetconfig',
-            name='search_cache_sha',
-            field=models.CharField(default='', max_length=255),
+            model_name="sheetconfig",
+            name="search_cache_sha",
+            field=models.CharField(default="", max_length=255),
         ),
     ]

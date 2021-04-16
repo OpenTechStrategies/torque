@@ -323,7 +323,9 @@ class SearchCacheRow(models.Model):
 
 
 class TableOfContentsCache(models.Model):
-    sheet_config = models.ForeignKey(SheetConfig, on_delete=models.CASCADE, related_name="cached_tocs")
+    sheet_config = models.ForeignKey(
+        SheetConfig, on_delete=models.CASCADE, related_name="cached_tocs"
+    )
     toc = models.ForeignKey(TableOfContents, on_delete=models.CASCADE)
     dirty = models.BooleanField(default=True)
     rendered_data = models.TextField()

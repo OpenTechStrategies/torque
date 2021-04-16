@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0008_auto_20210406_1909'),
+        ("core", "0008_auto_20210406_1909"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='sheetconfig',
-            name='search_cache_dirty',
+            model_name="sheetconfig",
+            name="search_cache_dirty",
             field=models.BooleanField(default=False),
         ),
     ]

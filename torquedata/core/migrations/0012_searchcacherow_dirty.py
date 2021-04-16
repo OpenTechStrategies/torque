@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0011_auto_20210416_1739'),
+        ("core", "0011_auto_20210416_1739"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='searchcacherow',
-            name='dirty',
+            model_name="searchcacherow",
+            name="dirty",
             field=models.BooleanField(default=False),
         ),
     ]

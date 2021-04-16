@@ -1,1 +1,1 @@
-default_app_config = 'cache_rebuilder.apps.CacheRebuilderConfig'
+default_app_config = "cache_rebuilder.apps.CacheRebuilderConfig"

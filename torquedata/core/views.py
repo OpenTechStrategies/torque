@@ -25,7 +25,7 @@ def search(q, template_config, sheet_configs):
         )
         .select_related("row")
         .select_related("sheet")
-        .annotate(rank=SearchRank(SearchVector('data'), SearchQuery(q)))
+        .annotate(rank=SearchRank(SearchVector("data"), SearchQuery(q)))
         .order_by("-rank")
     )
 
@@ -87,11 +87,18 @@ def edit_record(request, sheet_name, key):
         cell.latest_value = val
         cell.save()
         edit_record = models.CellEdit(
-            sheet=sheet, cell=cell, value=val, message="", edit_timestamp=datetime.now, wiki_key=wiki_key
+            sheet=sheet,
+            cell=cell,
+            value=val,
+            message="",
+            edit_timestamp=datetime.now,
+            wiki_key=wiki_key,
         )
         edit_record.save()
 
-    models.TableOfContentsCache.objects.filter(toc__in=sheet.tables_of_contents.all()).update(dirty=True)
+    models.TableOfContentsCache.objects.filter(
+        toc__in=sheet.tables_of_contents.all()
+    ).update(dirty=True)
     models.SearchCacheRow.objects.filter(row=row).update(dirty=True)
 
     return HttpResponse(201)
@@ -240,9 +247,9 @@ def get_attachment(request, sheet_name, key, attachment):
 
 
 def reset_config(request, sheet_name, wiki_key):
-    models.SheetConfig.objects.filter(
-        sheet__name=sheet_name, wiki_key=wiki_key
-    ).update(in_config=False)
+    models.SheetConfig.objects.filter(sheet__name=sheet_name, wiki_key=wiki_key).update(
+        in_config=False
+    )
     models.Template.objects.filter(sheet__name=sheet_name, wiki_key=wiki_key).delete()
 
     return HttpResponse(status=200)
@@ -264,10 +271,10 @@ def set_group_config(request, sheet_name, wiki_key):
         config = None
 
     permissions_sha = hashlib.sha224(
-            sheet_name.encode("utf-8")
-            + str(new_config.get("valid_ids")).encode("utf-8")
-            + str(new_config.get("columns")).encode("utf-8")
-            ).hexdigest()
+        sheet_name.encode("utf-8")
+        + str(new_config.get("valid_ids")).encode("utf-8")
+        + str(new_config.get("columns")).encode("utf-8")
+    ).hexdigest()
 
     if config is None or permissions_sha != config.search_cache_sha:
         if config is not None:
@@ -281,8 +288,7 @@ def set_group_config(request, sheet_name, wiki_key):
 
             for toc in sheet.tables_of_contents.all():
                 (cache, created) = models.TableOfContentsCache.objects.update_or_create(
-                    toc=toc,
-                    sheet_config=config
+                    toc=toc, sheet_config=config
                 )
                 cache.dirty = True
                 cache.save()

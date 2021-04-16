@@ -6,12 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0010_tableofcontentscache'),
+        ("core", "0010_tableofcontentscache"),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='tableofcontentscache',
-            constraint=models.UniqueConstraint(fields=('sheet_config', 'toc'), name='unique_toc_cache'),
+            model_name="tableofcontentscache",
+            constraint=models.UniqueConstraint(
+                fields=("sheet_config", "toc"), name="unique_toc_cache"
+            ),
         ),
     ]

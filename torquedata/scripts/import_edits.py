@@ -28,7 +28,8 @@ def run(*args):
                             value=edit["new_value"],
                             edit_timestamp=edit["edit_timestamp"],
                             wiki_key=edit["wiki_key"],
-                            message="")
+                            message="",
+                        )
                         edit_record.save()
                         cell.latest_value = edit["new_value"]
                         cell.save()

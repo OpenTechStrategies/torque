@@ -7,18 +7,39 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0009_sheetconfig_search_cache_dirty'),
+        ("core", "0009_sheetconfig_search_cache_dirty"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TableOfContentsCache',
+            name="TableOfContentsCache",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('dirty', models.BooleanField(default=True)),
-                ('rendered_data', models.TextField()),
-                ('sheet_config', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cached_tocs', to='core.sheetconfig')),
-                ('toc', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.tableofcontents')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("dirty", models.BooleanField(default=True)),
+                ("rendered_data", models.TextField()),
+                (
+                    "sheet_config",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="cached_tocs",
+                        to="core.sheetconfig",
+                    ),
+                ),
+                (
+                    "toc",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.tableofcontents",
+                    ),
+                ),
             ],
         ),
     ]
