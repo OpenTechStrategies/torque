@@ -11,6 +11,8 @@ from django.contrib.postgres.search import SearchVector
 from django.contrib.postgres.search import SearchVectorField
 from django.contrib.postgres.indexes import GinIndex
 
+from jinja2 import Template as JinjaTemplate
+
 
 class Spreadsheet(models.Model):
     """ An uploaded CSV file """
@@ -128,18 +130,18 @@ class SheetConfig(models.Model):
     # the search cache has to be re-indexed, which is not a catastrophic error.
     in_config = models.BooleanField(default=False)
 
-    def delete_search_index(self):
-        SearchCacheRow.objects.filter(sheet_config=self).delete()
+    search_cache_dirty = models.BooleanField(default=False)
 
-    def create_search_index(self, sheet):
+    def rebuild_search_index(self):
+        SearchCacheRow.objects.filter(sheet_config=self).delete()
         sc_rows = []
-        for row_dict in sheet.clean_rows(self):
-            row = Row.objects.get(key=row_dict["key"], sheet=sheet)
+        for row_dict in self.sheet.clean_rows(self):
+            row = Row.objects.get(key=row_dict["key"], sheet=self.sheet)
             if not SearchCacheRow.objects.filter(row=row, sheet_config=self).exists():
                 sc_rows.append(
                     SearchCacheRow(
                         row=row,
-                        sheet=sheet,
+                        sheet=self.sheet,
                         wiki_key=self.wiki_key,
                         group=self.group,
                         sheet_config=self,
@@ -314,9 +316,51 @@ class SearchCacheRow(models.Model):
     group = models.TextField()
     data = models.TextField()
     data_vector = SearchVectorField(null=True)
+    dirty = models.BooleanField(default=False)
 
     class Meta:
         indexes = (GinIndex(fields=["data_vector"]),)
+
+
+class TableOfContentsCache(models.Model):
+    sheet_config = models.ForeignKey(SheetConfig, on_delete=models.CASCADE, related_name="cached_tocs")
+    toc = models.ForeignKey(TableOfContents, on_delete=models.CASCADE)
+    dirty = models.BooleanField(default=True)
+    rendered_data = models.TextField()
+
+    def rebuild(self):
+        sheet = self.sheet_config.sheet
+        rows = sheet.clean_rows(self.sheet_config)
+
+        data = json.loads(self.toc.json_file)
+        data[sheet.name] = {row[sheet.key_column]: row for row in rows}
+
+        toc_templates = Template.objects.filter(
+            sheet=sheet,
+            wiki_key=self.sheet_config.wiki_key,
+            type="TOC",
+        )
+        line_template = toc_templates.get(is_default=True)
+
+        line_template_contents = line_template.template_file.read().decode("utf-8")
+        template_contents = self.toc.template.template_file.read().decode("utf-8")
+
+        data["toc_lines"] = {
+            row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
+                {sheet.object_name: row}
+            )
+            for row in rows
+        }
+        self.rendered_data = JinjaTemplate(template_contents).render(data)
+
+        self.save()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["sheet_config", "toc"], name="unique_toc_cache"
+            ),
+        ]
 
 
 class PermissionGroup(models.Model):

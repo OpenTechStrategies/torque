@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "django_extensions",
     "core",
+    "cache_rebuilder",
 ]
 
 MIDDLEWARE = [

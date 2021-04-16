@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 from django.core.files.base import ContentFile
 from django.db.models import Q
+from django.db import transaction
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -90,6 +91,9 @@ def edit_record(request, sheet_name, key):
         )
         edit_record.save()
 
+    models.TableOfContentsCache.objects.filter(toc__in=sheet.tables_of_contents.all()).update(dirty=True)
+    models.SearchCacheRow.objects.filter(row=row).update(dirty=True)
+
     return HttpResponse(201)
 
 
@@ -161,33 +165,9 @@ def get_toc(request, sheet_name, toc_name, fmt):
         return HttpResponse(status=403)
 
     toc = models.TableOfContents.objects.get(sheet=sheet, name=toc_name)
+    cached_toc = sheet_config.cached_tocs.get(toc=toc)
 
-    rows = sheet.clean_rows(sheet_config)
-
-    data = json.loads(toc.json_file)
-    data[sheet.name] = {row[sheet.key_column]: row for row in rows}
-
-    toc_templates = models.Template.objects.filter(
-        sheet=sheet,
-        wiki_key=wiki_key,
-        type="TOC",
-    )
-    try:
-        line_template = toc_templates.get(name=request.GET.get("view"))
-    except models.Template.DoesNotExist:
-        line_template = toc_templates.get(is_default=True)
-
-    line_template_contents = line_template.template_file.read().decode("utf-8")
-    template_contents = toc.template.template_file.read().decode("utf-8")
-
-    data["toc_lines"] = {
-        row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
-            {sheet.object_name: row}
-        )
-        for row in rows
-    }
-
-    return HttpResponse(JinjaTemplate(template_contents).render(data))
+    return HttpResponse(cached_toc.rendered_data)
 
 
 def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
@@ -291,11 +271,24 @@ def set_group_config(request, sheet_name, wiki_key):
 
     if config is None or permissions_sha != config.search_cache_sha:
         if config is not None:
-            config.delete()
+            config.valid_ids.clear()
+            config.valid_columns.clear()
+        else:
+            config = models.SheetConfig(
+                sheet=sheet, wiki_key=wiki_key, group=new_config["group"]
+            )
+            config.save()
 
-        config = models.SheetConfig(
-            sheet=sheet, wiki_key=wiki_key, group=new_config["group"], search_cache_sha=permissions_sha
-        )
+            for toc in sheet.tables_of_contents.all():
+                (cache, created) = models.TableOfContentsCache.objects.update_or_create(
+                    toc=toc,
+                    sheet_config=config
+                )
+                cache.dirty = True
+                cache.save()
+
+        config.search_cache_sha = permissions_sha
+
         valid_rows = models.Row.objects.filter(
             sheet=sheet, key__in=new_config.get("valid_ids")
         )
@@ -303,8 +296,7 @@ def set_group_config(request, sheet_name, wiki_key):
         config.save()
         config.valid_ids.add(*valid_rows)
         config.valid_columns.add(*valid_columns)
-
-        config.create_search_index(sheet)
+        config.search_cache_dirty = True
 
     config.in_config = True
     config.save()
@@ -376,8 +368,8 @@ def upload_sheet(request):
     # and failing.
 
     for config in models.SheetConfig.objects.filter(sheet=sheet):
-        config.delete_search_index()
-        config.create_search_index(sheet)
+        config.search_cache_dirty = True
+        config.save()
 
     return HttpResponse(status=200)
 
@@ -393,7 +385,7 @@ def upload_toc(request):
     )
     template.template_file = request.FILES["template"]
     template.save()
-    models.TableOfContents.objects.update_or_create(
+    (toc, created) = models.TableOfContents.objects.update_or_create(
         sheet=sheet,
         name=request.POST["toc_name"],
         defaults={
@@ -401,6 +393,14 @@ def upload_toc(request):
             "template": template,
         },
     )
+
+    for config in sheet.configs.all():
+        (cache, created) = models.TableOfContentsCache.objects.update_or_create(
+            toc=toc,
+            sheet_config=config,
+        )
+        cache.dirty = True
+        cache.save()
 
     return HttpResponse(status=200)
 
