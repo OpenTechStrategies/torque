@@ -421,7 +421,7 @@ def upload_attachment(request):
     row = sheet.rows.get(key=request.POST["object_id"])
     (attachment, changed) = models.Attachment.objects.update_or_create(
         sheet=sheet,
-        name=request.POST["attachment_name"],
+        name=secure_filename(request.POST["attachment_name"]),
         row=row,
         permissions_column=permissions_column,
     )
