@@ -12,6 +12,7 @@ werkzeug = "*"
 psycopg2-binary = "*"
 whoosh = "*"
 django-extensions = "*"
+python-magic = "*"
 
 [requires]
 python_version = "3.7"

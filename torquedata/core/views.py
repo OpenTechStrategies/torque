@@ -12,6 +12,7 @@ from django.contrib.postgres.search import SearchVector
 from jinja2 import Template as JinjaTemplate
 from core import models
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+import magic
 
 
 def search(q, template_config, sheet_configs):
@@ -243,7 +244,12 @@ def get_attachment(request, sheet_name, key, attachment):
     ).exists():
         raise Exception("Not permitted to see this attachment.")
 
-    return FileResponse(attachment.file.open("rb"))
+    content_type = magic.from_buffer(attachment.file.open("rb").read(1024), mime=True)
+    return FileResponse(
+        attachment.file.open("rb"),
+        filename=attachment_name,
+        content_type=content_type
+    )
 
 
 def reset_config(request, sheet_name, wiki_key):
