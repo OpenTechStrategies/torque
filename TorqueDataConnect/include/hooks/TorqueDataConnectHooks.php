@@ -124,7 +124,7 @@ class TorqueDataConnectHooks {
     if($wgTorqueDataConnectMultiWikiConfig) {
       $wiki_keys = "";
       $sheet_names = "";
-      foreach($wgTorqueDataConnectMultiWikiConfig as $wiki_key => $sheet_name) {
+      foreach($wgTorqueDataConnectMultiWikiConfig as $sheet_name => $wiki_key) {
         $wiki_keys .= "$wiki_key,";
         $sheet_names .= "$sheet_name,";
       }

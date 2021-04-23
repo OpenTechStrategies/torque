@@ -59,9 +59,7 @@ def search_global(request):
     global_config = models.SheetConfig.objects.get(
         sheet__name=global_sheet_name, wiki_key=global_wiki_key, group=group
     )
-    configs = models.SheetConfig.objects.all()
-    for wiki_key, sheet_name in zip(wiki_keys, sheet_names):
-        configs.filter(sheet__name=sheet_name, wiki_key=wiki_key, group=group)
+    configs = models.SheetConfig.objects.filter(sheet__name__in=sheet_names, wiki_key__in=wiki_keys, group=group).all()
     return search(q, global_config, configs)
 
 
