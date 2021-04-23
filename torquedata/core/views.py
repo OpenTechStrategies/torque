@@ -397,14 +397,21 @@ def upload_toc(request):
     )
     template.template_file = request.FILES["template"]
     template.save()
+    json_file = request.FILES["json"].read().decode("utf-8")
     (toc, created) = models.TableOfContents.objects.update_or_create(
         sheet=sheet,
         name=request.POST["toc_name"],
         defaults={
-            "json_file": request.FILES["json"].read().decode("utf-8"),
+            "json_file": json_file,
             "template": template,
         },
     )
+    # Have to repeat this because we need to have it when we create, if
+    # we do create (above), but we also need to set it in the case that
+    # the TOC already exists in the database
+    toc.json_file = json_file
+    toc.template = template
+    toc.save()
 
     for config in sheet.configs.all():
         (cache, created) = models.TableOfContentsCache.objects.update_or_create(
