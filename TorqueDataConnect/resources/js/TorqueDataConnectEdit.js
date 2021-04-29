@@ -8,6 +8,7 @@ function addEditButtonListeners () {
         .replace(".mwiki", "")
         .split("/");
     window.sheetName = sheetName;
+    window.wikiKey = $("#page-info").data("wiki-key");
     window.key = key;
 }
 
@@ -22,6 +23,7 @@ async function submitEdit (field, value) {
     const postData = {
         newValues: JSON.stringify({ [field]: value }),
         sheetName: window.sheetName,
+        wikiKey: window.wikiKey,
         key: window.key,
         title: mw.config.values.wgTitle,
     };
@@ -58,6 +60,7 @@ async function getFieldValue (field) {
             action: actionName,
             format: "json",
             sheetName: window.sheetName,
+            wikiKey: window.wikiKey,
             key: window.key,
             field: field
         }

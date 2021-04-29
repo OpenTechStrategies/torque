@@ -47,7 +47,7 @@ class TorqueDataConnectHooks {
       ($view ? "&view=" . $view : "")
       );
     
-    $contents = $contents . '<span id="page-info" data-location="' . $location . '"></span>';
+    $contents = $contents . '<span id="page-info" data-location="' . $location . '" data-wiki-key="' . $wiki_key . '"></span>';
 
     # If there are parser hooks in the output of the template, then
     # then we need to parse it fully, and let mediawiki know that
