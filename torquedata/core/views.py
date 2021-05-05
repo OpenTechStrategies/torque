@@ -117,42 +117,6 @@ def get_sheet(request, sheet_name, fmt):
     return JsonResponse({sheet.name: sheet.clean_rows(sheet_config)})
 
 
-def get_global_view_toc(request):
-    group = request.GET["group"]
-    wiki_keys = request.GET["wiki_keys"].split(",")
-    sheet_names = request.GET["sheet_names"].split(",")
-    configs = models.SheetConfig.all()
-
-    global_toc = None  # TODO: load globalview TOC
-    data = json.loads(global_toc.json_file)
-
-    for wiki_key, sheet_name in zip(wiki_keys, sheet_names):
-        configs.filter(sheet__name=sheet_name, wiki_key=wiki_key, group=group)
-
-    # For each sheet, we load in the associated rows
-    for config in configs:
-        rows = config.sheet.clean_rows(config)
-        line_template = models.Template.objects.get(
-            sheet=config.sheet, type="TOC", is_default=True
-        ).select_related("toc")
-
-        line_template_contents = line_template.template_file.read().decode("utf-8")
-        template_contents = global_toc.template.template_file.read().decode("utf-8")
-
-        # For each row - we store the template rendering in toc_lines
-        data[config.sheet.name] = {row[config.sheet.key_column]: row for row in rows}
-        data["toc_lines"][config.sheet_name] = {
-            {
-                row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
-                    {sheet.object_name: row}
-                )
-                for row in rows
-            }
-        }
-
-    return HttpResponse(JinjaTemplate(global_toc).render(data))
-
-
 def get_toc(request, sheet_name, toc_name, fmt):
     group = request.GET["group"]
     wiki_key = request.GET["wiki_key"]
