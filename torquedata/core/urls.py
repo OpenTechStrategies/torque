@@ -1,9 +1,14 @@
 from django.urls import path, include
 from core import views
+import config
 
 urlpatterns = [
     path("search/<sheet_name>", views.search_sheet),
     path("search", views.search_global),
+
+    path("api/%s.<fmt>" % config.SHEETS_ALIAS, views.get_sheets),
+    path("api/%s/<sheet_name>/%s.<fmt>" % (config.SHEETS_ALIAS, config.ROWS_ALIAS), views.get_sheet),
+
     path("api/<sheet_name>.<fmt>", views.get_sheet),
     path("api/<sheet_name>/toc/<toc_name>.<fmt>", views.get_toc),
     path("api/<sheet_name>/id/<key>.<fmt>", views.get_row_view),

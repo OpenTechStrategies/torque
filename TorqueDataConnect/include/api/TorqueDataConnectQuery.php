@@ -11,7 +11,20 @@ class TorqueDataConnectQuery extends APIBase {
 
     $valid_group = TorqueDataConnectConfig::getValidGroup($this->getUser());
 
-    global $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
+    global $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
+      $wgTorqueDataConnectMultiWikiConfig, $wgTorqueDataConnectSheetName;
+
+    $wiki_keys = "";
+    $sheet_names = "";
+    if($wgTorqueDataConnectMultiWikiConfig) {
+      foreach($wgTorqueDataConnectMultiWikiConfig as $sheet_name => $wiki_key) {
+        $wiki_keys .= "$wiki_key,";
+        $sheet_names .= "$sheet_name,";
+      }
+    } else {
+      $wiki_keys .= "$wgTorqueDataConnectWikiKey";
+      $sheet_names .= "$wgTorqueDataConnectSheetName";
+    }
 
     $contents = file_get_contents(
       $wgTorqueDataConnectServerLocation .
@@ -21,7 +34,9 @@ class TorqueDataConnectQuery extends APIBase {
       "?group=" .
       $valid_group .
       "&wiki_key=" .
-      $wgTorqueDataConnectWikiKey);
+      $wgTorqueDataConnectWikiKey .
+      "&wiki_keys=" . $wiki_keys .
+      "&sheet_names=" . $sheet_names);
 
     $response = json_decode($contents);
     foreach($response as $name => $value) {

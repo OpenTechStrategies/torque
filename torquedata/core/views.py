@@ -13,6 +13,7 @@ from jinja2 import Template as JinjaTemplate
 from core import models
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 import magic
+import config
 
 
 def search(q, template_config, sheet_configs):
@@ -103,18 +104,31 @@ def edit_record(request, sheet_name, key):
     return HttpResponse(201)
 
 
+def get_sheets(request, fmt):
+    sheet_names = [x for x in request.GET["sheet_names"].split(",") if x]
+
+    return JsonResponse({config.SHEETS_ALIAS: sheet_names})
+
+
 def get_sheet(request, sheet_name, fmt):
     group = request.GET["group"]
     wiki_key = request.GET["wiki_key"]
 
-    sheet = models.Spreadsheet.objects.get(sheet=sheet_name)
+    wiki_keys = request.GET["wiki_keys"].split(",")
+    sheet_names = request.GET["sheet_names"].split(",")
+    mapping = dict(zip(sheet_names, wiki_keys))
+
+    if sheet_name in mapping:
+        wiki_key = mapping[sheet_name]
+
+    sheet = models.Spreadsheet.objects.get(name=sheet_name)
     sheet_config = models.SheetConfig.objects.get(
         sheet=sheet,
         wiki_key=wiki_key,
         group=group,
     )
 
-    return JsonResponse({sheet.name: sheet.clean_rows(sheet_config)})
+    return JsonResponse({sheet.name: {row["key"]: row for row in sheet.clean_rows(sheet_config)}})
 
 
 def get_toc(request, sheet_name, toc_name, fmt):
