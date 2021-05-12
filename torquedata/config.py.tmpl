@@ -1,2 +1,14 @@
-# Where to find the data spreadsheets
-SPREADSHEET_FOLDER = "__SPREADSHEET_LOCATION__"
+# Database configuration for torquedata
+POSTGRES_DB_NAME="__DATABASE_NAME__"
+POSTGRES_DB_USER="__DATABASE_USER__"
+POSTGRES_DB_PASSWORD="__DATABASE_PASSWORD__"
+
+# Secret key as needed by django.  See
+# https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-SECRET_KEY
+SECRET_KEY="__RANDOM_SECRET_KEY__"
+
+# This is where uploaded files go (like attachments).
+# See https://docs.djangoproject.com/en/3.1/ref/settings/#media-root
+# 
+# Note: Leaving this as is will probably clutter up your checkout
+MEDIA_ROOT=os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")

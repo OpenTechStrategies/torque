@@ -108,6 +108,17 @@ class TorqueDataConnectConfig {
       "/reset");
   }
 
+  public static function completeConfig() {
+    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
+    file_get_contents(
+      $wgTorqueDataConnectServerLocation .
+      "/config/" .
+      $wgTorqueDataConnectSheetName .
+      "/" .
+      $wgTorqueDataConnectWikiKey .
+      "/complete");
+  }
+
   private static function parseConfig() {
     global $wgTorqueDataConnectConfigPage;
     if(!$wgTorqueDataConnectConfigPage) {
@@ -234,6 +245,7 @@ class TorqueDataConnectConfig {
         $template["templateType"]
       );
     }
+    TorqueDataConnectConfig::completeConfig();
   }
 
   public static function isConfigPage($title) {

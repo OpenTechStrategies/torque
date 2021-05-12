@@ -8,6 +8,7 @@ function addEditButtonListeners () {
         .replace(".mwiki", "")
         .split("/");
     window.sheetName = sheetName;
+    window.wikiKey = $("#page-info").data("wiki-key");
     window.key = key;
 }
 
@@ -22,6 +23,7 @@ async function submitEdit (field, value) {
     const postData = {
         newValues: JSON.stringify({ [field]: value }),
         sheetName: window.sheetName,
+        wikiKey: window.wikiKey,
         key: window.key,
         title: mw.config.values.wgTitle,
     };
@@ -58,6 +60,7 @@ async function getFieldValue (field) {
             action: actionName,
             format: "json",
             sheetName: window.sheetName,
+            wikiKey: window.wikiKey,
             key: window.key,
             field: field
         }
@@ -70,10 +73,10 @@ async function getFieldValue (field) {
 
 const textArea = (v) => $(`<textarea name="" type="text">${v}</textarea>`);
 // Returns a jquery cancel and save button side-by-side
-const saveButtons = (fieldName, originalValue, onCancel, onSave) => {
+const saveButtons = (fieldName, originalValue, type, onCancel, onSave) => {
     const cancelBtn = $('<span class="torque-save-cancel">Cancel</span>');
     cancelBtn.data("original", originalValue);
-    cancelBtn.click(onCancel);
+    cancelBtn.click({ type }, onCancel);
     const saveBtn = $('<span class="torque-save">Save</span>');
     saveBtn.data("field", fieldName);
     saveBtn.click(onSave);
@@ -104,7 +107,8 @@ const handleEdit = async (e, handleSave, type) => {
         saveButtons(
             field,
             html,
-            handleSaveCancel.bind(type),
+            type,
+            handleSaveCancel,
             handleSave
         )
     );
@@ -119,12 +123,12 @@ const substituteValue = (sibling, target, newValue, field, type) => {
     target.replaceWith(editBtn);
 };
 
-const handleSaveCancel = (e, type) => {
+const handleSaveCancel = (e) => {
     const target = $(e.target);
     const sibling = $(e.target).parent().prev();
     const newValue = target.data("original");
     const field = target.next().data("field");
-    substituteValue(sibling, target.parent(), newValue, field, type);
+    substituteValue(sibling, target.parent(), newValue, field, e.data.type);
 };
 
 // Paragraph event listeners
