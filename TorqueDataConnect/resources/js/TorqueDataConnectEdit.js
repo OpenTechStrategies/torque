@@ -21,7 +21,8 @@ $(document).ready(() => {
 
 async function submitEdit (field, value) {
     const postData = {
-        newValues: JSON.stringify({ [field]: value }),
+        field: field,
+        newValue: value,
         sheetName: window.sheetName,
         wikiKey: window.wikiKey,
         key: window.key,
@@ -31,7 +32,7 @@ async function submitEdit (field, value) {
         // Gets CORS token for POST
         const corsResult = await $.ajax({
             type: "GET",
-            url: "/lfc/api.php?action=query&format=json&meta=tokens",
+            url: `${mw.config.values.wgScriptPath}/api.php?action=query&format=json&meta=tokens`,
             dataType: "json",
         });
 
@@ -52,23 +53,24 @@ async function submitEdit (field, value) {
 }
 
 async function getFieldValue (field) {
-    const actionName = "torquedataconnectquerycell";
+    const actionName = "torquedataconnect";
+    const path = "/sheets/" +
+        window.sheetName +
+        "/rows/" +
+        window.key +
+        "/fields/" +
+        field;
     const results = await $.ajax({
         type: "GET",
         url: `${mw.config.values.wgScriptPath}/api.php`,
         data: {
             action: actionName,
             format: "json",
-            sheetName: window.sheetName,
             wikiKey: window.wikiKey,
-            key: window.key,
-            field: field
+            path: path
         }
     })
-    if (Array.isArray(results.field)) {
-        return results.field.join("\n");
-    }
-    return results.field;
+    return results.result;
 }
 
 const textArea = (v) => $(`<textarea name="" type="text">${v}</textarea>`);

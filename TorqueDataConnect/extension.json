@@ -25,7 +25,6 @@
     "TorqueDataConnectUserLookup": "include/TorqueDataConnectUserLookup.php",
     "TorqueDataConnectQuery": "include/api/TorqueDataConnectQuery.php",
     "TorqueDataConnectSubmitEdit": "include/api/TorqueDataConnectSubmitEdit.php",
-    "TorqueDataConnectQueryCell": "include/api/TorqueDataConnectQueryCell.php",
     "TorqueDataConnectUploadSheet": "include/api/TorqueDataConnectUploadSheet.php",
     "TorqueDataConnectUploadToc": "include/api/TorqueDataConnectUploadToc.php",
     "TorqueDataConnectUploadAttachment": "include/api/TorqueDataConnectUploadAttachment.php",
@@ -44,7 +43,6 @@
   },
   "APIModules": {
     "torquedataconnect": "TorqueDataConnectQuery",
-    "torquedataconnectquerycell": "TorqueDataConnectQueryCell",
     "torquedataconnectsubmitedit": "TorqueDataConnectSubmitEdit",
     "torquedataconnectuploadsheet": "TorqueDataConnectUploadSheet",
     "torquedataconnectuploadtoc": "TorqueDataConnectUploadToc",

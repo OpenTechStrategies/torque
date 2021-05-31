@@ -12,8 +12,8 @@ class TorqueDataConnectSubmitEdit extends APIBase {
       $wgTorqueDataConnectMultiWikiConfig;
 
     parent::checkUserRightsAny(["torquedataconnect-edit"]);
-    $newValues = $this->getParameter('newValues');
-    $field = array_keys(json_decode($newValues, true))[0];
+    $newValue = $this->getParameter('newValue');
+    $field = $this->getParameter('field');
     $sheetName = $this->getParameter('sheetName');
     $wiki_key = $this->getParameter('wikiKey');
     $key = $this->getParameter('key');
@@ -31,16 +31,19 @@ class TorqueDataConnectSubmitEdit extends APIBase {
     }
 
     $url = $wgTorqueDataConnectServerLocation .
-      '/api/' .
+      '/api/sheets/' .
       $sheetName .
-      '/edit-record/' .
-      $key;
+      "/rows/" .
+      $key .
+      "/fields/" .
+      urlencode($field) .
+      ".json";
 
     $ch = curl_init( $url );
     # Setup request to send json via POST.
     $payload = json_encode(
       array(
-        "new_values" => $newValues,
+        "new_value" => $newValue,
         "wiki_key" => $wiki_key,
         "group" => $valid_group,
       )
@@ -65,7 +68,11 @@ class TorqueDataConnectSubmitEdit extends APIBase {
 
   public function getAllowedParams() {
     return [
-      "newValues" => [
+      "newValue" => [
+        ApiBase::PARAM_TYPE => 'string',
+        ApiBase::PARAM_REQUIRED => 'true'
+      ],
+      "field" => [
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],

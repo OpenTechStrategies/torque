@@ -4,6 +4,7 @@ import io
 import os
 import pathlib
 import json
+import datetime
 from django.db import models
 from django.conf import settings
 
@@ -20,6 +21,7 @@ class Spreadsheet(models.Model):
     name = models.CharField(max_length=255, unique=True)
     object_name = models.CharField(max_length=255)
     key_column = models.TextField()
+    last_updated = models.DateTimeField(auto_now=True)
 
     def clean_rows(self, config):
         # return a reduced list of rows based on permissions defined in config
@@ -87,10 +89,12 @@ class Spreadsheet(models.Model):
                     cell = sheet_cells[row][cols[col_name]]
                     # Only update for cells whose value has changed
                     if cell.original_value != cell_value:
+                        sheet.last_updated = datetime.now
                         cell.original_value = cell_value
                         cell.latest_value = cell_value
                         cell.save()
                 else:
+                    sheet.last_updated = datetime.now
                     cell = Cell(
                         column=cols[col_name],
                         original_value=cell_value,
@@ -100,6 +104,9 @@ class Spreadsheet(models.Model):
                     cells.append(cell)
 
         Cell.objects.bulk_create(cells)
+
+        # In case last_updated got set
+        sheet.save()
         return sheet, rows
 
 
