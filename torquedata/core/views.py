@@ -152,19 +152,26 @@ def get_sheet(request, sheet_name, fmt):
     if fmt == "json":
         response = {"name": sheet_name}
 
-        group = request.GET["group"]
-        wiki_key = get_wiki_key(request, sheet_name)
 
         sheet = models.Spreadsheet.objects.get(name=sheet_name)
-        sheet_config = models.SheetConfig.objects.get(
-            sheet=sheet,
-            wiki_key=wiki_key,
-            group=group,
-        )
 
-        response["columns"] = [
-            column.name for column in sheet_config.valid_columns.all()
-        ]
+        if "group" in request.GET:
+            group = request.GET["group"]
+            wiki_key = get_wiki_key(request, sheet_name)
+            sheet_config = models.SheetConfig.objects.get(
+                sheet=sheet,
+                wiki_key=wiki_key,
+                group=group,
+            )
+
+            response["columns"] = [
+                column.name for column in sheet_config.valid_columns.all()
+            ]
+        else:
+            response["columns"] = [
+                column.name for column in sheet.columns.all()
+            ]
+
         response["last_updated"] = sheet.last_updated.isoformat()
 
         return JsonResponse(response)
