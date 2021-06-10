@@ -14,8 +14,10 @@ class TorqueDataConnectUploadSheet extends APIBase {
     # We use phpcurl here because it's really straightforward, and
     # research (stackoverflow) didn't produce a compelling native php method.
     $file = $this->getParameter("data_file");
+    $temp = tempnam(sys_get_temp_dir(), 'TDC');
+    file_put_contents($temp, $file->getStream()->getContents());
     $data = [
-      'data_file' => curl_file_create($file->getTempName()),
+      'data_file' => curl_file_create($temp),
       'object_name' => $this->getParameter("object_name"),
       'sheet_name' => $this->getParameter("sheet_name"),
       'key_column' => $this->getParameter("key_column")
@@ -26,6 +28,7 @@ class TorqueDataConnectUploadSheet extends APIBase {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_exec ($ch);
     curl_close ($ch);
+    unlink($temp);
   }
 
   public function mustBePosted() {
