@@ -31,11 +31,11 @@ class TorqueDataConnectAttachment extends SpecialPage {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL,
       $wgTorqueDataConnectServerLocation .
-      '/api/' .
+      '/api/sheets/' .
       $sheet_name .
-      '/attachment/' .
+      '/rows/' .
       $id .
-      '/' .
+      '/attachments/' .
       urlencode($attachment) .
       "?group=" .
       $wgTorqueDataConnectGroup .

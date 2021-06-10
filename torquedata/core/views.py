@@ -16,7 +16,21 @@ import magic
 import config
 
 
-def search(q, template_config, sheet_configs):
+def get_wiki_key(request, sheet_name):
+    wiki_key = request.GET["wiki_key"]
+
+    if "wiki_keys" in request.GET:
+        wiki_keys = request.GET["wiki_keys"].split(",")
+        sheet_names = request.GET["sheet_names"].split(",")
+        mapping = dict(zip(sheet_names, wiki_keys))
+
+        if sheet_name in mapping:
+            wiki_key = mapping[sheet_name]
+
+    return wiki_key
+
+
+def search(q, template_config, sheet_configs, fmt, multi):
     results = (
         models.SearchCacheRow.objects.filter(
             sheet__in=sheet_configs.values_list("sheet", flat=True),
@@ -31,26 +45,46 @@ def search(q, template_config, sheet_configs):
         .order_by("-rank")
     )
 
-    addendum = ""
-    if results.count() > 100:
-        addendum = " (showing top 100)"
-    resp = f"== {results.count()} results for '{q}'{addendum} == \n\n"
+    if fmt == "mwiki":
+        addendum = ""
+        if results.count() > 100:
+            addendum = " (showing top 100)"
+        resp = f"== {results.count()} results for '{q}'{addendum} == \n\n"
 
-    for result in results[:100]:
-        template = JinjaTemplate(
-            models.Template.objects.get(
-                name="Search", sheet=template_config.sheet
-            ).get_file_contents()
-        )
-        resp += template.render(
-            {template_config.sheet.object_name: result.row.to_dict(result.sheet_config)}
-        )
-        resp += "\n\n"
+        for result in results[:100]:
+            template = JinjaTemplate(
+                models.Template.objects.get(
+                    name="Search", sheet=template_config.sheet
+                ).get_file_contents()
+            )
+            resp += template.render(
+                {
+                    template_config.sheet.object_name: result.row.to_dict(
+                        result.sheet_config
+                    )
+                }
+            )
+            resp += "\n\n"
 
-    return HttpResponse(resp)
+        return HttpResponse(resp)
+    elif fmt == "json":
+        response = [
+            "/%s/%s/%s/%s"
+            % (
+                config.SHEETS_ALIAS or "sheets",
+                result.sheet.name,
+                config.ROWS_ALIAS or "rows",
+                result.row.key,
+            )
+            for result in results
+        ]
+
+        return JsonResponse(response, safe=False)
+    else:
+        raise Exception(f"Invalid format {fmt}")
 
 
-def search_global(request):
+def search_global(request, fmt):
     q = request.GET["q"]
     group = request.GET["group"]
     global_wiki_key = request.GET["wiki_key"]
@@ -60,36 +94,39 @@ def search_global(request):
     global_config = models.SheetConfig.objects.get(
         sheet__name=global_sheet_name, wiki_key=global_wiki_key, group=group
     )
-    configs = models.SheetConfig.objects.filter(sheet__name__in=sheet_names, wiki_key__in=wiki_keys, group=group).all()
-    return search(q, global_config, configs)
+    configs = models.SheetConfig.objects.filter(
+        sheet__name__in=sheet_names, wiki_key__in=wiki_keys, group=group
+    ).all()
+    return search(q, global_config, configs, fmt, True)
 
 
-def search_sheet(request, sheet_name):
+def search_sheet(request, sheet_name, fmt):
     q = request.GET["q"]
     group = request.GET["group"]
     wiki_key = request.GET["wiki_key"]
     configs = models.SheetConfig.objects.filter(
         sheet__name=sheet_name, wiki_key=wiki_key, group=group
     )
-    return search(q, configs.first(), configs)
+    return search(q, configs.first(), configs, fmt, False)
 
 
-def edit_record(request, sheet_name, key):
-    post_fields = json.loads(request.body)
-    group = post_fields["group"]
-    wiki_key = post_fields["wiki_key"]
-    new_values = json.loads(post_fields["new_values"])
+def edit_record(sheet_name, key, group, wiki_key, field, new_value):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     row = models.Row.objects.get(sheet=sheet, key=key)
+    sheet_config = models.SheetConfig.objects.get(
+        sheet=sheet,
+        wiki_key=wiki_key,
+        group=group,
+    )
 
-    for field, val in new_values.items():
+    if field in [col.name for col in sheet_config.valid_columns.all()]:
         cell = row.cells.get(column__name=field)
-        cell.latest_value = val
+        cell.latest_value = new_value
         cell.save()
         edit_record = models.CellEdit(
             sheet=sheet,
             cell=cell,
-            value=val,
+            value=new_value,
             message="",
             edit_timestamp=datetime.now,
             wiki_key=wiki_key,
@@ -101,34 +138,38 @@ def edit_record(request, sheet_name, key):
     ).update(dirty=True)
     models.SearchCacheRow.objects.filter(row=row).update(dirty=True)
 
-    return HttpResponse(201)
+    sheet.last_updated = datetime.now
+    sheet.save()
 
 
 def get_sheets(request, fmt):
     sheet_names = [x for x in request.GET["sheet_names"].split(",") if x]
 
-    return JsonResponse({config.SHEETS_ALIAS: sheet_names})
+    return JsonResponse(sheet_names, safe=False)
 
 
 def get_sheet(request, sheet_name, fmt):
-    group = request.GET["group"]
-    wiki_key = request.GET["wiki_key"]
+    if fmt == "json":
+        response = {"name": sheet_name}
 
-    wiki_keys = request.GET["wiki_keys"].split(",")
-    sheet_names = request.GET["sheet_names"].split(",")
-    mapping = dict(zip(sheet_names, wiki_keys))
+        group = request.GET["group"]
+        wiki_key = get_wiki_key(request, sheet_name)
 
-    if sheet_name in mapping:
-        wiki_key = mapping[sheet_name]
+        sheet = models.Spreadsheet.objects.get(name=sheet_name)
+        sheet_config = models.SheetConfig.objects.get(
+            sheet=sheet,
+            wiki_key=wiki_key,
+            group=group,
+        )
 
-    sheet = models.Spreadsheet.objects.get(name=sheet_name)
-    sheet_config = models.SheetConfig.objects.get(
-        sheet=sheet,
-        wiki_key=wiki_key,
-        group=group,
-    )
+        response["columns"] = [
+            column.name for column in sheet_config.valid_columns.all()
+        ]
+        response["last_updated"] = sheet.last_updated.isoformat()
 
-    return JsonResponse({sheet.name: {row["key"]: row for row in sheet.clean_rows(sheet_config)}})
+        return JsonResponse(response)
+    else:
+        raise Exception(f"Invalid format {fmt}")
 
 
 def get_toc(request, sheet_name, toc_name, fmt):
@@ -152,6 +193,25 @@ def get_toc(request, sheet_name, toc_name, fmt):
     cached_toc = sheet_config.cached_tocs.get(toc=toc)
 
     return HttpResponse(cached_toc.rendered_data)
+
+
+def get_rows(request, sheet_name, fmt):
+    sheet = models.Spreadsheet.objects.get(name=sheet_name)
+    group = request.GET["group"]
+    wiki_key = get_wiki_key(request, sheet_name)
+
+    sheet_config = models.SheetConfig.objects.get(
+        sheet=sheet,
+        wiki_key=wiki_key,
+        group=group,
+    )
+
+    if fmt == "json":
+        return JsonResponse(
+            [row.key for row in sheet_config.valid_ids.all()], safe=False
+        )
+    else:
+        raise Exception(f"Invalid format {fmt}")
 
 
 def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
@@ -188,17 +248,24 @@ def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
 
 def get_row_view(request, sheet_name, key, fmt):
     group = request.GET["group"]
-    wiki_key = request.GET["wiki_key"]
-
+    wiki_key = get_wiki_key(request, sheet_name)
     return get_row(group, wiki_key, key, fmt, sheet_name, request.GET.get("view", None))
 
 
-def get_cell_view(request, sheet_name, key, field):
-    group = request.GET["group"]
-    wiki_key = request.GET["wiki_key"]
-
-    row = get_row(group, wiki_key, key, "dict", sheet_name, None)
-    return JsonResponse({"field": row[field]})
+def field(request, sheet_name, key, field, fmt):
+    field = urllib.parse.unquote_plus(field)
+    if request.method == "GET":
+        group = request.GET["group"]
+        wiki_key = get_wiki_key(request, sheet_name)
+        row = get_row(group, wiki_key, key, "dict", sheet_name, None)
+        return JsonResponse(row[field], safe=False)
+    elif request.method == "POST":
+        post_fields = json.loads(request.body)
+        group = post_fields["group"]
+        wiki_key = post_fields["wiki_key"]
+        new_value = post_fields["new_value"]
+        edit_record(sheet_name, key, group, wiki_key, field, new_value)
+        return HttpResponse(201)
 
 
 def get_attachment(request, sheet_name, key, attachment):
@@ -222,9 +289,7 @@ def get_attachment(request, sheet_name, key, attachment):
 
     content_type = magic.from_buffer(attachment.file.open("rb").read(1024), mime=True)
     return FileResponse(
-        attachment.file.open("rb"),
-        filename=attachment_name,
-        content_type=content_type
+        attachment.file.open("rb"), filename=attachment_name, content_type=content_type
     )
 
 

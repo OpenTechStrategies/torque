@@ -201,8 +201,9 @@ class TorqueDataConnectConfig {
             $templateName = $line;
           } else if(!$templatePage) {
             $matches = [];
-            preg_match("/\\[\\[(.*)\\]\\]/", $line, $matches);
-            $templatePage = $matches[1];
+            if(preg_match("/\\[\\[(.*)\\]\\]/", $line, $matches)) {
+              $templatePage = $matches[1];
+            }
           } else if(!$templateType) {
             $templateType = $line;
 
