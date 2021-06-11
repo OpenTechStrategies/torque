@@ -78,8 +78,6 @@ if config.SHEETS_ALIAS and config.ROWS_ALIAS:
 # which is probably too much for right now
 urlpatterns.extend(
     [
-        path("search/<sheet_name>.<fmt>", views.search_sheet),
-        path("search.<fmt>", views.search_global),
         path("api/<sheet_name>/id/<key>.<fmt>", views.get_row_view),
         path("api/<sheet_name>/toc/<toc_name>.<fmt>", views.get_toc),
     ]

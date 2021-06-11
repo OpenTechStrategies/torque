@@ -130,7 +130,7 @@ class TorqueDataConnectHooks {
       }
       $results = file_get_contents(
         $wgTorqueDataConnectServerLocation .
-        "/search" .
+        "/api/search.mwiki" .
         "?group=" . $wgTorqueDataConnectGroup .
         "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
         "&sheet_name=" . $wgTorqueDataConnectSheetName .
@@ -141,7 +141,7 @@ class TorqueDataConnectHooks {
     } else {
       $results = file_get_contents(
         $wgTorqueDataConnectServerLocation .
-        "/search/" .  $wgTorqueDataConnectSheetName .
+        "/api/sheets/" .  $wgTorqueDataConnectSheetName . "/search.mwiki" .
         "?group=" .  $wgTorqueDataConnectGroup .
         "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
         "&q=" .  urlencode($term)
