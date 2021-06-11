@@ -103,7 +103,7 @@ def search_global(request, fmt):
 def search_sheet(request, sheet_name, fmt):
     q = request.GET["q"]
     group = request.GET["group"]
-    wiki_key = request.GET["wiki_key"]
+    wiki_key = get_wiki_key(request, sheet_name)
     configs = models.SheetConfig.objects.filter(
         sheet__name=sheet_name, wiki_key=wiki_key, group=group
     )
@@ -164,11 +164,11 @@ def get_sheet(request, sheet_name, fmt):
                 group=group,
             )
 
-            response["columns"] = [
+            response["fields"] = [
                 column.name for column in sheet_config.valid_columns.all()
             ]
         else:
-            response["columns"] = [
+            response["fields"] = [
                 column.name for column in sheet.columns.all()
             ]
 
