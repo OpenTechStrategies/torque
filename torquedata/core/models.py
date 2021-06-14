@@ -4,7 +4,7 @@ import io
 import os
 import pathlib
 import json
-import datetime
+from datetime import datetime
 from django.db import models
 from django.conf import settings
 
