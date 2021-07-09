@@ -32,8 +32,7 @@ class TorqueDataConnectHooks {
     // If this isn't set, that means we've gotten here through some other means, and we
     // should just grab whatever group is correct for the current user.
     if(!$wgTorqueDataConnectGroup) {
-      global $wgUser;
-      $wgTorqueDataConnectGroup = TorqueDataConnectConfig::getValidGroup($wgUser);
+      $wgTorqueDataConnectGroup = TorqueDataConnectConfig::getValidGroup($parser->getUser());
     }
 
     // For legacy reasons, we strip off .mwiki if it's here.  Prior, it was correct
