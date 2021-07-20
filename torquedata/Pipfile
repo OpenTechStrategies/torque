@@ -13,6 +13,7 @@ psycopg2-binary = "*"
 whoosh = "*"
 django-extensions = "*"
 python-magic = "*"
+mwclient = "*"
 
 [requires]
 python_version = "3.7"

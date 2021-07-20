@@ -152,7 +152,6 @@ def get_sheet(request, sheet_name, fmt):
     if fmt == "json":
         response = {"name": sheet_name}
 
-
         sheet = models.Spreadsheet.objects.get(name=sheet_name)
 
         if "group" in request.GET:
@@ -168,9 +167,7 @@ def get_sheet(request, sheet_name, fmt):
                 column.name for column in sheet_config.valid_columns.all()
             ]
         else:
-            response["fields"] = [
-                column.name for column in sheet.columns.all()
-            ]
+            response["fields"] = [column.name for column in sheet.columns.all()]
 
         response["last_updated"] = sheet.last_updated.isoformat()
 
@@ -184,9 +181,6 @@ def get_toc(request, sheet_name, toc_name, fmt):
     wiki_key = request.GET["wiki_key"]
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
 
-    if group == "":
-        return HttpResponse(status=403)
-
     try:
         sheet_config = models.SheetConfig.objects.get(
             sheet=sheet,
@@ -197,9 +191,18 @@ def get_toc(request, sheet_name, toc_name, fmt):
         return HttpResponse(status=403)
 
     toc = models.TableOfContents.objects.get(sheet=sheet, name=toc_name)
-    cached_toc = sheet_config.cached_tocs.get(toc=toc)
 
-    return HttpResponse(cached_toc.rendered_data)
+    if group == "":
+        return HttpResponse(status=403)
+
+    if fmt == "mwiki":
+        return HttpResponse(toc.render_to_mwiki(sheet_config))
+    elif fmt == "html":
+        cached_toc = sheet_config.cached_tocs.get(toc=toc)
+
+        return HttpResponse(cached_toc.rendered_html)
+    else:
+        raise Exception(f"Invalid format {fmt}")
 
 
 def get_rows(request, sheet_name, fmt):
@@ -249,6 +252,10 @@ def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
         return HttpResponse(rendered_template)
     elif fmt == "dict":
         return row
+    elif fmt == "html":
+        # Return the empty string because we don't have a cached version, and the
+        # TDC extension will read that and attempt to get the mwiki version.
+        return HttpResponse("")
     else:
         raise Exception(f"Invalid format {fmt}")
 

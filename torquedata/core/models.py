@@ -274,6 +274,31 @@ class TableOfContents(models.Model):
         Template, on_delete=models.CASCADE, primary_key=True
     )
 
+    def render_to_mwiki(self, sheet_config):
+        sheet = sheet_config.sheet
+        rows = sheet.clean_rows(sheet_config)
+
+        data = json.loads(self.json_file)
+        data[sheet.name] = {row[sheet.key_column]: row for row in rows}
+
+        toc_templates = Template.objects.filter(
+            sheet=sheet,
+            wiki_key=sheet_config.wiki_key,
+            type="TOC",
+        )
+        line_template = toc_templates.get(is_default=True)
+
+        line_template_contents = line_template.template_file.read().decode("utf-8")
+        template_contents = self.template.template_file.read().decode("utf-8")
+
+        data["toc_lines"] = {
+            row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
+                {sheet.object_name: row}
+            )
+            for row in rows
+        }
+        return JinjaTemplate(template_contents).render(data)
+
     class Meta:
         constraints = [
             # enforced on save()
@@ -335,33 +360,18 @@ class TableOfContentsCache(models.Model):
     )
     toc = models.ForeignKey(TableOfContents, on_delete=models.CASCADE)
     dirty = models.BooleanField(default=True)
-    rendered_data = models.TextField()
+    rendered_html = models.TextField(null=True)
 
     def rebuild(self):
-        sheet = self.sheet_config.sheet
-        rows = sheet.clean_rows(self.sheet_config)
+        import mwclient
 
-        data = json.loads(self.toc.json_file)
-        data[sheet.name] = {row[sheet.key_column]: row for row in rows}
+        site = mwclient.Site("ots-macfound-test.com/", "GlobalView/", scheme="http")
+        site.login("admin", "<password>")
 
-        toc_templates = Template.objects.filter(
-            sheet=sheet,
-            wiki_key=self.sheet_config.wiki_key,
-            type="TOC",
-        )
-        line_template = toc_templates.get(is_default=True)
-
-        line_template_contents = line_template.template_file.read().decode("utf-8")
-        template_contents = self.toc.template.template_file.read().decode("utf-8")
-
-        data["toc_lines"] = {
-            row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
-                {sheet.object_name: row}
-            )
-            for row in rows
-        }
-        self.rendered_data = JinjaTemplate(template_contents).render(data)
-
+        rendered_data = self.toc.render_to_mwiki(self.sheet_config)
+        self.rendered_html = site.api(
+            "parse", text=rendered_data, contentmodel="wikitext", prop="text"
+        )["parse"]["text"]["*"]
         self.save()
 
     class Meta:
