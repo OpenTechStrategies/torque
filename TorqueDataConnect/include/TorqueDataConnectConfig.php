@@ -108,6 +108,31 @@ class TorqueDataConnectConfig {
       "/reset");
   }
 
+  public static function commitWikiConfig() {
+    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
+      $wgTorqueDataConnectWikiUsername, $wgTorqueDataConnectWikiPassword, $wgServer, $wgScriptPath;
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL,
+      $wgTorqueDataConnectServerLocation .
+      "/config/" .
+      $wgTorqueDataConnectSheetName .
+      "/" .
+      $wgTorqueDataConnectWikiKey .
+      "/wiki");
+
+    $data = [
+      "username" => $wgTorqueDataConnectWikiUsername,
+      "password" => $wgTorqueDataConnectWikiPassword,
+      "script_path" => $wgScriptPath,
+      "server" => $wgServer
+    ];
+
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_exec ($ch);
+    curl_close ($ch);
+  }
+
   public static function completeConfig() {
     global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
     file_get_contents(
@@ -228,10 +253,14 @@ class TorqueDataConnectConfig {
   }
 
   public static function commitConfigToTorqueData() {
+    global $wgTorqueDataConnectCache;
     [$groupConfig, $templateConfig] = TorqueDataConnectConfig::parseConfig();
 
-
     TorqueDataConnectConfig::resetConfig();
+    if($wgTorqueDataConnectCache) {
+      TorqueDataConnectConfig::commitWikiConfig();
+    }
+
     foreach($groupConfig as $group) {
       TorqueDataConnectConfig::commitGroupConfig(
         $group["groupName"],

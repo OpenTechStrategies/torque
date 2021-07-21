@@ -18,6 +18,7 @@ urlpatterns = [
     path("api/sheets/<sheet_name>/search.<fmt>", views.search_sheet),
     path("api/sheets/<sheet_name>/tocs/<toc_name>.<fmt>", views.get_toc),
     path("config/<sheet_name>/<wiki_key>/reset", views.reset_config),
+    path("config/<sheet_name>/<wiki_key>/wiki", views.set_wiki_config),
     path("config/<sheet_name>/<wiki_key>/complete", views.complete_config),
     path("config/<sheet_name>/<wiki_key>/group", views.set_group_config),
     path("config/<sheet_name>/<wiki_key>/template", views.set_template_config),

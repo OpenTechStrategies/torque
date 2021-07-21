@@ -308,12 +308,34 @@ def get_attachment(request, sheet_name, key, attachment):
 
 
 def reset_config(request, sheet_name, wiki_key):
+    wiki = models.Wiki.objects.get_or_create(wiki_key=wiki_key)[0]
+    wiki.username = None
+    wiki.password = None
+    wiki.script_path = None
+    wiki.server = None
+    wiki.save()
+
     models.SheetConfig.objects.filter(
-        sheet__name=sheet_name, wiki__wiki_key=wiki_key
+        sheet__name=sheet_name, wiki=wiki
     ).update(in_config=False)
     models.Template.objects.filter(
-        sheet__name=sheet_name, wiki__wiki_key=wiki_key
+        sheet__name=sheet_name, wiki=wiki
     ).delete()
+
+    return HttpResponse(status=200)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+# Even though sheet_name isn't user here, we add it so that the urls
+# all nicely line up with the other config requests
+def set_wiki_config(request, sheet_name, wiki_key):
+    wiki = models.Wiki.objects.get_or_create(wiki_key=wiki_key)[0]
+    wiki.username = request.POST["username"]
+    wiki.password = request.POST["password"]
+    wiki.script_path = request.POST["script_path"]
+    wiki.server = request.POST["server"]
+    wiki.save()
 
     return HttpResponse(status=200)
 

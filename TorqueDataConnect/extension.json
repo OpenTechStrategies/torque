@@ -67,7 +67,10 @@
     "TorqueDataConnectNotFoundMessage": "Torque Data Connect Error: Key Not Found",
     "TorqueDataConnectRaw": false,
     "TorqueDataConnectRenderToHTML": true,
-    "TorqueDataConnectMultiWikiConfig": false
+    "TorqueDataConnectMultiWikiConfig": false,
+    "TorqueDataConnectCache": false,
+    "TorqueDataConnectWikiUsername": "",
+    "TorqueDataConnectWikiPassword": ""
   },
   "LogTypes": [
     "torquedataconnect-apiaccess",

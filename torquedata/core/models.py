@@ -119,6 +119,10 @@ class Wiki(models.Model):
     can be connected to multiple spreadsheets through SheetConfigs"""
 
     wiki_key = models.TextField()
+    server = models.TextField(null=True)
+    script_path = models.TextField(null=True)
+    username = models.TextField(null=True)
+    password = models.TextField(null=True)
 
 
 class SheetConfig(models.Model):
@@ -378,14 +382,16 @@ class TableOfContentsCache(models.Model):
     def rebuild(self):
         import mwclient
 
-        site = mwclient.Site("ots-macfound-test.com/", "GlobalView/", scheme="http")
-        site.login("admin", "<password>")
+        if self.sheet_config.wiki.server:
+            (scheme, server) = self.sheet_config.wiki.server.split("://")
+            site = mwclient.Site(server, self.sheet_config.wiki.script_path + "/", scheme=scheme)
+            site.login(self.sheet_config.wiki.username, self.sheet_config.wiki.password)
 
-        rendered_data = self.toc.render_to_mwiki(self.sheet_config)
-        self.rendered_html = site.api(
-            "parse", text=rendered_data, contentmodel="wikitext", prop="text"
-        )["parse"]["text"]["*"]
-        self.save()
+            rendered_data = self.toc.render_to_mwiki(self.sheet_config)
+            self.rendered_html = site.api(
+                "parse", text=rendered_data, contentmodel="wikitext", prop="text"
+            )["parse"]["text"]["*"]
+            self.save()
 
     class Meta:
         constraints = [
