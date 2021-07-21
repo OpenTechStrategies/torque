@@ -110,13 +110,26 @@ class Spreadsheet(models.Model):
         return sheet, rows
 
 
+class Wiki(models.Model):
+    """Represents a Wiki that uses this torque instance.  Identified
+    by the wiki_key, which has the corresponding variable
+    $wgTorqueDataConnectWikiKey in the mediawiki extension.
+
+    Not that this does not connect to any spreadsheet, because a wiki
+    can be connected to multiple spreadsheets through SheetConfigs"""
+
+    wiki_key = models.TextField()
+
+
 class SheetConfig(models.Model):
     sheet = models.ForeignKey(
         Spreadsheet,
         on_delete=models.CASCADE,
         related_name="configs",
     )
-    wiki_key = models.TextField()
+    wiki = models.ForeignKey(
+        Wiki, on_delete=models.CASCADE, related_name="configs", null=True
+    )
     group = models.TextField()
 
     # This field holds a hash of the valid ids/valid columns for this group
@@ -149,7 +162,7 @@ class SheetConfig(models.Model):
                     SearchCacheRow(
                         row=row,
                         sheet=self.sheet,
-                        wiki_key=self.wiki_key,
+                        wiki=self.wiki,
                         group=self.group,
                         sheet_config=self,
                         data=" ".join(list(map(str, row_dict.values()))),
@@ -237,7 +250,7 @@ class CellEdit(models.Model):
     edit_timestamp = models.DateTimeField(auto_now=True)
     approval_timestamp = models.DateTimeField(null=True)
     sheet = models.ForeignKey(Spreadsheet, on_delete=models.CASCADE)
-    wiki_key = models.TextField(null=True)
+    wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     approval_code = models.CharField(max_length=255, null=True)
 
 
@@ -245,7 +258,7 @@ class Template(models.Model):
     sheet = models.ForeignKey(
         Spreadsheet, on_delete=models.CASCADE, related_name="templates"
     )
-    wiki_key = models.TextField(null=True)
+    wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     type = models.TextField(null=True)  # enumeration?
     name = models.TextField()
     is_default = models.BooleanField(default=False)
@@ -283,7 +296,7 @@ class TableOfContents(models.Model):
 
         toc_templates = Template.objects.filter(
             sheet=sheet,
-            wiki_key=sheet_config.wiki_key,
+            wiki=sheet_config.wiki,
             type="TOC",
         )
         line_template = toc_templates.get(is_default=True)
@@ -344,7 +357,7 @@ class SearchCacheRow(models.Model):
     )
     sheet_config = models.ForeignKey(SheetConfig, on_delete=models.CASCADE)
     row = models.ForeignKey(Row, on_delete=models.CASCADE)
-    wiki_key = models.TextField()
+    wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     group = models.TextField()
     data = models.TextField()
     data_vector = SearchVectorField(null=True)
