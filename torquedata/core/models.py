@@ -384,7 +384,9 @@ class TableOfContentsCache(models.Model):
 
         if self.sheet_config.wiki.server:
             (scheme, server) = self.sheet_config.wiki.server.split("://")
-            site = mwclient.Site(server, self.sheet_config.wiki.script_path + "/", scheme=scheme)
+            site = mwclient.Site(
+                server, self.sheet_config.wiki.script_path + "/", scheme=scheme
+            )
             site.login(self.sheet_config.wiki.username, self.sheet_config.wiki.password)
 
             rendered_data = self.toc.render_to_mwiki(self.sheet_config)

@@ -6,28 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0018_delete_permissiongroup'),
+        ("core", "0018_delete_permissiongroup"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wiki',
-            name='password',
+            model_name="wiki",
+            name="password",
             field=models.TextField(null=True),
         ),
         migrations.AddField(
-            model_name='wiki',
-            name='script_path',
+            model_name="wiki",
+            name="script_path",
             field=models.TextField(null=True),
         ),
         migrations.AddField(
-            model_name='wiki',
-            name='server',
+            model_name="wiki",
+            name="server",
             field=models.TextField(null=True),
         ),
         migrations.AddField(
-            model_name='wiki',
-            name='username',
+            model_name="wiki",
+            name="username",
             field=models.TextField(null=True),
         ),
     ]

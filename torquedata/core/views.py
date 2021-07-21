@@ -315,12 +315,10 @@ def reset_config(request, sheet_name, wiki_key):
     wiki.server = None
     wiki.save()
 
-    models.SheetConfig.objects.filter(
-        sheet__name=sheet_name, wiki=wiki
-    ).update(in_config=False)
-    models.Template.objects.filter(
-        sheet__name=sheet_name, wiki=wiki
-    ).delete()
+    models.SheetConfig.objects.filter(sheet__name=sheet_name, wiki=wiki).update(
+        in_config=False
+    )
+    models.Template.objects.filter(sheet__name=sheet_name, wiki=wiki).delete()
 
     return HttpResponse(status=200)
 
