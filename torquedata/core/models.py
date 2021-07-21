@@ -393,10 +393,3 @@ class TableOfContentsCache(models.Model):
                 fields=["sheet_config", "toc"], name="unique_toc_cache"
             ),
         ]
-
-
-class PermissionGroup(models.Model):
-    name = models.CharField(max_length=255)
-    object_name = models.CharField(max_length=255)
-    columns = models.ManyToManyField(Column)
-    # key_column = models.ForeignKey(Column, on_delete=models.CASCADE)
