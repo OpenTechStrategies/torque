@@ -3,7 +3,7 @@ import urllib.parse
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from django.core.files.base import ContentFile
-from django.db.models import Q
+from django.db.models import Q, F
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.http import require_http_methods
@@ -30,7 +30,7 @@ def get_wiki(request, sheet_name):
     return models.Wiki.objects.get_or_create(wiki_key=wiki_key)[0]
 
 
-def search(q, template_config, sheet_configs, fmt, multi):
+def search(q, offset, template_config, sheet_configs, fmt, multi):
     results = (
         models.SearchCacheRow.objects.filter(
             sheet__in=sheet_configs.values_list("sheet", flat=True),
@@ -41,17 +41,14 @@ def search(q, template_config, sheet_configs, fmt, multi):
         )
         .select_related("row")
         .select_related("sheet")
-        .annotate(rank=SearchRank(SearchVector("data"), SearchQuery(q)))
+        .annotate(rank=SearchRank(F("data_vector"), SearchQuery(q)))
         .order_by("-rank")
     )
 
     if fmt == "mwiki":
-        addendum = ""
-        if results.count() > 100:
-            addendum = " (showing top 100)"
-        resp = f"== {results.count()} results for '{q}'{addendum} == \n\n"
+        resp = ""
 
-        for result in results[:100]:
+        for result in results[offset : (offset + 20)]:
             template = JinjaTemplate(
                 models.Template.objects.get(
                     name="Search", sheet=template_config.sheet
@@ -66,7 +63,7 @@ def search(q, template_config, sheet_configs, fmt, multi):
             )
             resp += "\n\n"
 
-        return HttpResponse(resp)
+        return HttpResponse(str(results.count()) + " " + resp)
     elif fmt == "json":
         response = [
             "/%s/%s/%s/%s"
@@ -86,6 +83,7 @@ def search(q, template_config, sheet_configs, fmt, multi):
 
 def search_global(request, fmt):
     q = request.GET["q"]
+    offset = int(request.GET["offset"])
     group = request.GET["group"]
     global_wiki_key = request.GET["wiki_key"]
     global_sheet_name = request.GET["sheet_name"]
@@ -97,17 +95,18 @@ def search_global(request, fmt):
     configs = models.SheetConfig.objects.filter(
         sheet__name__in=sheet_names, wiki__wiki_key__in=wiki_keys, group=group
     ).all()
-    return search(q, global_config, configs, fmt, True)
+    return search(q, offset, global_config, configs, fmt, True)
 
 
 def search_sheet(request, sheet_name, fmt):
     q = request.GET["q"]
+    offset = int(request.GET["offset"])
     group = request.GET["group"]
     wiki = get_wiki(request, sheet_name)
     configs = models.SheetConfig.objects.filter(
         sheet__name=sheet_name, wiki=wiki, group=group
     )
-    return search(q, configs.first(), configs, fmt, False)
+    return search(q, offset, configs.first(), configs, fmt, False)
 
 
 def edit_record(sheet_name, key, group, wiki, field, new_value):

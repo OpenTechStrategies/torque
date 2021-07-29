@@ -131,6 +131,8 @@ class TorqueDataConnectHooks {
       $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
       $wgTorqueDataConnectMultiWikiConfig;
 
+    $offset = $specialSearch->getRequest()->getInt("offset", 0);
+
     if($wgTorqueDataConnectMultiWikiConfig) {
       $wiki_keys = "";
       $sheet_names = "";
@@ -146,6 +148,7 @@ class TorqueDataConnectHooks {
         "&sheet_name=" . $wgTorqueDataConnectSheetName .
         "&wiki_keys=" . $wiki_keys .
         "&sheet_names=" . $sheet_names .
+        "&offset=" . $offset .
         "&q=" .  urlencode($term)
         );
     } else {
@@ -154,11 +157,37 @@ class TorqueDataConnectHooks {
         "/api/sheets/" .  $wgTorqueDataConnectSheetName . "/search.mwiki" .
         "?group=" .  $wgTorqueDataConnectGroup .
         "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
+        "&offset=" . $offset .
         "&q=" .  urlencode($term)
         );
     }
+    $split_point = strpos($results, " ");
+    $num_results = intval(substr($results, 0, $split_point));
+    $mwiki_results = substr($results, $split_point + 1);
+    $request = $specialSearch->getRequest();
 
-    $output->addWikiTextAsInterface($results);
+    $header = "<h2>$num_results results for '$term'";
+    if($num_results > 20) {
+      $header .= " (viewing ";
+      $header .= ($offset + 1) . " - " . min($num_results, ($offset + 20));
+      if($offset > 0) {
+        $header .= " | ";
+        $request->appendQueryValue("offset", ($offset - 20));
+        $prev_20_url = $output->getTitle()->getFullUrl(["offset" => $offset - 20, "search" => $term]);
+        $header .= "<a href='$prev_20_url'>Prev 20</a>";
+      }
+      if(($offset + 20) < $num_results) {
+        $header .= " | ";
+        $request->appendQueryValue("offset", ($offset + 20));
+        $next_20_url = $output->getTitle()->getFullUrl(["offset" => $offset + 20, "search" => $term]);
+        $header .= "<a href='$next_20_url'>Next 20</a>";
+      }
+      $header .= ")";
+    }
+    $header .= "</h2>";
+
+    $output->addHTML($header);
+    $output->addWikiTextAsInterface($mwiki_results);
 
     return false;
   }
