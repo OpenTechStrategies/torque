@@ -110,13 +110,30 @@ class Spreadsheet(models.Model):
         return sheet, rows
 
 
+class Wiki(models.Model):
+    """Represents a Wiki that uses this torque instance.  Identified
+    by the wiki_key, which has the corresponding variable
+    $wgTorqueDataConnectWikiKey in the mediawiki extension.
+
+    Not that this does not connect to any spreadsheet, because a wiki
+    can be connected to multiple spreadsheets through SheetConfigs"""
+
+    wiki_key = models.TextField()
+    server = models.TextField(null=True)
+    script_path = models.TextField(null=True)
+    username = models.TextField(null=True)
+    password = models.TextField(null=True)
+
+
 class SheetConfig(models.Model):
     sheet = models.ForeignKey(
         Spreadsheet,
         on_delete=models.CASCADE,
         related_name="configs",
     )
-    wiki_key = models.TextField()
+    wiki = models.ForeignKey(
+        Wiki, on_delete=models.CASCADE, related_name="configs", null=True
+    )
     group = models.TextField()
 
     # This field holds a hash of the valid ids/valid columns for this group
@@ -149,7 +166,7 @@ class SheetConfig(models.Model):
                     SearchCacheRow(
                         row=row,
                         sheet=self.sheet,
-                        wiki_key=self.wiki_key,
+                        wiki=self.wiki,
                         group=self.group,
                         sheet_config=self,
                         data=" ".join(list(map(str, row_dict.values()))),
@@ -237,7 +254,7 @@ class CellEdit(models.Model):
     edit_timestamp = models.DateTimeField(auto_now=True)
     approval_timestamp = models.DateTimeField(null=True)
     sheet = models.ForeignKey(Spreadsheet, on_delete=models.CASCADE)
-    wiki_key = models.TextField(null=True)
+    wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     approval_code = models.CharField(max_length=255, null=True)
 
 
@@ -245,7 +262,7 @@ class Template(models.Model):
     sheet = models.ForeignKey(
         Spreadsheet, on_delete=models.CASCADE, related_name="templates"
     )
-    wiki_key = models.TextField(null=True)
+    wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     type = models.TextField(null=True)  # enumeration?
     name = models.TextField()
     is_default = models.BooleanField(default=False)
@@ -273,6 +290,31 @@ class TableOfContents(models.Model):
     template = models.OneToOneField(
         Template, on_delete=models.CASCADE, primary_key=True
     )
+
+    def render_to_mwiki(self, sheet_config):
+        sheet = sheet_config.sheet
+        rows = sheet.clean_rows(sheet_config)
+
+        data = json.loads(self.json_file)
+        data[sheet.name] = {row[sheet.key_column]: row for row in rows}
+
+        toc_templates = Template.objects.filter(
+            sheet=sheet,
+            wiki=sheet_config.wiki,
+            type="TOC",
+        )
+        line_template = toc_templates.get(is_default=True)
+
+        line_template_contents = line_template.template_file.read().decode("utf-8")
+        template_contents = self.template.template_file.read().decode("utf-8")
+
+        data["toc_lines"] = {
+            row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
+                {sheet.object_name: row}
+            )
+            for row in rows
+        }
+        return JinjaTemplate(template_contents).render(data)
 
     class Meta:
         constraints = [
@@ -319,7 +361,7 @@ class SearchCacheRow(models.Model):
     )
     sheet_config = models.ForeignKey(SheetConfig, on_delete=models.CASCADE)
     row = models.ForeignKey(Row, on_delete=models.CASCADE)
-    wiki_key = models.TextField()
+    wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     group = models.TextField()
     data = models.TextField()
     data_vector = SearchVectorField(null=True)
@@ -335,34 +377,23 @@ class TableOfContentsCache(models.Model):
     )
     toc = models.ForeignKey(TableOfContents, on_delete=models.CASCADE)
     dirty = models.BooleanField(default=True)
-    rendered_data = models.TextField()
+    rendered_html = models.TextField(null=True)
 
     def rebuild(self):
-        sheet = self.sheet_config.sheet
-        rows = sheet.clean_rows(self.sheet_config)
+        import mwclient
 
-        data = json.loads(self.toc.json_file)
-        data[sheet.name] = {row[sheet.key_column]: row for row in rows}
-
-        toc_templates = Template.objects.filter(
-            sheet=sheet,
-            wiki_key=self.sheet_config.wiki_key,
-            type="TOC",
-        )
-        line_template = toc_templates.get(is_default=True)
-
-        line_template_contents = line_template.template_file.read().decode("utf-8")
-        template_contents = self.toc.template.template_file.read().decode("utf-8")
-
-        data["toc_lines"] = {
-            row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
-                {sheet.object_name: row}
+        if self.sheet_config.wiki.server:
+            (scheme, server) = self.sheet_config.wiki.server.split("://")
+            site = mwclient.Site(
+                server, self.sheet_config.wiki.script_path + "/", scheme=scheme
             )
-            for row in rows
-        }
-        self.rendered_data = JinjaTemplate(template_contents).render(data)
+            site.login(self.sheet_config.wiki.username, self.sheet_config.wiki.password)
 
-        self.save()
+            rendered_data = self.toc.render_to_mwiki(self.sheet_config)
+            self.rendered_html = site.api(
+                "parse", text=rendered_data, contentmodel="wikitext", prop="text"
+            )["parse"]["text"]["*"]
+            self.save()
 
     class Meta:
         constraints = [
@@ -370,10 +401,3 @@ class TableOfContentsCache(models.Model):
                 fields=["sheet_config", "toc"], name="unique_toc_cache"
             ),
         ]
-
-
-class PermissionGroup(models.Model):
-    name = models.CharField(max_length=255)
-    object_name = models.CharField(max_length=255)
-    columns = models.ManyToManyField(Column)
-    # key_column = models.ForeignKey(Column, on_delete=models.CASCADE)

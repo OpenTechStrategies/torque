@@ -36,16 +36,26 @@ class TorqueDataConnectHooks {
       $wgTorqueDataConnectGroup = TorqueDataConnectConfig::getValidGroup($wgUser);
     }
 
-    $contents = file_get_contents(
-      $wgTorqueDataConnectServerLocation .
-      "/api/" .
-      $location .
-      "?group=" .
-      $wgTorqueDataConnectGroup .
-      "&wiki_key=" .
-      $wiki_key .
-      ($view ? "&view=" . $view : "")
-      );
+    // For legacy reasons, we strip off .mwiki if it's here.  Prior, it was correct
+    // to specify the content type as the extensions from within the wiki pages
+    // as part of the #tdcrender tag
+    if(strlen($location) ? substr($location, -6) === ".mwiki" : false) {
+      $location = substr($location, 0, strlen($location) - 6);
+    }
+
+    $path = $wgTorqueDataConnectServerLocation . "/api/" . "${location}";
+    $args = "group=" . $wgTorqueDataConnectGroup .
+      "&wiki_key=" . $wiki_key .
+      ($view ? "&view=" . $view : "");
+
+    // For now, this is only for the cached version
+    $using_html = true;
+    $contents = file_get_contents("${path}.html?${args}");
+
+    if(strlen($contents) === 0) {
+      $using_html = false;
+      $contents = file_get_contents("${path}.mwiki?${args}");
+    }
     
     $contents = $contents . '<span id="page-info" data-location="' . $location . '" data-wiki-key="' . $wiki_key . '"></span>';
 
@@ -58,7 +68,7 @@ class TorqueDataConnectHooks {
     if(!$contents) {
       global $wgTorqueDataConnectNotFoundMessage;
       return $wgTorqueDataConnectNotFoundMessage;
-    } else if($wgTorqueDataConnectRaw || TorqueDataConnectConfig::isRawView($view)) {
+    } else if($wgTorqueDataConnectRaw || TorqueDataConnectConfig::isRawView($view) || $using_html) {
       # We need to remove newlines and extra spaces because mediawiki adds a bunch of
       # <p> tags # when it hits them.  Since we want the output to be completely raw,
       # we trick mediawiki into doing just that by putting it all on one line

@@ -46,6 +46,13 @@ wfLoadExtension('TorqueDataConnect');
   some users, especially API users, may want the wiki markup to do things like pdf rendering.
 * `$wgTorqueDataConnectMultiWikiConfig` - This is an associative array of `SheetName` to `WikiKey` as
   above.  See [below](#MultiWiki support) for more information.
+* `$wgTorqueDataConnectCache` - when set to true, torque will cache the rendered forms of certain
+  things, such as tables of contents.  Defaults to false
+* `$wgTorqueDataConnectWikiUsername`" - used in conjunction with $wgTorqueDataConnectCache to set
+  the username to log into the wiki to prerender cached data.  Defaults to ""
+* `$wgTorqueDataConnectWikiPassword`" - used in conjunction with $wgTorqueDataConnectCache to set
+  the username to log into the wiki to prerender cached data.  Defaults to ""
+
 
 ### WikiPage configuration
 

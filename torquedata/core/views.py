@@ -16,7 +16,7 @@ import magic
 import config
 
 
-def get_wiki_key(request, sheet_name):
+def get_wiki(request, sheet_name):
     wiki_key = request.GET["wiki_key"]
 
     if "wiki_keys" in request.GET:
@@ -27,7 +27,7 @@ def get_wiki_key(request, sheet_name):
         if sheet_name in mapping:
             wiki_key = mapping[sheet_name]
 
-    return wiki_key
+    return models.Wiki.objects.get_or_create(wiki_key=wiki_key)[0]
 
 
 def search(q, template_config, sheet_configs, fmt, multi):
@@ -92,10 +92,10 @@ def search_global(request, fmt):
     wiki_keys = request.GET["wiki_keys"].split(",")
     sheet_names = request.GET["sheet_names"].split(",")
     global_config = models.SheetConfig.objects.get(
-        sheet__name=global_sheet_name, wiki_key=global_wiki_key, group=group
+        sheet__name=global_sheet_name, wiki__wiki_key=global_wiki_key, group=group
     )
     configs = models.SheetConfig.objects.filter(
-        sheet__name__in=sheet_names, wiki_key__in=wiki_keys, group=group
+        sheet__name__in=sheet_names, wiki__wiki_key__in=wiki_keys, group=group
     ).all()
     return search(q, global_config, configs, fmt, True)
 
@@ -103,19 +103,19 @@ def search_global(request, fmt):
 def search_sheet(request, sheet_name, fmt):
     q = request.GET["q"]
     group = request.GET["group"]
-    wiki_key = get_wiki_key(request, sheet_name)
+    wiki = get_wiki(request, sheet_name)
     configs = models.SheetConfig.objects.filter(
-        sheet__name=sheet_name, wiki_key=wiki_key, group=group
+        sheet__name=sheet_name, wiki=wiki, group=group
     )
     return search(q, configs.first(), configs, fmt, False)
 
 
-def edit_record(sheet_name, key, group, wiki_key, field, new_value):
+def edit_record(sheet_name, key, group, wiki, field, new_value):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     row = models.Row.objects.get(sheet=sheet, key=key)
     sheet_config = models.SheetConfig.objects.get(
         sheet=sheet,
-        wiki_key=wiki_key,
+        wiki=wiki,
         group=group,
     )
 
@@ -129,7 +129,7 @@ def edit_record(sheet_name, key, group, wiki_key, field, new_value):
             value=new_value,
             message="",
             edit_timestamp=datetime.now,
-            wiki_key=wiki_key,
+            wiki=wiki,
         )
         edit_record.save()
 
@@ -152,15 +152,14 @@ def get_sheet(request, sheet_name, fmt):
     if fmt == "json":
         response = {"name": sheet_name}
 
-
         sheet = models.Spreadsheet.objects.get(name=sheet_name)
 
         if "group" in request.GET:
             group = request.GET["group"]
-            wiki_key = get_wiki_key(request, sheet_name)
+            wiki = get_wiki(request, sheet_name)
             sheet_config = models.SheetConfig.objects.get(
                 sheet=sheet,
-                wiki_key=wiki_key,
+                wiki=wiki,
                 group=group,
             )
 
@@ -168,9 +167,7 @@ def get_sheet(request, sheet_name, fmt):
                 column.name for column in sheet_config.valid_columns.all()
             ]
         else:
-            response["fields"] = [
-                column.name for column in sheet.columns.all()
-            ]
+            response["fields"] = [column.name for column in sheet.columns.all()]
 
         response["last_updated"] = sheet.last_updated.isoformat()
 
@@ -181,35 +178,41 @@ def get_sheet(request, sheet_name, fmt):
 
 def get_toc(request, sheet_name, toc_name, fmt):
     group = request.GET["group"]
-    wiki_key = request.GET["wiki_key"]
+    wiki = get_wiki(request, sheet_name)
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
-
-    if group == "":
-        return HttpResponse(status=403)
 
     try:
         sheet_config = models.SheetConfig.objects.get(
             sheet=sheet,
-            wiki_key=wiki_key,
+            wiki=wiki,
             group=group,
         )
     except:
         return HttpResponse(status=403)
 
     toc = models.TableOfContents.objects.get(sheet=sheet, name=toc_name)
-    cached_toc = sheet_config.cached_tocs.get(toc=toc)
 
-    return HttpResponse(cached_toc.rendered_data)
+    if group == "":
+        return HttpResponse(status=403)
+
+    if fmt == "mwiki":
+        return HttpResponse(toc.render_to_mwiki(sheet_config))
+    elif fmt == "html":
+        cached_toc = sheet_config.cached_tocs.get(toc=toc)
+
+        return HttpResponse(cached_toc.rendered_html)
+    else:
+        raise Exception(f"Invalid format {fmt}")
 
 
 def get_rows(request, sheet_name, fmt):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     group = request.GET["group"]
-    wiki_key = get_wiki_key(request, sheet_name)
+    wiki = get_wiki(request, sheet_name)
 
     sheet_config = models.SheetConfig.objects.get(
         sheet=sheet,
-        wiki_key=wiki_key,
+        wiki=wiki,
         group=group,
     )
 
@@ -221,11 +224,11 @@ def get_rows(request, sheet_name, fmt):
         raise Exception(f"Invalid format {fmt}")
 
 
-def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
+def get_row(group, wiki, key, fmt, sheet_name, view=None):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     sheet_config = models.SheetConfig.objects.get(
         sheet=sheet,
-        wiki_key=wiki_key,
+        wiki=wiki,
         group=group,
     )
     row = models.Row.objects.get(key=key, sheet=sheet).to_dict(sheet_config)
@@ -235,7 +238,7 @@ def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
     elif fmt == "mwiki":
         templates = models.Template.objects.filter(
             sheet=sheet,
-            wiki_key=wiki_key,
+            wiki=wiki,
             type="View",
         )
         if view is not None:
@@ -249,41 +252,45 @@ def get_row(group, wiki_key, key, fmt, sheet_name, view=None):
         return HttpResponse(rendered_template)
     elif fmt == "dict":
         return row
+    elif fmt == "html":
+        # Return the empty string because we don't have a cached version, and the
+        # TDC extension will read that and attempt to get the mwiki version.
+        return HttpResponse("")
     else:
         raise Exception(f"Invalid format {fmt}")
 
 
 def get_row_view(request, sheet_name, key, fmt):
     group = request.GET["group"]
-    wiki_key = get_wiki_key(request, sheet_name)
-    return get_row(group, wiki_key, key, fmt, sheet_name, request.GET.get("view", None))
+    wiki = get_wiki(request, sheet_name)
+    return get_row(group, wiki, key, fmt, sheet_name, request.GET.get("view", None))
 
 
 def field(request, sheet_name, key, field, fmt):
     field = urllib.parse.unquote_plus(field)
     if request.method == "GET":
         group = request.GET["group"]
-        wiki_key = get_wiki_key(request, sheet_name)
-        row = get_row(group, wiki_key, key, "dict", sheet_name, None)
+        wiki = get_wiki(request, sheet_name)
+        row = get_row(group, wiki, key, "dict", sheet_name, None)
         return JsonResponse(row[field], safe=False)
     elif request.method == "POST":
         post_fields = json.loads(request.body)
         group = post_fields["group"]
-        wiki_key = post_fields["wiki_key"]
+        wiki = models.Wiki.objects.get(wiki_key=post_fields["wiki_key"])
         new_value = post_fields["new_value"]
-        edit_record(sheet_name, key, group, wiki_key, field, new_value)
+        edit_record(sheet_name, key, group, wiki, field, new_value)
         return HttpResponse(201)
 
 
 def get_attachment(request, sheet_name, key, attachment):
     group = request.GET["group"]
-    wiki_key = request.GET["wiki_key"]
+    wiki = get_wiki(request, sheet_name)
     attachment_name = secure_filename(urllib.parse.unquote_plus(attachment))
 
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     sheet_config = models.SheetConfig.objects.get(
         sheet=sheet,
-        wiki_key=wiki_key,
+        wiki=wiki,
         group=group,
     )
     row = sheet.rows.get(key=key)
@@ -301,10 +308,32 @@ def get_attachment(request, sheet_name, key, attachment):
 
 
 def reset_config(request, sheet_name, wiki_key):
-    models.SheetConfig.objects.filter(sheet__name=sheet_name, wiki_key=wiki_key).update(
+    wiki = models.Wiki.objects.get_or_create(wiki_key=wiki_key)[0]
+    wiki.username = None
+    wiki.password = None
+    wiki.script_path = None
+    wiki.server = None
+    wiki.save()
+
+    models.SheetConfig.objects.filter(sheet__name=sheet_name, wiki=wiki).update(
         in_config=False
     )
-    models.Template.objects.filter(sheet__name=sheet_name, wiki_key=wiki_key).delete()
+    models.Template.objects.filter(sheet__name=sheet_name, wiki=wiki).delete()
+
+    return HttpResponse(status=200)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+# Even though sheet_name isn't user here, we add it so that the urls
+# all nicely line up with the other config requests
+def set_wiki_config(request, sheet_name, wiki_key):
+    wiki = models.Wiki.objects.get_or_create(wiki_key=wiki_key)[0]
+    wiki.username = request.POST["username"]
+    wiki.password = request.POST["password"]
+    wiki.script_path = request.POST["script_path"]
+    wiki.server = request.POST["server"]
+    wiki.save()
 
     return HttpResponse(status=200)
 
@@ -316,10 +345,11 @@ def set_group_config(request, sheet_name, wiki_key):
 
     new_config = json.loads(request.body)
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
+    wiki = models.Wiki.objects.get(wiki_key=wiki_key)
 
     try:
         config = models.SheetConfig.objects.get(
-            sheet__name=sheet_name, wiki_key=wiki_key, group=new_config["group"]
+            sheet=sheet, wiki=wiki, group=new_config["group"]
         )
     except models.SheetConfig.DoesNotExist:
         config = None
@@ -336,7 +366,7 @@ def set_group_config(request, sheet_name, wiki_key):
             config.valid_columns.clear()
         else:
             config = models.SheetConfig(
-                sheet=sheet, wiki_key=wiki_key, group=new_config["group"]
+                sheet=sheet, wiki=wiki, group=new_config["group"]
             )
             config.save()
 
@@ -366,7 +396,7 @@ def set_group_config(request, sheet_name, wiki_key):
 
 def complete_config(request, sheet_name, wiki_key):
     models.SheetConfig.objects.filter(
-        sheet__name=sheet_name, wiki_key=wiki_key, in_config=False
+        sheet__name=sheet_name, wiki__wiki_key=wiki_key, in_config=False
     ).delete()
 
     return HttpResponse(status=200)
@@ -379,25 +409,27 @@ def set_template_config(request, sheet_name, wiki_key):
 
     conf_name = new_config["name"]
     conf_type = new_config["type"]
+
+    sheet = models.Spreadsheet.objects.get(name=sheet_name)
+    wiki = models.Wiki.objects.get(wiki_key=wiki_key)
     try:
         config = models.Template.objects.get(
-            sheet__name=sheet_name,
-            wiki_key=wiki_key,
+            sheet=sheet,
+            wiki=wiki,
             type=conf_type,
             name=conf_name,
         )
     except models.Template.DoesNotExist:
         # create if does not exist
-        sheet = models.Spreadsheet.objects.get(name=sheet_name)
         config = models.Template(
             sheet=sheet,
-            wiki_key=wiki_key,
+            wiki=wiki,
             type=conf_type,
             name=conf_name,
             # set as default if first template of this type
             is_default=not models.Template.objects.filter(
                 sheet__name=sheet.name,
-                wiki_key=wiki_key,
+                wiki=wiki,
                 type=conf_type,
             ).exists(),
         )

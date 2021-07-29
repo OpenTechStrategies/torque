@@ -33,6 +33,7 @@ class RebuildTOCs:
             toc_cache.save()
             with transaction.atomic():
                 toc_cache.rebuild()
+            print("Rebuilt toc %s" % toc_cache.toc.name)
 
 
 class RebuildSearchCacheRows:
