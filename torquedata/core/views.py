@@ -34,7 +34,7 @@ def search(q, offset, template_config, sheet_configs, fmt, multi):
     results = (
         models.SearchCacheRow.objects.filter(
             sheet__in=sheet_configs.values_list("sheet", flat=True),
-            wiki_key__in=sheet_configs.values_list("wiki_key", flat=True),
+            wiki__wiki_key__in=sheet_configs.values_list("wiki__wiki_key", flat=True),
             group__in=sheet_configs.values_list("group", flat=True),
             sheet_config__in=sheet_configs,
             data_vector=q,
