@@ -20,7 +20,8 @@ class TorqueDataConnectUploadToc extends APIBase {
       'json' => curl_file_create($jsontemp),
       'template' => curl_file_create($templatetemp),
       'sheet_name' => $this->getParameter("sheet_name"),
-      'toc_name' => $this->getParameter("toc_name")
+      'toc_name' => $this->getParameter("toc_name"),
+      'raw' => $this->getParameter("raw_toc")
     ];
 
     $ch = curl_init();
@@ -53,6 +54,10 @@ class TorqueDataConnectUploadToc extends APIBase {
       "template" => [
         ApiBase::PARAM_TYPE => 'upload',
         ApiBase::PARAM_REQUIRED => 'true'
+      ],
+      "raw_toc" => [
+        ApiBase::PARAM_TYPE => 'boolean',
+        ApiBase::PARAM_REQUIRED => 'false'
       ]
     ];
   }

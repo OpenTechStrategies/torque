@@ -490,6 +490,7 @@ def upload_toc(request):
     # the TOC already exists in the database
     toc.json_file = json_file
     toc.template = template
+    toc.raw = bool(request.POST["raw"])
     toc.save()
 
     for config in sheet.configs.all():

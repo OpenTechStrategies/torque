@@ -290,6 +290,7 @@ class TableOfContents(models.Model):
     template = models.OneToOneField(
         Template, on_delete=models.CASCADE, primary_key=True
     )
+    raw = models.BooleanField(default=False)
 
     def render_to_mwiki(self, sheet_config):
         sheet = sheet_config.sheet
@@ -383,17 +384,21 @@ class TableOfContentsCache(models.Model):
         import mwclient
 
         if self.sheet_config.wiki.server:
-            (scheme, server) = self.sheet_config.wiki.server.split("://")
-            site = mwclient.Site(
-                server, self.sheet_config.wiki.script_path + "/", scheme=scheme
-            )
-            site.login(self.sheet_config.wiki.username, self.sheet_config.wiki.password)
+            if self.toc.raw:
+                self.rendered_html = self.toc.render_to_mwiki(self.sheet_config)
+                self.save()
+            else:
+                (scheme, server) = self.sheet_config.wiki.server.split("://")
+                site = mwclient.Site(
+                    server, self.sheet_config.wiki.script_path + "/", scheme=scheme
+                )
+                site.login(self.sheet_config.wiki.username, self.sheet_config.wiki.password)
 
-            rendered_data = self.toc.render_to_mwiki(self.sheet_config)
-            self.rendered_html = site.api(
-                "parse", text=rendered_data, contentmodel="wikitext", prop="text"
-            )["parse"]["text"]["*"]
-            self.save()
+                rendered_data = self.toc.render_to_mwiki(self.sheet_config)
+                self.rendered_html = site.api(
+                    "parse", text=rendered_data, contentmodel="wikitext", prop="text"
+                )["parse"]["text"]["*"]
+                self.save()
 
     class Meta:
         constraints = [
