@@ -52,7 +52,13 @@ wfLoadExtension('TorqueDataConnect');
   the username to log into the wiki to prerender cached data.  Defaults to ""
 * `$wgTorqueDataConnectWikiPassword`" - used in conjunction with $wgTorqueDataConnectCache to set
   the username to log into the wiki to prerender cached data.  Defaults to ""
-
+* `$wgTorqueDataConnectCache`" - when set, torque will cache the html versions of pages as needed,
+  most notably the table of contents pages, though later other pages could be added.  These
+  caches are built for each combination of group/row pairs as defined in the torque configuration
+* `$wgTorqueDataConnectWikiUsername`" - used in conjunction with `$wgTorqueDataConnectCache`, setting
+  the username with which to log into the wiki for parsing (if needed).
+* `$wgTorqueDataConnectWikiPassword`" - used in conjunction with `$wgTorqueDataConnectCache`, setting
+  the password with which to log into the wiki for parsing (if needed).
 
 ### WikiPage configuration
 
