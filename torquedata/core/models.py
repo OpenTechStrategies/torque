@@ -399,6 +399,9 @@ class TableOfContentsCache(models.Model):
                     "parse", text=rendered_data, contentmodel="wikitext", prop="text"
                 )["parse"]["text"]["*"]
                 self.save()
+        else:
+            self.rendered_html = ''
+            self.save()
 
     class Meta:
         constraints = [
