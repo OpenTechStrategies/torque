@@ -83,7 +83,7 @@ def search(q, offset, template_config, sheet_configs, fmt, multi):
 
 def search_global(request, fmt):
     q = request.GET["q"]
-    offset = int(request.GET["offset"])
+    offset = int(request.GET.get("offset", 0))
     group = request.GET["group"]
     global_wiki_key = request.GET["wiki_key"]
     global_sheet_name = request.GET["sheet_name"]
@@ -100,7 +100,7 @@ def search_global(request, fmt):
 
 def search_sheet(request, sheet_name, fmt):
     q = request.GET["q"]
-    offset = int(request.GET["offset"])
+    offset = int(request.GET.get("offset", 0))
     group = request.GET["group"]
     wiki = get_wiki(request, sheet_name)
     configs = models.SheetConfig.objects.filter(
