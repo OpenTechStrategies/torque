@@ -118,8 +118,8 @@ def edit_record(sheet_name, key, group, wiki, field, new_value):
         group=group,
     )
 
-    if field in [col.name for col in sheet_config.valid_columns.all()]:
-        value = row.values.get(column__name=field)
+    if field in [field.name for field in sheet_config.valid_fields.all()]:
+        value = row.values.get(field__name=field)
         value.latest = json.dumps(new_value)
         value.save()
         edit_record = models.ValueEdit(
@@ -163,10 +163,10 @@ def get_sheet(request, sheet_name, fmt):
             )
 
             response["fields"] = [
-                column.name for column in sheet_config.valid_columns.all()
+                field.name for field in sheet_config.valid_fields.all()
             ]
         else:
-            response["fields"] = [column.name for column in sheet.columns.all()]
+            response["fields"] = [field.name for field in sheet.fields.all()]
 
         response["last_updated"] = sheet.last_updated.isoformat()
 
@@ -295,8 +295,8 @@ def get_attachment(request, sheet_name, key, attachment):
     row = sheet.rows.get(key=key)
     attachment = models.Attachment.objects.get(name=attachment_name, row=row)
 
-    if not sheet_config.valid_columns.filter(
-        id=attachment.permissions_column.id
+    if not sheet_config.valid_fields.filter(
+        id=attachment.permissions_field.id
     ).exists():
         raise Exception("Not permitted to see this attachment.")
 
@@ -356,13 +356,13 @@ def set_group_config(request, sheet_name, wiki_key):
     permissions_sha = hashlib.sha224(
         sheet_name.encode("utf-8")
         + str(new_config.get("valid_ids")).encode("utf-8")
-        + str(new_config.get("columns")).encode("utf-8")
+        + str(new_config.get("fields")).encode("utf-8")
     ).hexdigest()
 
     if config is None or permissions_sha != config.search_cache_sha:
         if config is not None:
             config.valid_ids.clear()
-            config.valid_columns.clear()
+            config.valid_fields.clear()
         else:
             config = models.SheetConfig(
                 sheet=sheet, wiki=wiki, group=new_config["group"]
@@ -381,10 +381,10 @@ def set_group_config(request, sheet_name, wiki_key):
         valid_rows = models.Row.objects.filter(
             sheet=sheet, key__in=new_config.get("valid_ids")
         )
-        valid_columns = models.Column.objects.filter(name__in=new_config.get("columns"))
+        valid_fields = models.Field.objects.filter(name__in=new_config.get("fields"))
         config.save()
         config.valid_ids.add(*valid_rows)
-        config.valid_columns.add(*valid_columns)
+        config.valid_fields.add(*valid_fields)
         config.search_cache_dirty = True
 
     config.in_config = True
@@ -448,7 +448,7 @@ def upload_sheet(request):
         sheet, rows = models.Spreadsheet.from_json(
             name=request.POST["sheet_name"],
             object_name=request.POST["object_name"],
-            key_column=request.POST["key_column"],
+            key_field=request.POST["key_field"],
             file=f,
         )
     sheet.save()
@@ -508,15 +508,15 @@ def upload_toc(request):
 @require_http_methods(["POST"])
 def upload_attachment(request):
     sheet = models.Spreadsheet.objects.get(name=request.POST["sheet_name"])
-    permissions_column = models.Column.objects.get(
-        sheet=sheet, name=request.POST["permissions_column"]
+    permissions_field = models.Field.objects.get(
+        sheet=sheet, name=request.POST["permissions_field"]
     )
     row = sheet.rows.get(key=request.POST["object_id"])
     (attachment, changed) = models.Attachment.objects.update_or_create(
         sheet=sheet,
         name=secure_filename(request.POST["attachment_name"]),
         row=row,
-        permissions_column=permissions_column,
+        permissions_field=permissions_field,
     )
     attachment.file = request.FILES["attachment"]
     attachment.save()

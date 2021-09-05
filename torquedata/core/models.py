@@ -19,7 +19,7 @@ class Spreadsheet(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     object_name = models.CharField(max_length=255)
-    key_column = models.TextField()
+    key_field = models.TextField()
     last_updated = models.DateTimeField(auto_now=True)
 
     def clean_rows(self, config):
@@ -28,62 +28,65 @@ class Spreadsheet(models.Model):
         new_rows = {}
         for value in (
             Value.objects.filter(
-                row__in=config.valid_ids.all(), column__in=config.valid_columns.all()
+                row__in=config.valid_ids.all(), field__in=config.valid_fields.all()
             )
-            .prefetch_related("column")
+            .prefetch_related("field")
             .prefetch_related("row")
             .all()
         ):
             if value.row.id not in new_rows:
                 new_rows[value.row.id] = {"key": value.row.key}
-            new_rows[value.row.id][value.column.name] = value.to_python()
+            new_rows[value.row.id][value.field.name] = value.to_python()
         return new_rows.values()
 
     @classmethod
-    def from_json(cls, name, object_name, key_column, file):
+    def from_json(cls, name, object_name, key_field, file):
         file_text = file.read().decode()
         data = json.loads(file_text)
         if Spreadsheet.objects.filter(name=name).exists():
             sheet = Spreadsheet.objects.get(name=name)
         else:
-            sheet = cls(name=name, object_name=object_name, key_column=key_column)
+            sheet = cls(name=name, object_name=object_name, key_field=key_field)
             sheet.save()
 
-        cols = {}
+        fields = {}
         rows = []
         values = []
         sheet_values = {}
         for value in (
             Value.objects.filter(row__in=Row.objects.filter(sheet=sheet))
-            .prefetch_related("column")
+            .prefetch_related("field")
             .prefetch_related("row")
         ):
             if value.row not in sheet_values:
                 sheet_values[value.row] = {}
-            if value.column not in sheet_values[value.row]:
-                sheet_values[value.row][value.column] = value
+            if value.field not in sheet_values[value.row]:
+                sheet_values[value.row][value.field] = value
 
         for row_number, row_in in enumerate(data):
             if row_number == 0:
-                # Generate columns, but only on the first proposal
-                for col_name in row_in.keys():
-                    col, created = Column.objects.update_or_create(
-                        name=col_name,
+                # Generate fields, but only on the first proposal
+                for field_name in row_in.keys():
+                    field, created = Field.objects.update_or_create(
+                        name=field_name,
                         sheet=sheet,
                     )
-                    col.save()
-                    cols[col_name] = col
+                    field.save()
+                    fields[field_name] = field
 
             db_row, created = Row.objects.update_or_create(
                 sheet=sheet,
-                key=row_in[sheet.key_column],
+                key=row_in[sheet.key_field],
             )
             db_row.save()
             rows.append(db_row)
-            for col_name, value_value in row_in.items():
+            for field_name, value_value in row_in.items():
                 jsoned_value_value = json.dumps(value_value)
-                if db_row in sheet_values and cols[col_name] in sheet_values[db_row]:
-                    value = sheet_values[db_row][cols[col_name]]
+                if (
+                    db_row in sheet_values
+                    and fields[field_name] in sheet_values[db_row]
+                ):
+                    value = sheet_values[db_row][fields[field_name]]
                     # Only update for values whose value has changed
                     if value.original != jsoned_value_value:
                         sheet.last_updated = datetime.now
@@ -93,7 +96,7 @@ class Spreadsheet(models.Model):
                 else:
                     sheet.last_updated = datetime.now
                     value = Value(
-                        column=cols[col_name],
+                        field=fields[field_name],
                         original=jsoned_value_value,
                         latest=jsoned_value_value,
                         db_row=db_row,
@@ -133,7 +136,7 @@ class SheetConfig(models.Model):
     )
     group = models.TextField()
 
-    # This field holds a hash of the valid ids/valid columns for this group
+    # This field holds a hash of the valid ids/valid fields for this group
     # The reason is to quickly check to see if this group has been created
     # identically before now.  Updating a group is an expensive operation
     # due to the search cache needing to be re-created andd re-indexed, so
@@ -187,11 +190,9 @@ class Row(models.Model):
 
     def to_dict(self, config):
         new_row = {"key": self.key}
-        valid_columns = config.valid_columns.all()
-        for value in self.values.filter(column__in=valid_columns).select_related(
-            "column"
-        ):
-            new_row[value.column.name] = value.to_python()
+        valid_fields = config.valid_fields.all()
+        for value in self.values.filter(field__in=valid_fields).select_related("field"):
+            new_row[value.field.name] = value.to_python()
 
         return new_row
 
@@ -213,18 +214,18 @@ class Row(models.Model):
         ]
 
 
-class Column(models.Model):
+class Field(models.Model):
     name = models.CharField(max_length=255)
     sheet = models.ForeignKey(
         Spreadsheet,
         on_delete=models.CASCADE,
-        related_name="columns",
+        related_name="fields",
     )
-    sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_columns")
+    sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_fields")
 
 
 class Value(models.Model):
-    column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="values")
+    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name="values")
     original = models.TextField(null=True)
     latest = models.TextField(null=True)
     row = models.ForeignKey(Row, on_delete=models.CASCADE, related_name="values")
@@ -283,7 +284,7 @@ class TableOfContents(models.Model):
         rows = sheet.clean_rows(sheet_config)
 
         data = json.loads(self.json_file)
-        data[sheet.name] = {row[sheet.key_column]: row for row in rows}
+        data[sheet.name] = {row[sheet.key_field]: row for row in rows}
 
         toc_templates = Template.objects.filter(
             sheet=sheet,
@@ -296,7 +297,7 @@ class TableOfContents(models.Model):
         template_contents = self.template.template_file.read().decode("utf-8")
 
         data["toc_lines"] = {
-            row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
+            row[sheet.key_field]: JinjaTemplate(line_template_contents).render(
                 {sheet.object_name: row}
             )
             for row in rows
@@ -320,8 +321,8 @@ class Attachment(models.Model):
     row = models.ForeignKey(
         Row, on_delete=models.CASCADE, related_name="attachments", default=None
     )
-    permissions_column = models.ForeignKey(
-        Column, on_delete=models.CASCADE, related_name="attachments", default=None
+    permissions_field = models.ForeignKey(
+        Field, on_delete=models.CASCADE, related_name="attachments", default=None
     )
     file = models.FileField(upload_to="attachments")
 
