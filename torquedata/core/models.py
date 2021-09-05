@@ -1,4 +1,3 @@
-import csv
 import hashlib
 import io
 import os
@@ -16,7 +15,7 @@ from jinja2 import Template as JinjaTemplate
 
 
 class Spreadsheet(models.Model):
-    """ An uploaded CSV file """
+    """An uploaded CSV file"""
 
     name = models.CharField(max_length=255, unique=True)
     object_name = models.CharField(max_length=255)
@@ -37,13 +36,13 @@ class Spreadsheet(models.Model):
         ):
             if cell.row.id not in new_rows:
                 new_rows[cell.row.id] = {"key": cell.row.key}
-            new_rows[cell.row.id][cell.column.name] = cell.formatted_value()
+            new_rows[cell.row.id][cell.column.name] = cell.value()
         return new_rows.values()
 
     @classmethod
-    def from_csv(cls, name, object_name, key_column, file):
-        file_text = io.StringIO(file.read().decode())
-        reader = csv.DictReader(file_text)
+    def from_json(cls, name, object_name, key_column, file):
+        file_text = file.read().decode()
+        data = json.loads(file_text)
         if Spreadsheet.objects.filter(name=name).exists():
             sheet = Spreadsheet.objects.get(name=name)
         else:
@@ -64,42 +63,41 @@ class Spreadsheet(models.Model):
             if cell.column not in sheet_cells[cell.row]:
                 sheet_cells[cell.row][cell.column] = cell
 
-        for row_number, line in enumerate(reader):
+        for row_number, row_in in enumerate(data):
             if row_number == 0:
-                # Generate columns
-                for col_name, col_type in line.items():
+                # Generate columns, but only on the first proposal
+                for col_name in row_in.keys():
                     col, created = Column.objects.update_or_create(
                         name=col_name,
-                        type=col_type,
                         sheet=sheet,
                     )
                     col.save()
                     cols[col_name] = col
-                continue
 
-            row, created = Row.objects.update_or_create(
+            db_row, created = Row.objects.update_or_create(
                 sheet=sheet,
-                key=line[sheet.key_column],
+                key=row_in[sheet.key_column],
             )
-            row.save()
-            rows.append(row)
-            for col_name, cell_value in line.items():
+            db_row.save()
+            rows.append(db_row)
+            for col_name, cell_value in row_in.items():
+                jsoned_cell_value = json.dumps(cell_value)
                 # found_cell = None
-                if row in sheet_cells and cols[col_name] in sheet_cells[row]:
-                    cell = sheet_cells[row][cols[col_name]]
+                if db_row in sheet_cells and cols[col_name] in sheet_cells[db_row]:
+                    cell = sheet_cells[db_row][cols[col_name]]
                     # Only update for cells whose value has changed
-                    if cell.original_value != cell_value:
+                    if cell.original_value != jsoned_cell_value:
                         sheet.last_updated = datetime.now
-                        cell.original_value = cell_value
-                        cell.latest_value = cell_value
+                        cell.original_value = jsoned_cell_value
+                        cell.latest_value = jsoned_cell_value
                         cell.save()
                 else:
                     sheet.last_updated = datetime.now
                     cell = Cell(
                         column=cols[col_name],
-                        original_value=cell_value,
-                        latest_value=cell_value,
-                        row=row,
+                        original_value=jsoned_cell_value,
+                        latest_value=jsoned_cell_value,
+                        db_row=db_row,
                     )
                     cells.append(cell)
 
@@ -180,7 +178,7 @@ class SheetConfig(models.Model):
 
 
 class Row(models.Model):
-    """ A single row in a spreadsheet """
+    """A single row in a spreadsheet"""
 
     sheet = models.ForeignKey(
         Spreadsheet, on_delete=models.CASCADE, related_name="rows"
@@ -194,7 +192,7 @@ class Row(models.Model):
         for cell in self.cells.filter(column__in=valid_columns).select_related(
             "column"
         ):
-            new_row[cell.column.name] = cell.formatted_value()
+            new_row[cell.column.name] = cell.value()
 
         return new_row
 
@@ -218,7 +216,6 @@ class Row(models.Model):
 
 class Column(models.Model):
     name = models.CharField(max_length=255)
-    type = models.CharField(max_length=255)
     sheet = models.ForeignKey(
         Spreadsheet,
         on_delete=models.CASCADE,
@@ -233,18 +230,8 @@ class Cell(models.Model):
     latest_value = models.TextField(null=True)
     row = models.ForeignKey(Row, on_delete=models.CASCADE, related_name="cells")
 
-    def formatted_value(self):
-        cell_value = self.latest_value
-
-        if self.column.type == "list":
-            cell_value = cell_value.split("\n")
-        elif self.column.type == "json":
-            if cell_value == "":
-                cell_value = {}
-            else:
-                cell_value = json.loads(cell_value)
-
-        return cell_value
+    def value(self):
+        return json.loads(self.latest_value)
 
 
 class CellEdit(models.Model):
@@ -392,7 +379,9 @@ class TableOfContentsCache(models.Model):
                 site = mwclient.Site(
                     server, self.sheet_config.wiki.script_path + "/", scheme=scheme
                 )
-                site.login(self.sheet_config.wiki.username, self.sheet_config.wiki.password)
+                site.login(
+                    self.sheet_config.wiki.username, self.sheet_config.wiki.password
+                )
 
                 rendered_data = self.toc.render_to_mwiki(self.sheet_config)
                 self.rendered_html = site.api(
@@ -400,7 +389,7 @@ class TableOfContentsCache(models.Model):
                 )["parse"]["text"]["*"]
                 self.save()
         else:
-            self.rendered_html = ''
+            self.rendered_html = ""
             self.save()
 
     class Meta:

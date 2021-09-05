@@ -120,7 +120,7 @@ def edit_record(sheet_name, key, group, wiki, field, new_value):
 
     if field in [col.name for col in sheet_config.valid_columns.all()]:
         cell = row.cells.get(column__name=field)
-        cell.latest_value = new_value
+        cell.latest_value = json.dumps(new_value)
         cell.save()
         edit_record = models.CellEdit(
             sheet=sheet,
@@ -445,7 +445,7 @@ def set_template_config(request, sheet_name, wiki_key):
 @require_http_methods(["POST"])
 def upload_sheet(request):
     with request.FILES["data_file"].open(mode="rt") as f:
-        sheet, rows = models.Spreadsheet.from_csv(
+        sheet, rows = models.Spreadsheet.from_json(
             name=request.POST["sheet_name"],
             object_name=request.POST["object_name"],
             key_column=request.POST["key_column"],
