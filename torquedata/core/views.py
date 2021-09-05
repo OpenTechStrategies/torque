@@ -119,13 +119,13 @@ def edit_record(sheet_name, key, group, wiki, field, new_value):
     )
 
     if field in [col.name for col in sheet_config.valid_columns.all()]:
-        cell = row.cells.get(column__name=field)
-        cell.latest_value = json.dumps(new_value)
-        cell.save()
-        edit_record = models.CellEdit(
+        value = row.values.get(column__name=field)
+        value.latest = json.dumps(new_value)
+        value.save()
+        edit_record = models.ValueEdit(
             sheet=sheet,
-            cell=cell,
-            value=new_value,
+            value=value,
+            updated=new_value,
             message="",
             edit_timestamp=datetime.now,
             wiki=wiki,

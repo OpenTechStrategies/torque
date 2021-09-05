@@ -26,17 +26,17 @@ class Spreadsheet(models.Model):
         # return a reduced list of rows based on permissions defined in config
         # (SheetConfig instance)
         new_rows = {}
-        for cell in (
-            Cell.objects.filter(
+        for value in (
+            Value.objects.filter(
                 row__in=config.valid_ids.all(), column__in=config.valid_columns.all()
             )
             .prefetch_related("column")
             .prefetch_related("row")
             .all()
         ):
-            if cell.row.id not in new_rows:
-                new_rows[cell.row.id] = {"key": cell.row.key}
-            new_rows[cell.row.id][cell.column.name] = cell.value()
+            if value.row.id not in new_rows:
+                new_rows[value.row.id] = {"key": value.row.key}
+            new_rows[value.row.id][value.column.name] = value.to_python()
         return new_rows.values()
 
     @classmethod
@@ -51,17 +51,17 @@ class Spreadsheet(models.Model):
 
         cols = {}
         rows = []
-        cells = []
-        sheet_cells = {}
-        for cell in (
-            Cell.objects.filter(row__in=Row.objects.filter(sheet=sheet))
+        values = []
+        sheet_values = {}
+        for value in (
+            Value.objects.filter(row__in=Row.objects.filter(sheet=sheet))
             .prefetch_related("column")
             .prefetch_related("row")
         ):
-            if cell.row not in sheet_cells:
-                sheet_cells[cell.row] = {}
-            if cell.column not in sheet_cells[cell.row]:
-                sheet_cells[cell.row][cell.column] = cell
+            if value.row not in sheet_values:
+                sheet_values[value.row] = {}
+            if value.column not in sheet_values[value.row]:
+                sheet_values[value.row][value.column] = value
 
         for row_number, row_in in enumerate(data):
             if row_number == 0:
@@ -80,28 +80,27 @@ class Spreadsheet(models.Model):
             )
             db_row.save()
             rows.append(db_row)
-            for col_name, cell_value in row_in.items():
-                jsoned_cell_value = json.dumps(cell_value)
-                # found_cell = None
-                if db_row in sheet_cells and cols[col_name] in sheet_cells[db_row]:
-                    cell = sheet_cells[db_row][cols[col_name]]
-                    # Only update for cells whose value has changed
-                    if cell.original_value != jsoned_cell_value:
+            for col_name, value_value in row_in.items():
+                jsoned_value_value = json.dumps(value_value)
+                if db_row in sheet_values and cols[col_name] in sheet_values[db_row]:
+                    value = sheet_values[db_row][cols[col_name]]
+                    # Only update for values whose value has changed
+                    if value.original != jsoned_value_value:
                         sheet.last_updated = datetime.now
-                        cell.original_value = jsoned_cell_value
-                        cell.latest_value = jsoned_cell_value
-                        cell.save()
+                        value.original = jsoned_value_value
+                        value.latest = jsoned_value_value
+                        value.save()
                 else:
                     sheet.last_updated = datetime.now
-                    cell = Cell(
+                    value = Value(
                         column=cols[col_name],
-                        original_value=jsoned_cell_value,
-                        latest_value=jsoned_cell_value,
+                        original=jsoned_value_value,
+                        latest=jsoned_value_value,
                         db_row=db_row,
                     )
-                    cells.append(cell)
+                    values.append(value)
 
-        Cell.objects.bulk_create(cells)
+        Value.objects.bulk_create(values)
 
         # In case last_updated got set
         sheet.save()
@@ -189,10 +188,10 @@ class Row(models.Model):
     def to_dict(self, config):
         new_row = {"key": self.key}
         valid_columns = config.valid_columns.all()
-        for cell in self.cells.filter(column__in=valid_columns).select_related(
+        for value in self.values.filter(column__in=valid_columns).select_related(
             "column"
         ):
-            new_row[cell.column.name] = cell.value()
+            new_row[value.column.name] = value.to_python()
 
         return new_row
 
@@ -224,19 +223,19 @@ class Column(models.Model):
     sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_columns")
 
 
-class Cell(models.Model):
-    column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="cells")
-    original_value = models.TextField(null=True)
-    latest_value = models.TextField(null=True)
-    row = models.ForeignKey(Row, on_delete=models.CASCADE, related_name="cells")
+class Value(models.Model):
+    column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="values")
+    original = models.TextField(null=True)
+    latest = models.TextField(null=True)
+    row = models.ForeignKey(Row, on_delete=models.CASCADE, related_name="values")
 
-    def value(self):
-        return json.loads(self.latest_value)
+    def to_python(self):
+        return json.loads(self.latest)
 
 
-class CellEdit(models.Model):
-    cell = models.ForeignKey(Cell, on_delete=models.CASCADE, related_name="edits")
-    value = models.TextField()
+class ValueEdit(models.Model):
+    value = models.ForeignKey(Value, on_delete=models.CASCADE, related_name="edits")
+    updated = models.TextField()
     message = models.CharField(max_length=255, null=True)
     edit_timestamp = models.DateTimeField(auto_now=True)
     approval_timestamp = models.DateTimeField(null=True)
