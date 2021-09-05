@@ -22,22 +22,22 @@ class Spreadsheet(models.Model):
     key_field = models.TextField()
     last_updated = models.DateTimeField(auto_now=True)
 
-    def clean_rows(self, config):
-        # return a reduced list of rows based on permissions defined in config
+    def clean_documents(self, config):
+        # return a reduced list of documents based on permissions defined in config
         # (SheetConfig instance)
-        new_rows = {}
+        new_documents = {}
         for value in (
             Value.objects.filter(
-                row__in=config.valid_ids.all(), field__in=config.valid_fields.all()
+                document__in=config.valid_ids.all(), field__in=config.valid_fields.all()
             )
             .prefetch_related("field")
-            .prefetch_related("row")
+            .prefetch_related("document")
             .all()
         ):
-            if value.row.id not in new_rows:
-                new_rows[value.row.id] = {"key": value.row.key}
-            new_rows[value.row.id][value.field.name] = value.to_python()
-        return new_rows.values()
+            if value.document.id not in new_documents:
+                new_documents[value.document.id] = {"key": value.document.key}
+            new_documents[value.document.id][value.field.name] = value.to_python()
+        return new_documents.values()
 
     @classmethod
     def from_json(cls, name, object_name, key_field, file):
@@ -50,23 +50,23 @@ class Spreadsheet(models.Model):
             sheet.save()
 
         fields = {}
-        rows = []
+        documents = []
         values = []
         sheet_values = {}
         for value in (
-            Value.objects.filter(row__in=Row.objects.filter(sheet=sheet))
+            Value.objects.filter(document__in=Document.objects.filter(sheet=sheet))
             .prefetch_related("field")
-            .prefetch_related("row")
+            .prefetch_related("document")
         ):
-            if value.row not in sheet_values:
-                sheet_values[value.row] = {}
-            if value.field not in sheet_values[value.row]:
-                sheet_values[value.row][value.field] = value
+            if value.document not in sheet_values:
+                sheet_values[value.document] = {}
+            if value.field not in sheet_values[value.document]:
+                sheet_values[value.document][value.field] = value
 
-        for row_number, row_in in enumerate(data):
-            if row_number == 0:
+        for document_number, document_in in enumerate(data):
+            if document_number == 0:
                 # Generate fields, but only on the first proposal
-                for field_name in row_in.keys():
+                for field_name in document_in.keys():
                     field, created = Field.objects.update_or_create(
                         name=field_name,
                         sheet=sheet,
@@ -74,19 +74,19 @@ class Spreadsheet(models.Model):
                     field.save()
                     fields[field_name] = field
 
-            db_row, created = Row.objects.update_or_create(
+            db_document, created = Document.objects.update_or_create(
                 sheet=sheet,
-                key=row_in[sheet.key_field],
+                key=document_in[sheet.key_field],
             )
-            db_row.save()
-            rows.append(db_row)
-            for field_name, value_value in row_in.items():
+            db_document.save()
+            documents.append(db_document)
+            for field_name, value_value in document_in.items():
                 jsoned_value_value = json.dumps(value_value)
                 if (
-                    db_row in sheet_values
-                    and fields[field_name] in sheet_values[db_row]
+                    db_document in sheet_values
+                    and fields[field_name] in sheet_values[db_document]
                 ):
-                    value = sheet_values[db_row][fields[field_name]]
+                    value = sheet_values[db_document][fields[field_name]]
                     # Only update for values whose value has changed
                     if value.original != jsoned_value_value:
                         sheet.last_updated = datetime.now
@@ -99,7 +99,7 @@ class Spreadsheet(models.Model):
                         field=fields[field_name],
                         original=jsoned_value_value,
                         latest=jsoned_value_value,
-                        db_row=db_row,
+                        db_document=db_document,
                     )
                     values.append(value)
 
@@ -107,7 +107,7 @@ class Spreadsheet(models.Model):
 
         # In case last_updated got set
         sheet.save()
-        return sheet, rows
+        return sheet, documents
 
 
 class Wiki(models.Model):
@@ -157,44 +157,46 @@ class SheetConfig(models.Model):
     search_cache_dirty = models.BooleanField(default=False)
 
     def rebuild_search_index(self):
-        SearchCacheRow.objects.filter(sheet_config=self).delete()
-        sc_rows = []
-        for row_dict in self.sheet.clean_rows(self):
-            row = Row.objects.get(key=row_dict["key"], sheet=self.sheet)
-            if not SearchCacheRow.objects.filter(row=row, sheet_config=self).exists():
-                sc_rows.append(
-                    SearchCacheRow(
-                        row=row,
+        SearchCacheDocument.objects.filter(sheet_config=self).delete()
+        sc_documents = []
+        for document_dict in self.sheet.clean_documents(self):
+            document = Document.objects.get(key=document_dict["key"], sheet=self.sheet)
+            if not SearchCacheDocument.objects.filter(
+                document=document, sheet_config=self
+            ).exists():
+                sc_documents.append(
+                    SearchCacheDocument(
+                        document=document,
                         sheet=self.sheet,
                         wiki=self.wiki,
                         group=self.group,
                         sheet_config=self,
-                        data=" ".join(list(map(str, row_dict.values()))),
+                        data=" ".join(list(map(str, document_dict.values()))),
                     )
                 )
 
-        SearchCacheRow.objects.bulk_create(sc_rows)
-        SearchCacheRow.objects.filter(sheet_config=self).update(
+        SearchCacheDocument.objects.bulk_create(sc_documents)
+        SearchCacheDocument.objects.filter(sheet_config=self).update(
             data_vector=SearchVector("data")
         )
 
 
-class Row(models.Model):
-    """A single row in a spreadsheet"""
+class Document(models.Model):
+    """A single document in a spreadsheet"""
 
     sheet = models.ForeignKey(
-        Spreadsheet, on_delete=models.CASCADE, related_name="rows"
+        Spreadsheet, on_delete=models.CASCADE, related_name="documents"
     )
     key = models.TextField()
     sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_ids")
 
     def to_dict(self, config):
-        new_row = {"key": self.key}
+        new_document = {"key": self.key}
         valid_fields = config.valid_fields.all()
         for value in self.values.filter(field__in=valid_fields).select_related("field"):
-            new_row[value.field.name] = value.to_python()
+            new_document[value.field.name] = value.to_python()
 
-        return new_row
+        return new_document
 
     def __getitem__(self, key):
         return self.data[key]
@@ -203,12 +205,12 @@ class Row(models.Model):
         return self.data.items()
 
     def clone(self):
-        return Row(sheet=self.sheet, key=self.key)
+        return Document(sheet=self.sheet, key=self.key)
 
     class Meta:
         constraints = [
             # enforced on save()
-            # useful for making sure any copies of a row can't be written to
+            # useful for making sure any copies of a document can't be written to
             # the database (would probably create some awful bugs)
             models.UniqueConstraint(fields=["sheet", "key"], name="unique_key"),
         ]
@@ -228,7 +230,9 @@ class Value(models.Model):
     field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name="values")
     original = models.TextField(null=True)
     latest = models.TextField(null=True)
-    row = models.ForeignKey(Row, on_delete=models.CASCADE, related_name="values")
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name="values"
+    )
 
     def to_python(self):
         return json.loads(self.latest)
@@ -281,10 +285,12 @@ class TableOfContents(models.Model):
 
     def render_to_mwiki(self, sheet_config):
         sheet = sheet_config.sheet
-        rows = sheet.clean_rows(sheet_config)
+        documents = sheet.clean_documents(sheet_config)
 
         data = json.loads(self.json_file)
-        data[sheet.name] = {row[sheet.key_field]: row for row in rows}
+        data[sheet.name] = {
+            document[sheet.key_field]: document for document in documents
+        }
 
         toc_templates = Template.objects.filter(
             sheet=sheet,
@@ -297,17 +303,17 @@ class TableOfContents(models.Model):
         template_contents = self.template.template_file.read().decode("utf-8")
 
         data["toc_lines"] = {
-            row[sheet.key_field]: JinjaTemplate(line_template_contents).render(
-                {sheet.object_name: row}
+            document[sheet.key_field]: JinjaTemplate(line_template_contents).render(
+                {sheet.object_name: document}
             )
-            for row in rows
+            for document in documents
         }
         return JinjaTemplate(template_contents).render(data)
 
     class Meta:
         constraints = [
             # enforced on save()
-            # useful for making sure any copies of a row can't be written to
+            # useful for making sure any copies of a document can't be written to
             # the database (would probably create some awful bugs)
             models.UniqueConstraint(fields=["sheet", "name"], name="unique_toc"),
         ]
@@ -318,8 +324,8 @@ class Attachment(models.Model):
         Spreadsheet, on_delete=models.CASCADE, related_name="attachments", default=None
     )
     name = models.TextField()
-    row = models.ForeignKey(
-        Row, on_delete=models.CASCADE, related_name="attachments", default=None
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name="attachments", default=None
     )
     permissions_field = models.ForeignKey(
         Field, on_delete=models.CASCADE, related_name="attachments", default=None
@@ -329,7 +335,7 @@ class Attachment(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["sheet", "row", "name"], name="unique_attachment"
+                fields=["sheet", "document", "name"], name="unique_attachment"
             ),
         ]
 
@@ -342,13 +348,13 @@ class Permission(models.Model):
     permission_type = models.CharField(max_length=255)
 
 
-class SearchCacheRow(models.Model):
+class SearchCacheDocument(models.Model):
     sheet = models.ForeignKey(
         Spreadsheet,
         on_delete=models.CASCADE,
     )
     sheet_config = models.ForeignKey(SheetConfig, on_delete=models.CASCADE)
-    row = models.ForeignKey(Row, on_delete=models.CASCADE)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
     wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     group = models.TextField()
     data = models.TextField()

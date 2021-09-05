@@ -36,18 +36,18 @@ class RebuildTOCs:
             print("Rebuilt toc %s" % toc_cache.toc.name)
 
 
-class RebuildSearchCacheRows:
+class RebuildSearchCacheDocuments:
     def run(self):
         from core import models
 
-        for cache_row in models.SearchCacheRow.objects.filter(dirty=True):
-            sheet = cache_row.row.sheet
+        for cache_document in models.SearchCacheDocument.objects.filter(dirty=True):
+            sheet = cache_document.document.sheet
             for config in sheet.configs.all():
-                row_dict = cache_row.row.to_dict(config)
-                cache_row.data = " ".join(list(map(str, row_dict.values())))
-                cache_row.dirty = False
-                cache_row.save()
-                models.SearchCacheRow.objects.filter(id=cache_row.id).update(
+                document_dict = cache_document.document.to_dict(config)
+                cache_document.data = " ".join(list(map(str, document_dict.values())))
+                cache_document.dirty = False
+                cache_document.save()
+                models.SearchCacheDocument.objects.filter(id=cache_document.id).update(
                     data_vector=SearchVector("data")
                 )
 
@@ -64,7 +64,7 @@ class CacheRebuilder(Process):
             try:
                 RebuildSheetConfigs().run()
                 RebuildTOCs().run()
-                RebuildSearchCacheRows().run()
+                RebuildSearchCacheDocuments().run()
             except:
                 print("Rebuilder failed a loop due to %s" % sys.exc_info()[0])
 

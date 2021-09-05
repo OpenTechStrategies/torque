@@ -32,14 +32,14 @@ def get_wiki(request, sheet_name):
 
 def search(q, offset, template_config, sheet_configs, fmt, multi):
     results = (
-        models.SearchCacheRow.objects.filter(
+        models.SearchCacheDocument.objects.filter(
             sheet__in=sheet_configs.values_list("sheet", flat=True),
             wiki__wiki_key__in=sheet_configs.values_list("wiki__wiki_key", flat=True),
             group__in=sheet_configs.values_list("group", flat=True),
             sheet_config__in=sheet_configs,
             data_vector=q,
         )
-        .select_related("row")
+        .select_related("document")
         .select_related("sheet")
         .annotate(rank=SearchRank(F("data_vector"), SearchQuery(q)))
         .order_by("-rank")
@@ -56,7 +56,7 @@ def search(q, offset, template_config, sheet_configs, fmt, multi):
             )
             resp += template.render(
                 {
-                    template_config.sheet.object_name: result.row.to_dict(
+                    template_config.sheet.object_name: result.document.to_dict(
                         result.sheet_config
                     )
                 }
@@ -70,8 +70,8 @@ def search(q, offset, template_config, sheet_configs, fmt, multi):
             % (
                 config.SHEETS_ALIAS or "sheets",
                 result.sheet.name,
-                config.ROWS_ALIAS or "rows",
-                result.row.key,
+                config.DOCUMENTS_ALIAS or "documents",
+                result.document.key,
             )
             for result in results
         ]
@@ -111,7 +111,7 @@ def search_sheet(request, sheet_name, fmt):
 
 def edit_record(sheet_name, key, group, wiki, field, new_value):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
-    row = models.Row.objects.get(sheet=sheet, key=key)
+    document = models.Document.objects.get(sheet=sheet, key=key)
     sheet_config = models.SheetConfig.objects.get(
         sheet=sheet,
         wiki=wiki,
@@ -119,7 +119,7 @@ def edit_record(sheet_name, key, group, wiki, field, new_value):
     )
 
     if field in [field.name for field in sheet_config.valid_fields.all()]:
-        value = row.values.get(field__name=field)
+        value = document.values.get(field__name=field)
         value.latest = json.dumps(new_value)
         value.save()
         edit_record = models.ValueEdit(
@@ -135,7 +135,7 @@ def edit_record(sheet_name, key, group, wiki, field, new_value):
     models.TableOfContentsCache.objects.filter(
         toc__in=sheet.tables_of_contents.all()
     ).update(dirty=True)
-    models.SearchCacheRow.objects.filter(row=row).update(dirty=True)
+    models.SearchCacheDocument.objects.filter(document=document).update(dirty=True)
 
     sheet.last_updated = datetime.now
     sheet.save()
@@ -204,7 +204,7 @@ def get_toc(request, sheet_name, toc_name, fmt):
         raise Exception(f"Invalid format {fmt}")
 
 
-def get_rows(request, sheet_name, fmt):
+def get_documents(request, sheet_name, fmt):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     group = request.GET["group"]
     wiki = get_wiki(request, sheet_name)
@@ -217,23 +217,23 @@ def get_rows(request, sheet_name, fmt):
 
     if fmt == "json":
         return JsonResponse(
-            [row.key for row in sheet_config.valid_ids.all()], safe=False
+            [document.key for document in sheet_config.valid_ids.all()], safe=False
         )
     else:
         raise Exception(f"Invalid format {fmt}")
 
 
-def get_row(group, wiki, key, fmt, sheet_name, view=None):
+def get_document(group, wiki, key, fmt, sheet_name, view=None):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     sheet_config = models.SheetConfig.objects.get(
         sheet=sheet,
         wiki=wiki,
         group=group,
     )
-    row = models.Row.objects.get(key=key, sheet=sheet).to_dict(sheet_config)
+    document = models.Document.objects.get(key=key, sheet=sheet).to_dict(sheet_config)
 
     if fmt == "json":
-        return JsonResponse(row)
+        return JsonResponse(document)
     elif fmt == "mwiki":
         templates = models.Template.objects.filter(
             sheet=sheet,
@@ -246,11 +246,11 @@ def get_row(group, wiki, key, fmt, sheet_name, view=None):
             template = templates.get(is_default=True)
 
         rendered_template = JinjaTemplate(template.get_file_contents()).render(
-            {sheet.object_name: row}
+            {sheet.object_name: document}
         )
         return HttpResponse(rendered_template)
     elif fmt == "dict":
-        return row
+        return document
     elif fmt == "html":
         # Return the empty string because we don't have a cached version, and the
         # TDC extension will read that and attempt to get the mwiki version.
@@ -259,10 +259,12 @@ def get_row(group, wiki, key, fmt, sheet_name, view=None):
         raise Exception(f"Invalid format {fmt}")
 
 
-def get_row_view(request, sheet_name, key, fmt):
+def get_document_view(request, sheet_name, key, fmt):
     group = request.GET["group"]
     wiki = get_wiki(request, sheet_name)
-    return get_row(group, wiki, key, fmt, sheet_name, request.GET.get("view", None))
+    return get_document(
+        group, wiki, key, fmt, sheet_name, request.GET.get("view", None)
+    )
 
 
 def field(request, sheet_name, key, field, fmt):
@@ -270,8 +272,8 @@ def field(request, sheet_name, key, field, fmt):
     if request.method == "GET":
         group = request.GET["group"]
         wiki = get_wiki(request, sheet_name)
-        row = get_row(group, wiki, key, "dict", sheet_name, None)
-        return JsonResponse(row[field], safe=False)
+        document = get_document(group, wiki, key, "dict", sheet_name, None)
+        return JsonResponse(document[field], safe=False)
     elif request.method == "POST":
         post_fields = json.loads(request.body)
         group = post_fields["group"]
@@ -292,8 +294,8 @@ def get_attachment(request, sheet_name, key, attachment):
         wiki=wiki,
         group=group,
     )
-    row = sheet.rows.get(key=key)
-    attachment = models.Attachment.objects.get(name=attachment_name, row=row)
+    document = sheet.documents.get(key=key)
+    attachment = models.Attachment.objects.get(name=attachment_name, document=document)
 
     if not sheet_config.valid_fields.filter(
         id=attachment.permissions_field.id
@@ -378,12 +380,12 @@ def set_group_config(request, sheet_name, wiki_key):
 
         config.search_cache_sha = permissions_sha
 
-        valid_rows = models.Row.objects.filter(
+        valid_documents = models.Document.objects.filter(
             sheet=sheet, key__in=new_config.get("valid_ids")
         )
         valid_fields = models.Field.objects.filter(name__in=new_config.get("fields"))
         config.save()
-        config.valid_ids.add(*valid_rows)
+        config.valid_ids.add(*valid_documents)
         config.valid_fields.add(*valid_fields)
         config.search_cache_dirty = True
 
@@ -445,7 +447,7 @@ def set_template_config(request, sheet_name, wiki_key):
 @require_http_methods(["POST"])
 def upload_sheet(request):
     with request.FILES["data_file"].open(mode="rt") as f:
-        sheet, rows = models.Spreadsheet.from_json(
+        sheet, documents = models.Spreadsheet.from_json(
             name=request.POST["sheet_name"],
             object_name=request.POST["object_name"],
             key_field=request.POST["key_field"],
@@ -511,11 +513,11 @@ def upload_attachment(request):
     permissions_field = models.Field.objects.get(
         sheet=sheet, name=request.POST["permissions_field"]
     )
-    row = sheet.rows.get(key=request.POST["object_id"])
+    document = sheet.documents.get(key=request.POST["object_id"])
     (attachment, changed) = models.Attachment.objects.update_or_create(
         sheet=sheet,
         name=secure_filename(request.POST["attachment_name"]),
-        row=row,
+        document=document,
         permissions_field=permissions_field,
     )
     attachment.file = request.FILES["attachment"]
