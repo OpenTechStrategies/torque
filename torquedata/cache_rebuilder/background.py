@@ -6,11 +6,11 @@ import sys
 from django.contrib.postgres.search import SearchVector
 
 
-class RebuildSheetConfigs:
+class RebuildWikiConfigs:
     def run(self):
         from core import models
 
-        for config in models.SheetConfig.objects.filter(search_cache_dirty=True).all():
+        for config in models.WikiConfig.objects.filter(search_cache_dirty=True).all():
             # We do this outside of the transaction, because if someone comes
             # along and dirties it again while we're rebuilding, we want to
             # rebuild it after we're done rebuilding it.
@@ -62,7 +62,7 @@ class CacheRebuilder(Process):
 
         while True:
             try:
-                RebuildSheetConfigs().run()
+                RebuildWikiConfigs().run()
                 RebuildTOCs().run()
                 RebuildSearchCacheDocuments().run()
             except:

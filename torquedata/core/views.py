@@ -30,13 +30,13 @@ def get_wiki(request, sheet_name):
     return models.Wiki.objects.get_or_create(wiki_key=wiki_key)[0]
 
 
-def search(q, offset, template_config, sheet_configs, fmt, multi):
+def search(q, offset, template_config, wiki_configs, fmt, multi):
     results = (
         models.SearchCacheDocument.objects.filter(
-            sheet__in=sheet_configs.values_list("sheet", flat=True),
-            wiki__wiki_key__in=sheet_configs.values_list("wiki__wiki_key", flat=True),
-            group__in=sheet_configs.values_list("group", flat=True),
-            sheet_config__in=sheet_configs,
+            sheet__in=wiki_configs.values_list("sheet", flat=True),
+            wiki__wiki_key__in=wiki_configs.values_list("wiki__wiki_key", flat=True),
+            group__in=wiki_configs.values_list("group", flat=True),
+            wiki_config__in=wiki_configs,
             data_vector=q,
         )
         .select_related("document")
@@ -57,7 +57,7 @@ def search(q, offset, template_config, sheet_configs, fmt, multi):
             resp += template.render(
                 {
                     template_config.sheet.object_name: result.document.to_dict(
-                        result.sheet_config
+                        result.wiki_config
                     )
                 }
             )
@@ -89,10 +89,10 @@ def search_global(request, fmt):
     global_sheet_name = request.GET["sheet_name"]
     wiki_keys = request.GET["wiki_keys"].split(",")
     sheet_names = request.GET["sheet_names"].split(",")
-    global_config = models.SheetConfig.objects.get(
+    global_config = models.WikiConfig.objects.get(
         sheet__name=global_sheet_name, wiki__wiki_key=global_wiki_key, group=group
     )
-    configs = models.SheetConfig.objects.filter(
+    configs = models.WikiConfig.objects.filter(
         sheet__name__in=sheet_names, wiki__wiki_key__in=wiki_keys, group=group
     ).all()
     return search(q, offset, global_config, configs, fmt, True)
@@ -103,7 +103,7 @@ def search_sheet(request, sheet_name, fmt):
     offset = int(request.GET.get("offset", 0))
     group = request.GET["group"]
     wiki = get_wiki(request, sheet_name)
-    configs = models.SheetConfig.objects.filter(
+    configs = models.WikiConfig.objects.filter(
         sheet__name=sheet_name, wiki=wiki, group=group
     )
     return search(q, offset, configs.first(), configs, fmt, False)
@@ -112,13 +112,13 @@ def search_sheet(request, sheet_name, fmt):
 def edit_record(sheet_name, key, group, wiki, field, new_value):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
     document = models.Document.objects.get(sheet=sheet, key=key)
-    sheet_config = models.SheetConfig.objects.get(
+    wiki_config = models.WikiConfig.objects.get(
         sheet=sheet,
         wiki=wiki,
         group=group,
     )
 
-    if field in [field.name for field in sheet_config.valid_fields.all()]:
+    if field in [field.name for field in wiki_config.valid_fields.all()]:
         value = document.values.get(field__name=field)
         value.latest = json.dumps(new_value)
         value.save()
@@ -156,14 +156,14 @@ def get_sheet(request, sheet_name, fmt):
         if "group" in request.GET:
             group = request.GET["group"]
             wiki = get_wiki(request, sheet_name)
-            sheet_config = models.SheetConfig.objects.get(
+            wiki_config = models.WikiConfig.objects.get(
                 sheet=sheet,
                 wiki=wiki,
                 group=group,
             )
 
             response["fields"] = [
-                field.name for field in sheet_config.valid_fields.all()
+                field.name for field in wiki_config.valid_fields.all()
             ]
         else:
             response["fields"] = [field.name for field in sheet.fields.all()]
@@ -181,7 +181,7 @@ def get_toc(request, sheet_name, toc_name, fmt):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
 
     try:
-        sheet_config = models.SheetConfig.objects.get(
+        wiki_config = models.WikiConfig.objects.get(
             sheet=sheet,
             wiki=wiki,
             group=group,
@@ -195,9 +195,9 @@ def get_toc(request, sheet_name, toc_name, fmt):
         return HttpResponse(status=403)
 
     if fmt == "mwiki":
-        return HttpResponse(toc.render_to_mwiki(sheet_config))
+        return HttpResponse(toc.render_to_mwiki(wiki_config))
     elif fmt == "html":
-        cached_toc = sheet_config.cached_tocs.get(toc=toc)
+        cached_toc = wiki_config.cached_tocs.get(toc=toc)
 
         return HttpResponse(cached_toc.rendered_html)
     else:
@@ -209,7 +209,7 @@ def get_documents(request, sheet_name, fmt):
     group = request.GET["group"]
     wiki = get_wiki(request, sheet_name)
 
-    sheet_config = models.SheetConfig.objects.get(
+    wiki_config = models.WikiConfig.objects.get(
         sheet=sheet,
         wiki=wiki,
         group=group,
@@ -217,7 +217,7 @@ def get_documents(request, sheet_name, fmt):
 
     if fmt == "json":
         return JsonResponse(
-            [document.key for document in sheet_config.valid_ids.all()], safe=False
+            [document.key for document in wiki_config.valid_ids.all()], safe=False
         )
     else:
         raise Exception(f"Invalid format {fmt}")
@@ -225,12 +225,12 @@ def get_documents(request, sheet_name, fmt):
 
 def get_document(group, wiki, key, fmt, sheet_name, view=None):
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
-    sheet_config = models.SheetConfig.objects.get(
+    wiki_config = models.WikiConfig.objects.get(
         sheet=sheet,
         wiki=wiki,
         group=group,
     )
-    document = models.Document.objects.get(key=key, sheet=sheet).to_dict(sheet_config)
+    document = models.Document.objects.get(key=key, sheet=sheet).to_dict(wiki_config)
 
     if fmt == "json":
         return JsonResponse(document)
@@ -289,7 +289,7 @@ def get_attachment(request, sheet_name, key, attachment):
     attachment_name = secure_filename(urllib.parse.unquote_plus(attachment))
 
     sheet = models.Spreadsheet.objects.get(name=sheet_name)
-    sheet_config = models.SheetConfig.objects.get(
+    wiki_config = models.WikiConfig.objects.get(
         sheet=sheet,
         wiki=wiki,
         group=group,
@@ -297,9 +297,7 @@ def get_attachment(request, sheet_name, key, attachment):
     document = sheet.documents.get(key=key)
     attachment = models.Attachment.objects.get(name=attachment_name, document=document)
 
-    if not sheet_config.valid_fields.filter(
-        id=attachment.permissions_field.id
-    ).exists():
+    if not wiki_config.valid_fields.filter(id=attachment.permissions_field.id).exists():
         raise Exception("Not permitted to see this attachment.")
 
     content_type = magic.from_buffer(attachment.file.open("rb").read(1024), mime=True)
@@ -316,7 +314,7 @@ def reset_config(request, sheet_name, wiki_key):
     wiki.server = None
     wiki.save()
 
-    models.SheetConfig.objects.filter(sheet__name=sheet_name, wiki=wiki).update(
+    models.WikiConfig.objects.filter(sheet__name=sheet_name, wiki=wiki).update(
         in_config=False
     )
     models.Template.objects.filter(sheet__name=sheet_name, wiki=wiki).delete()
@@ -349,10 +347,10 @@ def set_group_config(request, sheet_name, wiki_key):
     wiki = models.Wiki.objects.get(wiki_key=wiki_key)
 
     try:
-        config = models.SheetConfig.objects.get(
+        config = models.WikiConfig.objects.get(
             sheet=sheet, wiki=wiki, group=new_config["group"]
         )
-    except models.SheetConfig.DoesNotExist:
+    except models.WikiConfig.DoesNotExist:
         config = None
 
     permissions_sha = hashlib.sha224(
@@ -366,14 +364,14 @@ def set_group_config(request, sheet_name, wiki_key):
             config.valid_ids.clear()
             config.valid_fields.clear()
         else:
-            config = models.SheetConfig(
+            config = models.WikiConfig(
                 sheet=sheet, wiki=wiki, group=new_config["group"]
             )
             config.save()
 
             for toc in sheet.tables_of_contents.all():
                 (cache, created) = models.TableOfContentsCache.objects.update_or_create(
-                    toc=toc, sheet_config=config
+                    toc=toc, wiki_config=config
                 )
                 cache.dirty = True
                 cache.save()
@@ -396,7 +394,7 @@ def set_group_config(request, sheet_name, wiki_key):
 
 
 def complete_config(request, sheet_name, wiki_key):
-    models.SheetConfig.objects.filter(
+    models.WikiConfig.objects.filter(
         sheet__name=sheet_name, wiki__wiki_key=wiki_key, in_config=False
     ).delete()
 
@@ -460,7 +458,7 @@ def upload_sheet(request):
     # but that's probably better than attempting to analyze cache invalidation
     # and failing.
 
-    for config in models.SheetConfig.objects.filter(sheet=sheet):
+    for config in models.WikiConfig.objects.filter(sheet=sheet):
         config.search_cache_dirty = True
         config.save()
 
@@ -498,7 +496,7 @@ def upload_toc(request):
     for config in sheet.configs.all():
         (cache, created) = models.TableOfContentsCache.objects.update_or_create(
             toc=toc,
-            sheet_config=config,
+            wiki_config=config,
         )
         cache.dirty = True
         cache.save()

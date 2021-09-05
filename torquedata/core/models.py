@@ -24,7 +24,7 @@ class Spreadsheet(models.Model):
 
     def clean_documents(self, config):
         # return a reduced list of documents based on permissions defined in config
-        # (SheetConfig instance)
+        # (WikiConfig instance)
         new_documents = {}
         for value in (
             Value.objects.filter(
@@ -116,7 +116,7 @@ class Wiki(models.Model):
     $wgTorqueDataConnectWikiKey in the mediawiki extension.
 
     Not that this does not connect to any spreadsheet, because a wiki
-    can be connected to multiple spreadsheets through SheetConfigs"""
+    can be connected to multiple spreadsheets through WikiConfigs"""
 
     wiki_key = models.TextField()
     server = models.TextField(null=True)
@@ -125,7 +125,7 @@ class Wiki(models.Model):
     password = models.TextField(null=True)
 
 
-class SheetConfig(models.Model):
+class WikiConfig(models.Model):
     sheet = models.ForeignKey(
         Spreadsheet,
         on_delete=models.CASCADE,
@@ -157,12 +157,12 @@ class SheetConfig(models.Model):
     search_cache_dirty = models.BooleanField(default=False)
 
     def rebuild_search_index(self):
-        SearchCacheDocument.objects.filter(sheet_config=self).delete()
+        SearchCacheDocument.objects.filter(wiki_config=self).delete()
         sc_documents = []
         for document_dict in self.sheet.clean_documents(self):
             document = Document.objects.get(key=document_dict["key"], sheet=self.sheet)
             if not SearchCacheDocument.objects.filter(
-                document=document, sheet_config=self
+                document=document, wiki_config=self
             ).exists():
                 sc_documents.append(
                     SearchCacheDocument(
@@ -170,13 +170,13 @@ class SheetConfig(models.Model):
                         sheet=self.sheet,
                         wiki=self.wiki,
                         group=self.group,
-                        sheet_config=self,
+                        wiki_config=self,
                         data=" ".join(list(map(str, document_dict.values()))),
                     )
                 )
 
         SearchCacheDocument.objects.bulk_create(sc_documents)
-        SearchCacheDocument.objects.filter(sheet_config=self).update(
+        SearchCacheDocument.objects.filter(wiki_config=self).update(
             data_vector=SearchVector("data")
         )
 
@@ -188,7 +188,7 @@ class Document(models.Model):
         Spreadsheet, on_delete=models.CASCADE, related_name="documents"
     )
     key = models.TextField()
-    sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_ids")
+    wiki_config = models.ManyToManyField(WikiConfig, related_name="valid_ids")
 
     def to_dict(self, config):
         new_document = {"key": self.key}
@@ -223,7 +223,7 @@ class Field(models.Model):
         on_delete=models.CASCADE,
         related_name="fields",
     )
-    sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_fields")
+    wiki_config = models.ManyToManyField(WikiConfig, related_name="valid_fields")
 
 
 class Value(models.Model):
@@ -283,9 +283,9 @@ class TableOfContents(models.Model):
     )
     raw = models.BooleanField(default=False)
 
-    def render_to_mwiki(self, sheet_config):
-        sheet = sheet_config.sheet
-        documents = sheet.clean_documents(sheet_config)
+    def render_to_mwiki(self, wiki_config):
+        sheet = wiki_config.sheet
+        documents = sheet.clean_documents(wiki_config)
 
         data = json.loads(self.json_file)
         data[sheet.name] = {
@@ -294,7 +294,7 @@ class TableOfContents(models.Model):
 
         toc_templates = Template.objects.filter(
             sheet=sheet,
-            wiki=sheet_config.wiki,
+            wiki=wiki_config.wiki,
             type="TOC",
         )
         line_template = toc_templates.get(is_default=True)
@@ -353,7 +353,7 @@ class SearchCacheDocument(models.Model):
         Spreadsheet,
         on_delete=models.CASCADE,
     )
-    sheet_config = models.ForeignKey(SheetConfig, on_delete=models.CASCADE)
+    wiki_config = models.ForeignKey(WikiConfig, on_delete=models.CASCADE)
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     group = models.TextField()
@@ -366,8 +366,8 @@ class SearchCacheDocument(models.Model):
 
 
 class TableOfContentsCache(models.Model):
-    sheet_config = models.ForeignKey(
-        SheetConfig, on_delete=models.CASCADE, related_name="cached_tocs"
+    wiki_config = models.ForeignKey(
+        WikiConfig, on_delete=models.CASCADE, related_name="cached_tocs"
     )
     toc = models.ForeignKey(TableOfContents, on_delete=models.CASCADE)
     dirty = models.BooleanField(default=True)
@@ -376,20 +376,20 @@ class TableOfContentsCache(models.Model):
     def rebuild(self):
         import mwclient
 
-        if self.sheet_config.wiki.server:
+        if self.wiki_config.wiki.server:
             if self.toc.raw:
-                self.rendered_html = self.toc.render_to_mwiki(self.sheet_config)
+                self.rendered_html = self.toc.render_to_mwiki(self.wiki_config)
                 self.save()
             else:
-                (scheme, server) = self.sheet_config.wiki.server.split("://")
+                (scheme, server) = self.wiki_config.wiki.server.split("://")
                 site = mwclient.Site(
-                    server, self.sheet_config.wiki.script_path + "/", scheme=scheme
+                    server, self.wiki_config.wiki.script_path + "/", scheme=scheme
                 )
                 site.login(
-                    self.sheet_config.wiki.username, self.sheet_config.wiki.password
+                    self.wiki_config.wiki.username, self.wiki_config.wiki.password
                 )
 
-                rendered_data = self.toc.render_to_mwiki(self.sheet_config)
+                rendered_data = self.toc.render_to_mwiki(self.wiki_config)
                 self.rendered_html = site.api(
                     "parse", text=rendered_data, contentmodel="wikitext", prop="text"
                 )["parse"]["text"]["*"]
@@ -401,6 +401,6 @@ class TableOfContentsCache(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["sheet_config", "toc"], name="unique_toc_cache"
+                fields=["wiki_config", "toc"], name="unique_toc_cache"
             ),
         ]
