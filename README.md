@@ -23,7 +23,7 @@ can be seen in the
 
 # torquedata
 
-torquedata is a Flask server that's responsible for storing spreadsheet data
+torquedata is a Flask server that's responsible for storing collection data (in json)
 and then serving it out as needed.  As a rule, it's very accepting and should
 not be exposed to the greater internet.  All of the authentication and authorization
 is done via the MediaWiki plugin.

@@ -38,7 +38,7 @@ wfLoadExtension('TorqueDataConnect');
   multiple wikis are using the same torquedata instance so that their permissions are distinct.
   A useful use case of this is a private and public version of the same data.
 * `$wgTorqueDataConnectNotFoundMessage` - An optional message to be displayed if a user doesn't
-  have permissions to view an object.  Defaults to "No `<key>` found for `<collection>`".
+  have permissions to view a document.  Defaults to "No `<key>` found for `<collection>`".
 * `$wgTorqueDataConnectRaw` - Whether the response coming from torquedata is raw HTML or wiki markup.
   This lets TorqueDataConnect know to stop all MediaWiki processing on the response from torquedata.
 * `$wgTorqueDataConnectRenderToHTML` - Whether to render the wiki markup to HTML or not.  If
@@ -110,10 +110,10 @@ In the "Permissions" table, the columns are:
 * a link to a page that lists the fields that group can see
   - the page linked to must be of the form
 ```
-* \<ColumnName\>
-* \<ColumnName2\>
-* \<ColumnName3\>
-* \<ColumnName4\>
+* \<FieldName\>
+* \<FieldName2\>
+* \<FieldName3\>
+* \<FieldName4\>
 ```
   there, the field names in the documents uploaded.  It is assumed that each document has the same fields, and the first one is used.
 * and a link to the page that lists what documents in the collection they have access to.
@@ -215,8 +215,8 @@ same as the `wiki_key` passed in here.  Requires `wiki_key` to be a value in
 
 The paths available from Torque are:
 
-* `\<collection_name\>/id/\<id\>.mwiki` - for rendering an object (for example, `proposals/id/1234.mwiki`)
-* `\<collection_name\>/toc/\<TOC_Name\>.mwiki` - for rendering a dynamic table of contents that had been uploaded previously (for example, `proposals/toc/Topic_TOC.mwiki`)
+* `collections/\<collection_name\>/documents/\<id\>.mwiki` - for rendering an object (for example, `collections/proposals/documents/1234.mwiki`)
+* `collections/\<collection_name\>/tocs/\<TOC_Name\>.mwiki` - for rendering a dynamic table of contents that had been uploaded previously (for example, `collections/proposals/tocs/Topic_TOC.mwiki`)
 
 ### Special page for attachments: Special:TorqueDataConnectAttachment
 

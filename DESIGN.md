@@ -40,7 +40,7 @@ Torque is built around having four classes of users:
   permissions.
 
   These users belong to the `torquedataconnect-admin` and can also
-  upload new spreadsheets, and overwrite spreadsheets.
+  upload new collections, and overwrite collections.
 
 * System Administrators: These users are responsible for setting up the
   MediaWiki instance, installing Torque, and setting the variables
@@ -57,20 +57,19 @@ matched with the user groups of the logged in MediaWiki user.  The first
 group in the `Permissions` table that matches a MediaWiki group the
 user is assigned to gets sent to torquedata for validation and rendering.
 
-Then, torquedata will redact the list of objects available to that user,
-and the columns available to the template for rendering, based on the
+Then, torquedata will redact the list of documents available to that user,
+and the fields available to the template for rendering, based on the
 permissions set up in that table.  See
 [the configuration page](TorqueDataConnect/README.md#WikiPage configuration)
 for details about the format of that page.
 
-The columns and proposals linked are also used to generate search indices
+The fields and documents linked are also used to generate search indices
 in torquedata for search results that are correct for the users permissions.
 
-## torquedata Flask app
+## torquedata Django app
 
-`torquedata` exists to use a backing store, initially
-CSV files stored on the hard drive, and provide different outputs necessary for
-the project.
+`torquedata` exists to use a backing store, storing json documents in postgres,
+and provide different outputs necessary for the project.
 
 Because it's largely not user facing, the [README](torquedata/README.md)
 is lightweight and concerned mostly system adminstrator information
@@ -79,54 +78,46 @@ MediaWiki is left undocumented and may be changed at any time.
 
 It provides the following features:
 
-### Input from CSV files
+### Input from JSON files
 
-CSV files are uploaded through the
-[TorqueDataConnect extension](TorqueDataConnect/README.md#torquedataconnectuploadsheet).
-The files must start with two rows, one being a header row, and the following
-being a column type row.
+JSON data are uploaded through the
+[TorqueDataConnect extension](TorqueDataConnect/README.md#torquedataconnectuploadcollection).
+The data must be an array of objects representing documents, with each one having
+the same fields as the rest.  Only the first is looked at to create the data model
+in the database.
 
-Entries in the header row should be unique. They will become indices in the
-dictionary passed to templates for display. The column type row declares what
-type will be found in the column, allowing Torque to assign it that type for use
-in the templates.
+Fields for the documents should be unique. They will become indices in the
+dictionary passed to templates for display.
 
 NOTE: There's no data sanitization.  The uploader needs to take
-care of that before using Torque.  XSS attacks, badly formatted sheets,
+care of that before using Torque.  XSS attacks, badly formatted collections,
 and whatnot, will just get blindly served up if passed to Torque.
 
-For right now, the available types are:
-
-* `list` - a new line separated list of values.  This gets turned
-  into a list in memory for the template to iterate over
-* `json` - a json document embedded in the csv, that will then
-  get turned into a python dict
-
-One of the columns must be specified as a key column.  The keys
-in the document should also all be unique to prevent collisions.
+One of the fields must be specified as a key field.  The keys
+in the documents should also all be unique to prevent collisions.
 This key is the way that all of the data is queried from the various
 hooks and permissions checks.
 
-When uploading, the last thing needed is a name for the sheet.  This
+When uploading, the last thing needed is a name for the collection.  This
 needs to be a simple name that can work as a variable, so it can't
 start with a number.  The reason is that in table of content templates,
 the place Torque puts what objects the user is allowed to view is in
-the variable `<sheet_name>`.
+the variable `<collection_name>`.
 
-### Wiki Markup from CSV rows
+### Wiki Markup from Documents
 
 Templates are configured as part of the
 [TorqueDataConnect extension](TorqueDataConnect/README.md#WikiPage_configuration)
 
 These templates, which are stored on the wiki, are Jinja templates.  When a request
-is made to `api/<sheet_name>/id/<id>.mwiki`, the desired template can be specified
-(or a the default is used), and Torque does the following:
+is made to `api/collections/<collection_name>/documents/<id>.mwiki`, the desired
+template can be specified (or a the default is used), and Torque does the following:
 
 * It ascertains whether the user has the permissions to access that `id`
-* It then culls the object referenced by that `id` to just ht ecolumns
+* It then culls the object referenced by that `id` to just the fields
   the user has access too
 * It feeds that redacted object to the template under the name specified
-  at sheet upload time as the `object_name`
+  at collection upload time as the `object_name`
 
 If it fails for any of these reasons, it errors out with a 403 HTTP code.
 
@@ -139,7 +130,7 @@ permissions to edit the templates.
 
 ### TOC pages
 
-Tables of Contents are dynamically generated lists of objects in the sheet.
+Tables of Contents are dynamically generated lists of objects in the collection.
 In order to provide flexibility there are three parts to the table of contents.
 
 Part 1 is the template itself.  This template will be provided, as data, an
@@ -169,21 +160,21 @@ you would refer to the object you've been given in your template by the names
 `grouped_objects` and `description` in the Jinja template.
 
 Part 3 is an object that's added to the data passed to the template, which
-will always be in the name `<sheet_name>` for whatever sheet this Table of
+will always be in the name `<collection_name>` for whatever collection this Table of
 Contents belongs to.  That object will be an dictionary mapping `key` of
-the object (based on the `key_column` when configured) to object itself for
+the object (based on the `key_field` when configured) to object itself for
 the template to use. The result of passing the object through the TOC Template
 defined by the MediaWiki instance is stored in the `toc_lines` variable, indexed
 by the same key.  This allows users of the wiki to declare how the table of
 contents items look and feel, and what information is displayed.
 
-### JSON output from CSV rows for API
+### JSON output for API
 
 Torque also allows programmatic access of the data, throught the `torquedataconnect`
 API call.  Any user with access can call into MediaWiki's API, using HTTP
 or a supporting library, and ask for a path.  The response is a JSON document
-with a list of objects, each having a mapping of the header to cell data for
-a given row.  This is redacted based on what that user has access to.
+with a list of objects, each having a mapping of the header to field data for
+a given document.  This is redacted based on what that user has access to.
 
 This allows for outside software to use the document store Torque uses.  Of course,
 outside sources can use the rest of MediaWiki's API to just render the wiki pages,
@@ -199,7 +190,7 @@ those attachments, and all the authorizations therein through a SpecialPage.
 
 When uploading, one of the arguments to the 
 [`torquedataconnectuploadattachment`](TorqueDataConnect/README.md#torquedataconnectuploadattachment)
-API call is the `permissions_column`.  The user must have access to that
+API call is the `permissions_field`.  The user must have access to that
 column, and access to the proposal, for the file to be returned.  If so,
 then the user can download the file.
 
@@ -230,7 +221,7 @@ which sets up the page.  Those are defined by the
 set for a correctly running system are:
 
 * `$wgTorqueDataConnectConfigPage`
-* `$wgTorqueDataConnectSheetName`
+* `$wgTorqueDataConnectCollectionName`
 * `$wgTorqueDataConnectWikiKey`
 
 The others have values to default to, or are assigned by TorqueDataConnect based on
@@ -262,9 +253,9 @@ that allows the user to select which view they want.
 
 The selected view template is called with the object being rendered
 set to the name defined when
-[uploading the sheet](TorqueDataConnect/README.md#torquedataconnectuploadsheet).
-That object is a dictionary with the column headers of the spreadsheet
-being indices to get the cell data for that row.  This is an
+[uploading the collection](TorqueDataConnect/README.md#torquedataconnectuploadcollection).
+That object is a dictionary with the column headers of the spreadcollection
+being indices to get the field data for that document.  This is an
 instance where demonstration is more informative than information, so see the
 [example](example/INSTALL.md) for a concrete example.
 
@@ -309,7 +300,7 @@ within the templates available for that render type (toc versus normal).
 
 For single objects, reference the object by its id.  The path used is
 
-`<sheet_name>/id/<id>.mwiki`
+`<collection_name>/id/<id>.mwiki`
 
 This will render the single object through the chosen view.  If there's
 an error, like if the template doesn't work with the redacted column set,
@@ -320,7 +311,7 @@ message will be returned in order to obfuscate the reason for the response.
 
 For tables of contents, reference the TOC by its name.  The path used is
 
-`<sheet_name>/toc/<toc_name>.mwiki`
+`<collection_name>/toc/<toc_name>.mwiki`
 
 See [above](#TOC pages) for how this is rendered.
 
@@ -344,7 +335,7 @@ permissions the user has.
 
 Torque allows torqueadmin's to upload three kinds of files:
 
-* [The full data sheet](TorqueDataConnect/README.md#torquedataconnectuploadsheet)
+* [The full data collection](TorqueDataConnect/README.md#torquedataconnectuploadcollection)
 * [A table of contents](TorqueDataConnect/README.md#torquedataconnectuploadtoc)
 * [An Attachment](TorqueDataConnect/README.md#torquedataconnectuploadattachment)
 
@@ -361,7 +352,7 @@ can edit data fields (e.g., to fix a typo in a city's name in the
 "City" field) if they have proper permissions.
 
 Because the original proposal data is inhaled from an on-disk
-spreadsheet at startup time and lives in an in-memory data structure,
+collection at startup time and lives in an in-memory data structure,
 edits are persisted "off to the side" as overlays over that original
 data.  The overlay information is then consulted for updates when
 proposal data is loaded.
@@ -430,7 +421,7 @@ edits = {
 
 The edit subdicts are listed in reverse chronological order by
 `edit_timestamp`. The `ORIGINAL_VALUE` is a copy of the original value for
-this field, that is, the value that came from the original spreadsheet.
+this field, that is, the value that came from the original collection.
 
 The approval fields are unused right now, though they may be used for
 an enhancement to this feature later.  We should decide whether there
