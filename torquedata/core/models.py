@@ -101,7 +101,7 @@ class Collection(models.Model):
                         field=fields[field_name],
                         original=jsoned_value_value,
                         latest=jsoned_value_value,
-                        db_document=db_document,
+                        document=db_document,
                     )
                     values.append(value)
 
