@@ -41,8 +41,8 @@ class RebuildSearchCacheDocuments:
         from core import models
 
         for cache_document in models.SearchCacheDocument.objects.filter(dirty=True):
-            sheet = cache_document.document.sheet
-            for config in sheet.configs.all():
+            collection = cache_document.document.collection
+            for config in collection.configs.all():
                 document_dict = cache_document.document.to_dict(config)
                 cache_document.data = " ".join(list(map(str, document_dict.values())))
                 cache_document.dirty = False
