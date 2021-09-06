@@ -1,16 +1,16 @@
 <?php
 
 /*
- * Special page that lists available spreadsheet columns
+ * Special page that lists available collection fields
  */
 
-class TorqueDataConnectColumns extends SpecialPage {
+class TorqueDataConnectFields extends SpecialPage {
   public function __construct() {
-    parent::__construct('TorqueDataConnectColumns', 'torquedataconnect-admin');
+    parent::__construct('TorqueDataConnectFields', 'torquedataconnect-admin');
   }
 
   public function execute($subPage) {
-    global $wgTorqueDataConnectSheetName;
+    global $wgTorqueDataConnectCollectionName;
     global $wgTorqueDataConnectServerLocation;
 
     $this->setHeaders();
@@ -20,18 +20,18 @@ class TorqueDataConnectColumns extends SpecialPage {
       $ch,
       CURLOPT_URL,
       $wgTorqueDataConnectServerLocation .
-      '/api/sheets/' .
-      $wgTorqueDataConnectSheetName . '.json'
+      '/api/collections/' .
+      $wgTorqueDataConnectCollectionName . '.json'
     );
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $sheet = json_decode(curl_exec($ch), true);
+    $collection = json_decode(curl_exec($ch), true);
     curl_close($ch);
 
-    $out = "== " . $wgTorqueDataConnectSheetName . " ==\n";
+    $out = "== " . $wgTorqueDataConnectCollectionName . " ==\n";
 
-    // this assumes there is at least one row in the spreadsheet
-    foreach ($sheet["columns"] as $column) {
-      $out .= "* " . $column . "\n";
+    // this assumes there is at least one document in the collection
+    foreach ($collection["fields"] as $field) {
+      $out .= "* " . $field . "\n";
     }
 
     $this->getOutput()->addWikiTextAsInterface($out);

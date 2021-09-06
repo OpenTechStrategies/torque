@@ -3,21 +3,21 @@ class TorqueDataConnectConfig {
   private static $errors = [];
   private static $validTemplateTypes = ["View", "TOC", "Search", "Raw View"];
 
-  public static function convertPageToColumnConfig($page) {
+  public static function convertPageToFieldConfig($page) {
     $title = Title::newFromText($page);
     if(!$title->exists()) {
-      array_push(self::$errors, wfMessage("torquedataconnect-convert-column-page-ne", $page)->parse());
+      array_push(self::$errors, wfMessage("torquedataconnect-convert-field-page-ne", $page)->parse());
       return [];
     }
     $page = new WikiPage($title);
-    $columns = [];
+    $fields = [];
     foreach(explode("\n", $page->getContent()->getText()) as $line) {
       $matches = [];
       if(preg_match("/^\* (.*)$/", $line, $matches)) {
-        $columns[] = $matches[1];
+        $fields[] = $matches[1];
       }
     }
-    return $columns;
+    return $fields;
   }
 
   public static function convertPageToIdConfig($page) {
@@ -47,13 +47,13 @@ class TorqueDataConnectConfig {
     return $page->getContent()->getText();
   }
 
-  public static function commitGroupConfig($groupName, $columnPage, $proposalPage) {
-    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
+  public static function commitGroupConfig($groupName, $fieldPage, $proposalPage) {
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL,
       $wgTorqueDataConnectServerLocation .
       "/config/" .
-      $wgTorqueDataConnectSheetName .
+      $wgTorqueDataConnectCollectionName .
       "/" .
       $wgTorqueDataConnectWikiKey .
       "/group");
@@ -61,7 +61,7 @@ class TorqueDataConnectConfig {
       [
         "group" => $groupName,
         "wiki_key" => $wgTorqueDataConnectWikiKey,
-        "columns" => TorqueDataConnectConfig::convertPageToColumnConfig($columnPage),
+        "fields" => TorqueDataConnectConfig::convertPageToFieldConfig($fieldPage),
         "valid_ids" => TorqueDataConnectConfig::convertPageToIdConfig($proposalPage)
       ]));
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
@@ -70,12 +70,12 @@ class TorqueDataConnectConfig {
   }
 
   public static function commitTemplateConfig($templateName, $templatePage, $templateType) {
-    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL,
       $wgTorqueDataConnectServerLocation .
       "/config/" .
-      $wgTorqueDataConnectSheetName .
+      $wgTorqueDataConnectCollectionName .
       "/" .
       $wgTorqueDataConnectWikiKey .
       "/template");
@@ -98,25 +98,25 @@ class TorqueDataConnectConfig {
   }
 
   public static function resetConfig() {
-    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
     file_get_contents(
       $wgTorqueDataConnectServerLocation .
       "/config/" .
-      $wgTorqueDataConnectSheetName .
+      $wgTorqueDataConnectCollectionName .
       "/" .
       $wgTorqueDataConnectWikiKey .
       "/reset");
   }
 
   public static function commitWikiConfig() {
-    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
       $wgTorqueDataConnectWikiUsername, $wgTorqueDataConnectWikiPassword, $wgServer, $wgScriptPath;
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL,
       $wgTorqueDataConnectServerLocation .
       "/config/" .
-      $wgTorqueDataConnectSheetName .
+      $wgTorqueDataConnectCollectionName .
       "/" .
       $wgTorqueDataConnectWikiKey .
       "/wiki");
@@ -134,11 +134,11 @@ class TorqueDataConnectConfig {
   }
 
   public static function completeConfig() {
-    global $wgTorqueDataConnectSheetName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
     file_get_contents(
       $wgTorqueDataConnectServerLocation .
       "/config/" .
-      $wgTorqueDataConnectSheetName .
+      $wgTorqueDataConnectCollectionName .
       "/" .
       $wgTorqueDataConnectWikiKey .
       "/complete");
@@ -170,7 +170,7 @@ class TorqueDataConnectConfig {
     // and callbacks like a normal parser, but it's currently so simple
     // that the following is cleaner.
     $groupName = false;
-    $columnPage = false;
+    $fieldPage = false;
     $idsPage = false;
 
     $templateName = false;
@@ -191,7 +191,7 @@ class TorqueDataConnectConfig {
       } if(preg_match("/^\|\\-/", $line)) {
         if($permissionsSection) {
           $groupName = false;
-          $columnPage = false;
+          $fieldPage = false;
           $idsPage = false;
         }else if($templatesSection) {
           $templateName = false;
@@ -203,21 +203,21 @@ class TorqueDataConnectConfig {
         if($permissionsSection) {
           if(!$groupName) {
             $groupName = $line;
-          } else if(!$columnPage) {
+          } else if(!$fieldPage) {
             $matches = [];
             preg_match("/\\[\\[(.*)\\]\\]/", $line, $matches);
-            $columnPage = $matches[1];
+            $fieldPage = $matches[1];
           } else if(!$idsPage) {
             $matches = [];
             preg_match("/\\[\\[(.*)\\]\\]/", $line, $matches);
             $idsPage = $matches[1];
           } else {
-            // Do nothing here, since a fourth column is ok for user notes if they like
+            // Do nothing here, since a fourth field is ok for user notes if they like
           }
-          if($groupName && $columnPage && $idsPage) {
+          if($groupName && $fieldPage && $idsPage) {
             array_push($groupConfig, [
               "groupName" => $groupName,
-              "columnPage" => $columnPage,
+              "fieldPage" => $fieldPage,
               "idsPage" => $idsPage
             ]);
           }
@@ -242,7 +242,7 @@ class TorqueDataConnectConfig {
               array_push(self::$errors, wfMessage("torquedataconnect-config-it", $templateType)->parse());
             }
           } else {
-            // Do nothing here, since a fourth column is ok for user notes if they like
+            // Do nothing here, since a fourth field is ok for user notes if they like
           }
         }
       }
@@ -264,7 +264,7 @@ class TorqueDataConnectConfig {
     foreach($groupConfig as $group) {
       TorqueDataConnectConfig::commitGroupConfig(
         $group["groupName"],
-        $group["columnPage"],
+        $group["fieldPage"],
         $group["idsPage"]
       );
     }
@@ -286,7 +286,7 @@ class TorqueDataConnectConfig {
 
     [$groupConfig, $templateConfig] = TorqueDataConnectConfig::parseConfig();
     foreach($groupConfig as $config) {
-      if($title->equals(Title::newFromText($config["columnPage"])) ||
+      if($title->equals(Title::newFromText($config["fieldPage"])) ||
          $title->equals(Title::newFromText($config["idsPage"]))) {
         return true;
       }
@@ -304,7 +304,7 @@ class TorqueDataConnectConfig {
     self::$errors = [];
     [$groupConfig, $templateConfig] = TorqueDataConnectConfig::parseConfig();
     foreach($groupConfig as $group) {
-      TorqueDataConnectConfig::convertPageToColumnConfig($group["columnPage"]);
+      TorqueDataConnectConfig::convertPageToFieldConfig($group["fieldPage"]);
       TorqueDataConnectConfig::convertPageToIdConfig($group["idsPage"]);
     }
     return self::$errors;

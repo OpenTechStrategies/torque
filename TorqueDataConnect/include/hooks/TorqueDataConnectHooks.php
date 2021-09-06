@@ -126,7 +126,7 @@ class TorqueDataConnectHooks {
   }
 
   public static function onSpecialSearchResultsPrepend($specialSearch, $output, $term) {
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectSheetName,
+    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectCollectionName,
       $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
       $wgTorqueDataConnectMultiWikiConfig;
 
@@ -134,26 +134,26 @@ class TorqueDataConnectHooks {
 
     if($wgTorqueDataConnectMultiWikiConfig) {
       $wiki_keys = "";
-      $sheet_names = "";
-      foreach($wgTorqueDataConnectMultiWikiConfig as $sheet_name => $wiki_key) {
+      $collection_names = "";
+      foreach($wgTorqueDataConnectMultiWikiConfig as $collection_name => $wiki_key) {
         $wiki_keys .= "$wiki_key,";
-        $sheet_names .= "$sheet_name,";
+        $collection_names .= "$collection_name,";
       }
       $results = file_get_contents(
         $wgTorqueDataConnectServerLocation .
         "/api/search.mwiki" .
         "?group=" . $wgTorqueDataConnectGroup .
         "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
-        "&sheet_name=" . $wgTorqueDataConnectSheetName .
+        "&collection_name=" . $wgTorqueDataConnectCollectionName .
         "&wiki_keys=" . $wiki_keys .
-        "&sheet_names=" . $sheet_names .
+        "&collection_names=" . $collection_names .
         "&offset=" . $offset .
         "&q=" .  urlencode($term)
         );
     } else {
       $results = file_get_contents(
         $wgTorqueDataConnectServerLocation .
-        "/api/sheets/" .  $wgTorqueDataConnectSheetName . "/search.mwiki" .
+        "/api/collections/" .  $wgTorqueDataConnectCollectionName . "/search.mwiki" .
         "?group=" .  $wgTorqueDataConnectGroup .
         "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
         "&offset=" . $offset .
