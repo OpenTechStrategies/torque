@@ -212,13 +212,19 @@ def build_topic_toc(collection):
 # to create the output.
 def build_list_toc(collection):
     with open(os.path.join(toc_dir, "AllProposals.json"), "w") as f:
-        f.writelines(json.dumps({"proposal_ids": [document["Application #"] for document in collection]}))
+        f.writelines(
+            json.dumps(
+                {"proposal_ids": [document["Application #"] for document in collection]}
+            )
+        )
 
 
 # Processes all the rows, combining the different data sources into one new
 # spreadsheet, and returning it.  This will be removed later as it clutters up
 # this example.
-def process_rows(field_names, proposals_reader, acceptable_application_numbers, judge_data):
+def process_rows(
+    field_names, proposals_reader, acceptable_application_numbers, judge_data
+):
     collection = []
 
     for row in proposals_reader:
@@ -273,7 +279,10 @@ def create_tdc_config(field_names, collection):
     """
 
     def document_to_title_line(document):
-        return "* %s: [[%s]]\n" % (document["Application #"], document["MediaWiki Title"])
+        return "* %s: [[%s]]\n" % (
+            document["Application #"],
+            document["MediaWiki Title"],
+        )
 
     # This is a list of all the columns.  There's nothing special about the name
     # other than self documenting what the list should be.  The columns should
@@ -303,7 +312,9 @@ def compose_csv():
     field_names = build_field_names(proposals_reader)
     acceptable_application_numbers = build_valid_proposals()
     judge_data = build_judge_data()
-    collection = process_rows(field_names, proposals_reader, acceptable_application_numbers, judge_data)
+    collection = process_rows(
+        field_names, proposals_reader, acceptable_application_numbers, judge_data
+    )
     build_populate_toc(collection)
     build_topic_toc(collection)
     build_list_toc(collection)
@@ -387,7 +398,10 @@ def upload_attachments():
                 "permissions_column": "View Attachments",
                 "attachment_name": document["Application #"] + "_attachment.txt",
             },
-            {"attachment": "This is an attachment for proposal " + document["Application #"]},
+            {
+                "attachment": "This is an attachment for proposal "
+                + document["Application #"]
+            },
         )
 
 
