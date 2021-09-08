@@ -120,14 +120,27 @@ def edit_record(collection_name, key, group, wiki, field, new_value):
         group=group,
     )
 
-    if field in [field.name for field in wiki_config.valid_fields.all()]:
-        value = document.values.get(field__name=field)
-        value.latest = json.dumps(new_value)
+    levels = field.split("||")
+
+    if levels[0] in [field.name for field in wiki_config.valid_fields.all()]:
+        value = document.values.get(field__name=levels[0])
+
+        if len(levels) == 1:
+            to_save = new_value
+        else:
+            to_save = value.to_python()
+            for idx in range(1, len(levels)):
+                if idx + 1 == len(levels):
+                    to_save[levels[idx]] = new_value
+                else:
+                    to_save = to_save[levels[idx]]
+
+        value.latest = json.dumps(to_save)
         value.save()
         edit_record = models.ValueEdit(
             collection=collection,
             value=value,
-            updated=new_value,
+            updated=json.dumps(to_save),
             message="",
             edit_timestamp=datetime.now,
             wiki=wiki,
@@ -277,7 +290,12 @@ def field(request, collection_name, key, field, fmt):
         group = request.GET["group"]
         wiki = get_wiki(request, collection_name)
         document = get_document(group, wiki, key, "dict", collection_name, None)
-        return JsonResponse(document[field], safe=False)
+
+        value = document
+        for level in field.split("||"):
+            value = value[level]
+
+        return JsonResponse(value, safe=False)
     elif request.method == "POST":
         post_fields = json.loads(request.body)
         group = post_fields["group"]

@@ -346,82 +346,27 @@ upload these files.
 
 ### Editing data
 
-As per [issue
-#32](https://github.com/opentechstrategies/torque/issues/32), users
+As per [issue #32](https://github.com/opentechstrategies/torque/issues/32), users
 can edit data fields (e.g., to fix a typo in a city's name in the
 "City" field) if they have proper permissions.
 
-Because the original proposal data is inhaled from an on-disk
-collection at startup time and lives in an in-memory data structure,
-edits are persisted "off to the side" as overlays over that original
-data.  The overlay information is then consulted for updates when
-proposal data is loaded.
-
-For simplicity's sake, we store the edits in their own top-level data
-structure (pickled to and from disk just like the original data is).
-This is what that data structure looks like:
+In order to edit a field, you're entire page must be wrapped in an element
+with the class "torque-wrapper".  Once that's done, you can create an editable
+section by doing the following:
 
 ```
-edits = {
-    "proposals": {
-        "1": {
-               "Application #":
-                  { "original": ORIGINAL_VALUE,
-                    "edits": [
-                      {
-                        "new_value": "15",
-                        "edit_message": "says reason for the edit",
-                        "edit_timestamp": "2020-07-31",
-                        "editor": "JRandom",
-                        "approver": NULL,
-                        "approval_code": NULL,
-                        "approval_timestamp": NULL,
-                      },
-                      {
-                        "new_value": "9",
-                        "edit_message": "says reason for the edit",
-                        "edit_timestamp": "2020-07-29",
-                        "editor": "JRandom",
-                        "approver": NULL,
-                        "approval_code": NULL,
-                        "approval_timestamp": NULL,
-                      },
-                      ...
-                    ]
-                  }
-                "Name":
-                  { "original": ORIGINAL_VALUE,
-                    "edits": [
-                      {
-                        "new_value": "Fish",
-                        "edit_message": "says reason for the edit",
-                        "edit_timestamp": "2020-08-12",
-                        "editor": "JRandom",
-                        "approver": NULL,
-                        "approval_code": NULL,
-                        "approval_timestamp": NULL,
-                      },
-                      {
-                        "new_value": "Food",
-                        "edit_message": "says reason for the edit",
-                        "edit_timestamp": "2020-08-07",
-                        "editor": "JRandom",
-                        "approver": NULL,
-                        "approval_code": NULL,
-                        "approval_timestamp": NULL,
-                      },
-                      ...
-                    ]
-                  }
-             },
-         "2": { ...},
-         ...}
-      }
+<div class="editable">CURRENT_TEXT</div>
+<div class="torque-edit-button" data-field="DATA_FIELD">
+  <div class="torque-edit">EDIT_TEXT</div>
+</div>
 ```
 
-The edit subdicts are listed in reverse chronological order by
-`edit_timestamp`. The `ORIGINAL_VALUE` is a copy of the original value for
-this field, that is, the value that came from the original collection.
+For the above:
+* `CURRENT_TEXT` - Whatever the current text is, so maybe `proposal["field_name"]`
+* `DATA_FIELD` - the field being edited, such as `"field_name"`.  Because some fields can be
+  complex json objects, you can use `||` to do subscripts, so `attachments||0||name` would edit
+  the name of the first attachment
+* `EDIT_TEXT` - what you want to display on the page to be clicked on to start the edit
 
 The approval fields are unused right now, though they may be used for
 an enhancement to this feature later.  We should decide whether there
