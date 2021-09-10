@@ -27,10 +27,10 @@ import config
 # in order to sanity check the sheet and build the headers before we have a chance
 # to look at the sheet.
 valid_traits = [
-    "Likelihood of Success",
-    "Magnitude of Impact",
-    "Potential for Scale",
-    "Strength of Evidence",
+    "EVIDENCE-BASED",
+    "IMPACTFUL",
+    "SCALABLE",
+    "DURABLE",
 ]
 
 # The three csvs that will be composed, and the output created by them
@@ -76,16 +76,14 @@ def wiki_escape_page_title(s):
 # sheet, we want to extend the header row by the same amount.
 def build_field_names(proposals_reader):
     field_names = next(proposals_reader)
-    field_names.append("Valid")
-    field_names.append("View Attachments")
+    field_names.append("Admin Review Status")
+    field_names.append("Attachments")
     field_names.append("MediaWiki Title")
-    field_names.append("Judge Overall Score Rank Normalized")
-    field_names.append("Judge Sum of Scores Normalized")
+    field_names.append("Panel Overall Score Rank Normalized")
+    field_names.append("Panel Sum of Scores Normalized")
     for trait in valid_traits:
-        field_names.append("Judge " + trait)
-        field_names.append("Judge " + trait + " Score Normalized")
-        field_names.append("Judge " + trait + " Comments")
-        field_names.append("Judge " + trait + " Comment Scores Normalized")
+        field_names.append("Panel " + trait + " Score Normalized")
+        field_names.append("Panel " + trait + " Judge Data")
     return field_names
 
 
@@ -131,8 +129,10 @@ def build_judge_data():
                     {
                         "name": trait,
                         "score_normalized": 0,
-                        "comments": [],
-                        "comment_scores": [],
+                        "judge_data": {
+                            "comments": [],
+                            "scores": [],
+                        },
                     }
                     for trait in valid_traits
                 ],
@@ -143,8 +143,8 @@ def build_judge_data():
         for trait in judge_datum["traits"]:
             if trait["name"] == row[15]:
                 trait["score_normalized"] += float(row[13])
-                trait["comments"].append(row[14])
-                trait["comment_scores"].append(row[13])
+                trait["judge_data"]["comments"].append(row[14])
+                trait["judge_data"]["scores"].append(row[13])
     return judge_data
 
 
@@ -251,8 +251,7 @@ def process_rows(
                     if trait["name"] == valid_trait:
                         row.append(trait["name"])
                         row.append("{0:.1f}".format(trait["score_normalized"]))
-                        row.append(trait["comments"])
-                        row.append(trait["comment_scores"])
+                        row.append(trait["judge_data"])
 
         else:
             row.extend([9999, ""])
@@ -262,7 +261,7 @@ def process_rows(
 
         collection.append(dict(zip(field_names, row)))
 
-    collection.sort(key=lambda row: int(row["Judge Overall Score Rank Normalized"]))
+    collection.sort(key=lambda row: int(row["Panel Overall Score Rank Normalized"]))
     return collection
 
 
@@ -395,7 +394,7 @@ def upload_attachments():
                 "format": "json",
                 "collection_name": "proposals",
                 "object_id": document["Application #"],
-                "permissions_column": "View Attachments",
+                "permissions_column": "Attachments",
                 "attachment_name": document["Application #"] + "_attachment.txt",
             },
             {
