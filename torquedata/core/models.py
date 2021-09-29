@@ -272,7 +272,7 @@ class Template(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["collection", "type", "name"], name="unique_template"
+                fields=["collection", "wiki", "type", "name"], name="unique_template"
             ),
         ]
 
