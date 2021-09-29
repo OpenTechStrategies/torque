@@ -46,8 +46,11 @@ class Collection(models.Model):
         if Collection.objects.filter(name=name).exists():
             collection = Collection.objects.get(name=name)
         else:
-            collection = cls(name=name, object_name=object_name, key_field=key_field)
-            collection.save()
+            collection = cls(name=name)
+
+        collection.key_field = key_field
+        collection.object_name = object_name
+        collection.save()
 
         fields = {}
         documents = []
