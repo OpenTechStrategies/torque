@@ -68,6 +68,8 @@ class Collection(models.Model):
             if value.field not in collection_values[value.document]:
                 collection_values[value.document][value.field] = value
 
+        collection.fields.update(attached=False)
+
         for document_number, document_in in enumerate(data):
             if document_number == 0:
                 # Generate fields, but only on the first proposal
@@ -76,6 +78,7 @@ class Collection(models.Model):
                         name=field_name,
                         collection=collection,
                     )
+                    field.attached = True
                     field.save()
                     fields[field_name] = field
 
@@ -231,6 +234,14 @@ class Field(models.Model):
         related_name="fields",
     )
     wiki_config = models.ManyToManyField(WikiConfig, related_name="valid_fields")
+
+    # Attached here represents fields that are actually attached to a collection.
+    #
+    # When uploading a collection, if fields have been dropped off, then they are
+    # no longer actively attached.  Instead of just removing them right away, and
+    # losing any Value or ValueEdits associated, we just mark them as unattached,
+    # and then we can later clean them up if we want.
+    attached = models.BooleanField(default=True)
 
 
 class Value(models.Model):

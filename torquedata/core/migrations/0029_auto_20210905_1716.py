@@ -73,12 +73,6 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AddConstraint(
-            model_name="document",
-            constraint=models.UniqueConstraint(
-                fields=("collection", "key"), name="unique_key"
-            ),
-        ),
-        migrations.AddConstraint(
             model_name="tableofcontents",
             constraint=models.UniqueConstraint(
                 fields=("collection", "name"), name="unique_toc"

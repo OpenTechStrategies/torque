@@ -11,10 +11,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='document',
-            name='unique_key',
-        ),
-        migrations.RemoveConstraint(
             model_name='template',
             name='unique_template',
         ),
