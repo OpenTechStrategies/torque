@@ -253,7 +253,17 @@ class Value(models.Model):
     )
 
     def to_python(self):
-        return json.loads(self.latest)
+        # For legacy purposes, we return the string representation
+        # if it's not valid json in the database.  Because some old
+        # data may still be in the database that isn't overwritten,
+        # we want to be able to soldier on.
+        try:
+            return json.loads(self.latest)
+        except json.JSONDecodeError:
+            if self.latest:
+                return self.latest
+            else:
+                return ""
 
 
 class ValueEdit(models.Model):
