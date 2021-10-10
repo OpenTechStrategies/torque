@@ -50,8 +50,7 @@
     "torquedataconnectuploadattachment": "TorqueDataConnectUploadAttachment"
   },
   "ExtensionMessagesFiles": {
-    "TorqueDataConnectMagic": "TorqueDataConnect.i18n.php",
-    "TorqueDataConnectAlias": "TorqueDataConnect.i18n.alias.php"
+    "TorqueDataConnectMagic": "TorqueDataConnect.i18n.php"
   },
   "SpecialPages": {
     "TorqueDataConnectAttachment": "TorqueDataConnectAttachment",
