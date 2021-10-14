@@ -344,8 +344,10 @@ class TorqueDataConnectConfig {
   }
 
   public static function getValidGroup($user) {
+    $manager = MediaWiki\MediaWikiServices::getInstance()->getUserGroupManager();
+    $wikiGroups = $manager->getUserGroups($user);
     foreach(TorqueDataConnectConfig::parseConfig()[0] as $group) {
-      if(in_array($group["groupName"], $user->getGroups())) {
+      if(in_array($group["groupName"], $wikiGroups) {
         return $group["groupName"];
       }
     }
