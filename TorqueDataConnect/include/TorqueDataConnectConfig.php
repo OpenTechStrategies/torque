@@ -275,11 +275,19 @@ class TorqueDataConnectConfig {
   public static function getValidGroup($user) {
     $manager = MediaWiki\MediaWikiServices::getInstance()->getUserGroupManager();
     $wikiGroups = $manager->getUserGroups($user);
-    foreach(TorqueDataConnectConfig::parseConfig()[0] as $group) {
-      if(in_array($group["groupName"], $wikiGroups) {
-        return $group["groupName"];
+    foreach(TorqueDataConnectConfig::getConfiguredGroups() as $group) {
+      if(in_array($group, $wikiGroups) {
+        return $group;
       }
     }
+  }
+
+  public static function getConfiguredGroups() {
+    $groupNames = [];
+    foreach(TorqueDataConnectConfig::parseConfig()[0] as $group) {
+      array_push($groupNames, $group["groupName"]);
+    }
+    return $groupNames;
   }
 }
 
