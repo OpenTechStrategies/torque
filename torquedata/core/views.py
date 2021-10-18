@@ -539,7 +539,7 @@ def upload_attachment(request):
         name=secure_filename(request.POST["attachment_name"]),
         document=document,
     )
-    attachment.permissions_field=permissions_field
+    attachment.permissions_field = permissions_field
     attachment.file = request.FILES["attachment"]
     attachment.save()
 

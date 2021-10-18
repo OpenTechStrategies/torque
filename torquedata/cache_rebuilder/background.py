@@ -29,7 +29,10 @@ class RebuildTOCs:
             # As above, we do this outside of the transaction, because if someone comes
             # along and dirties it again while we're rebuilding, we want to
             # rebuild it after we're done rebuilding it.
-            print("Rebuilding toc %s: %s" % (toc_cache.toc.collection.name, toc_cache.toc.name))
+            print(
+                "Rebuilding toc %s: %s"
+                % (toc_cache.toc.collection.name, toc_cache.toc.name)
+            )
             toc_cache.dirty = False
             toc_cache.save()
             with transaction.atomic():
