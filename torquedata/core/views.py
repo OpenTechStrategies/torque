@@ -3,7 +3,7 @@ import urllib.parse
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from django.core.files.base import ContentFile
-from django.db.models import Q, F
+from django.db.models import Q, F, Count
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.http import require_http_methods
@@ -30,7 +30,7 @@ def get_wiki(request, collection_name):
     return models.Wiki.objects.get_or_create(wiki_key=wiki_key)[0]
 
 
-def search(q, offset, template_config, wiki_configs, fmt, multi):
+def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
     results = (
         models.SearchCacheDocument.objects.filter(
             collection__in=wiki_configs.values_list("collection", flat=True),
@@ -41,29 +41,67 @@ def search(q, offset, template_config, wiki_configs, fmt, multi):
         )
         .select_related("document")
         .select_related("collection")
+    )
+    filter_results = {}
+    for filter in config.FILTERS:
+        additional_filters = {
+            ("filtered_data__%s" % k): v
+            for k, v in filters.items()
+            if k != filter.name()
+        }
+        filter_results[filter.name()] = []
+        grouped_results = (
+            results.filter(Q(**additional_filters))
+            .values("filtered_data__%s" % filter.name())
+            .annotate(total=Count("id"))
+        )
+        for result in grouped_results:
+            filter_results[filter.name()].append(
+                {
+                    "name": result["filtered_data__%s" % filter.name()],
+                    "total": result["total"],
+                }
+            )
+
+    additional_filters = {("filtered_data__%s" % k): v for k, v in filters.items()}
+
+    returned_results = (
+        results.filter(Q(**additional_filters))
         .annotate(rank=SearchRank(F("data_vector"), SearchQuery(q)))
         .order_by("-rank")
     )
 
+    # While this result isn't actually mwiki text, this result is intended
+    # for the mediawiki TorqueDataConnect extension.  Probably better to keep
+    # the mwiki format than to do something like create a new "torque" format.
+    # But, if we decide we need results to go to another renderer, it may
+    # be worth being more clear about what we're doing here via the interface.
     if fmt == "mwiki":
-        resp = ""
+        mwiki_text = ""
 
-        for result in results[offset : (offset + 20)]:
+        for result in returned_results[offset : (offset + 20)]:
             template = JinjaTemplate(
                 models.Template.objects.get(
                     name="Search", collection=template_config.collection
                 ).get_file_contents()
             )
-            resp += template.render(
+            mwiki_text += template.render(
                 {
                     template_config.collection.object_name: result.document.to_dict(
                         result.wiki_config
                     )
                 }
             )
-            resp += "\n\n"
+            mwiki_text += "\n\n"
 
-        return HttpResponse(str(results.count()) + " " + resp)
+        return JsonResponse(
+            {
+                "num_results": returned_results.count(),
+                "mwiki_text": mwiki_text,
+                "filter_results": filter_results,
+            },
+            safe=False,
+        )
     elif fmt == "json":
         response = [
             "/%s/%s/%s/%s"
@@ -73,7 +111,7 @@ def search(q, offset, template_config, wiki_configs, fmt, multi):
                 config.DOCUMENTS_ALIAS or "documents",
                 result.document.key,
             )
-            for result in results
+            for result in returned_results
         ]
 
         return JsonResponse(response, safe=False)
@@ -83,6 +121,7 @@ def search(q, offset, template_config, wiki_configs, fmt, multi):
 
 def search_global(request, fmt):
     q = request.GET["q"]
+    f = json.loads(request.GET["f"]) if "f" in request.GET and request.GET["f"] else {}
     offset = int(request.GET.get("offset", 0))
     group = request.GET["group"]
     global_wiki_key = request.GET["wiki_key"]
@@ -97,18 +136,19 @@ def search_global(request, fmt):
     configs = models.WikiConfig.objects.filter(
         collection__name__in=collection_names, wiki__wiki_key__in=wiki_keys, group=group
     ).all()
-    return search(q, offset, global_config, configs, fmt, True)
+    return search(q, f, offset, global_config, configs, fmt, True)
 
 
 def search_collection(request, collection_name, fmt):
     q = request.GET["q"]
+    f = json.loads(request.GET["f"]) if "f" in request.GET and request.GET["f"] else {}
     offset = int(request.GET.get("offset", 0))
     group = request.GET["group"]
     wiki = get_wiki(request, collection_name)
     configs = models.WikiConfig.objects.filter(
         collection__name=collection_name, wiki=wiki, group=group
     )
-    return search(q, offset, configs.first(), configs, fmt, False)
+    return search(q, f, offset, configs.first(), configs, fmt, False)
 
 
 def edit_record(collection_name, key, group, wiki, field, new_value):

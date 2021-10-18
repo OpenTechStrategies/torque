@@ -148,7 +148,8 @@ class TorqueDataConnectHooks {
         "&wiki_keys=" . $wiki_keys .
         "&collection_names=" . $collection_names .
         "&offset=" . $offset .
-        "&q=" .  urlencode($term)
+        "&q=" .  urlencode($term) .
+        "&f=" . $specialSearch->getRequest()->getVal("f")
         );
     } else {
       $results = file_get_contents(
@@ -157,13 +158,19 @@ class TorqueDataConnectHooks {
         "?group=" .  $wgTorqueDataConnectGroup .
         "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
         "&offset=" . $offset .
-        "&q=" .  urlencode($term)
+        "&q=" . urlencode($term) .
+        "&f=" . $specialSearch->getRequest()->getVal("f")
         );
     }
-    $split_point = strpos($results, " ");
-    $num_results = intval(substr($results, 0, $split_point));
-    $mwiki_results = substr($results, $split_point + 1);
-    $request = $specialSearch->getRequest();
+    $decoded_results = json_decode($results, true);
+    $num_results = $decoded_results["num_results"];
+    $filter_results = $decoded_results["filter_results"];
+    $mwiki_results = $decoded_results["mwiki_text"];
+
+    $current_filter = json_decode(urldecode($specialSearch->getRequest()->getVal("f")), true);
+    if(!$current_filter) {
+      $current_filter = [];
+    }
 
     $header = "<h2>$num_results results for '$term'";
     if($num_results > 20) {
@@ -171,21 +178,42 @@ class TorqueDataConnectHooks {
       $header .= ($offset + 1) . " - " . min($num_results, ($offset + 20));
       if($offset > 0) {
         $header .= " | ";
-        $request->appendQueryValue("offset", ($offset - 20));
-        $prev_20_url = $output->getTitle()->getFullUrl(["offset" => $offset - 20, "search" => $term]);
+        $prev_20_url = $output->getTitle()->getFullUrl(["offset" => $offset - 20, "search" => $term, "f" => urlencode(json_encode($current_filter))]);
         $header .= "<a href='$prev_20_url'>Prev 20</a>";
       }
       if(($offset + 20) < $num_results) {
         $header .= " | ";
-        $request->appendQueryValue("offset", ($offset + 20));
-        $next_20_url = $output->getTitle()->getFullUrl(["offset" => $offset + 20, "search" => $term]);
+        $next_20_url = $output->getTitle()->getFullUrl(["offset" => $offset + 20, "search" => $term, "f" => urlencode(json_encode($current_filter))]);
         $header .= "<a href='$next_20_url'>Next 20</a>";
       }
       $header .= ")";
     }
     $header .= "</h2>";
 
+    $filter_html = "<div style='border:1px solid black;float:right;padding:10px'><h1>Filters</h1>";
+    foreach($filter_results as $name => $counts) {
+      $filter_html .= "<h3>$name</h3>";
+      foreach($counts as $count) {
+        $filter_url = false;
+        if($current_filter[$name] != $count["name"]) {
+          $link_filter = $current_filter;
+          $link_filter[$name] = $count["name"];
+          $filter_url = $output->getTitle()->getFullUrl(["offset" => 0, "search" => $term, "f" => urlencode(json_encode($link_filter))]);
+          $filter_html .= "<a href='$filter_url'>";
+        }
+        $filter_html .= $count["name"];
+        if($filter_url) {
+          $filter_html .= "</a>";
+        }
+        $filter_html .= " (";
+        $filter_html .= $count["total"];
+        $filter_html .= ")<br>\n";
+      }
+    }
+    $filter_html .= "</div>\n";
+
     $output->addHTML($header);
+    $output->addHTML($filter_html);
     $output->addWikiTextAsInterface($mwiki_results);
 
     return false;
