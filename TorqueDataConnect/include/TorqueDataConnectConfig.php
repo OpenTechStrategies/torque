@@ -276,7 +276,7 @@ class TorqueDataConnectConfig {
     $manager = MediaWiki\MediaWikiServices::getInstance()->getUserGroupManager();
     $wikiGroups = $manager->getUserGroups($user);
     foreach(TorqueDataConnectConfig::getConfiguredGroups() as $group) {
-      if(in_array($group, $wikiGroups) {
+      if(in_array($group, $wikiGroups)) {
         return $group;
       }
     }
