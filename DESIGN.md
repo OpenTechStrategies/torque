@@ -412,3 +412,15 @@ of the data in order to correctly rank search results against each other.
 
 In the future, torquedata will gain a better understanding of the wiki to return
 better interleaved results. 
+
+#### Search Filter
+
+Filters are defined on the python server, rather than through mediawiki.
+This allows more powerful filters, as the python language is available.
+Filters are stored as part of the search cache, so when adjusting a filter,
+the cache must be refreshed via a new upload.
+
+To see how to define filters, see [config file](torquedata/config.py.tmpl).
+
+To adjust how the filter interface looks, use css, such as in the
+MediaWiki:Common.css page.
