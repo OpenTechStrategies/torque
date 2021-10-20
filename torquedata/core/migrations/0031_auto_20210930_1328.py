@@ -6,21 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0030_auto_20210927_1304'),
+        ("core", "0030_auto_20210927_1304"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='document',
-            name='unique_key',
+            model_name="document",
+            name="unique_key",
         ),
         migrations.AddField(
-            model_name='field',
-            name='attached',
+            model_name="field",
+            name="attached",
             field=models.BooleanField(default=True),
         ),
         migrations.AddConstraint(
-            model_name='document',
-            constraint=models.UniqueConstraint(fields=('collection', 'key'), name='unique_key'),
+            model_name="document",
+            constraint=models.UniqueConstraint(
+                fields=("collection", "key"), name="unique_key"
+            ),
         ),
     ]

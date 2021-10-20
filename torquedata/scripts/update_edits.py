@@ -16,8 +16,10 @@ from scripts.update_edits_config import collections, column_mapping, group
 # it.
 
 unrun_fields = set()
+
+
 def run():
-    for edit in models.ValueEdit.objects.order_by('edit_timestamp').all():
+    for edit in models.ValueEdit.objects.order_by("edit_timestamp").all():
         value = edit.value
         field = value.field
         document = value.document
@@ -28,7 +30,14 @@ def run():
         if not field.attached:
             if field.name in column_mapping:
                 print("Updating edit %s" % field.name)
-                views.edit_record(collection.name, value.document.key, group, wiki, column_mapping[field.name], edit.updated)
+                views.edit_record(
+                    collection.name,
+                    value.document.key,
+                    group,
+                    wiki,
+                    column_mapping[field.name],
+                    edit.updated,
+                )
                 edit.delete()
             else:
                 print("Adding field %s to unrun" % field.name)

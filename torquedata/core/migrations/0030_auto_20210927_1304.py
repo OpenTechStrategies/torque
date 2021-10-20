@@ -6,16 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0029_auto_20210905_1716'),
+        ("core", "0029_auto_20210905_1716"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='template',
-            name='unique_template',
+            model_name="template",
+            name="unique_template",
         ),
         migrations.AddConstraint(
-            model_name='template',
-            constraint=models.UniqueConstraint(fields=('collection', 'wiki', 'type', 'name'), name='unique_template'),
+            model_name="template",
+            constraint=models.UniqueConstraint(
+                fields=("collection", "wiki", "type", "name"), name="unique_template"
+            ),
         ),
     ]

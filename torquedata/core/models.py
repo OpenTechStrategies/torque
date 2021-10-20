@@ -165,12 +165,18 @@ class WikiConfig(models.Model):
     search_cache_dirty = models.BooleanField(default=False)
 
     def rebuild_search_index(self):
+        import config
+
         SearchCacheDocument.objects.filter(wiki_config=self).delete()
         sc_documents = []
         for document_dict in self.collection.clean_documents(self):
             document = Document.objects.get(
                 key=document_dict["key"], collection=self.collection
             )
+            filtered_data = {}
+            for filter in config.FILTERS:
+                filtered_data[filter.name()] = filter.document_value(document)
+
             if not SearchCacheDocument.objects.filter(
                 document=document, wiki_config=self
             ).exists():
@@ -181,6 +187,7 @@ class WikiConfig(models.Model):
                         wiki=self.wiki,
                         group=self.group,
                         wiki_config=self,
+                        filtered_data=filtered_data,
                         data=" ".join(list(map(str, document_dict.values()))),
                     )
                 )
@@ -209,10 +216,10 @@ class Document(models.Model):
         return new_document
 
     def __getitem__(self, key):
-        return self.data[key]
-
-    def items(self):
-        return self.data.items()
+        try:
+            return self.values.get(field__name=key).to_python()
+        except Value.DoesNotExist:
+            return None
 
     def clone(self):
         return Document(collection=self.collection, key=self.key)
@@ -386,6 +393,7 @@ class SearchCacheDocument(models.Model):
     wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     group = models.TextField()
     data = models.TextField()
+    filtered_data = models.JSONField(null=True)
     data_vector = SearchVectorField(null=True)
     dirty = models.BooleanField(default=False)
 
