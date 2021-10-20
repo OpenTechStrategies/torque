@@ -1,5 +1,5 @@
 <?php
-class TorqueDataConnectUploadSheet extends APIBase {
+class TorqueDataConnectUploadCollection extends APIBase {
 
   public function __construct($main, $action) {
     parent::__construct($main, $action);
@@ -8,7 +8,7 @@ class TorqueDataConnectUploadSheet extends APIBase {
   public function execute() {
     global $wgTorqueDataConnectServerLocation;
     $log = new LogPage('torquedataconnect-datachanges', false);
-    $log->addEntry('sheetupload', $this->getTitle(), null);
+    $log->addEntry('collectionupload', $this->getTitle(), null);
 
     parent::checkUserRightsAny(["torquedataconnect-admin"]);
     # We use phpcurl here because it's really straightforward, and
@@ -19,12 +19,12 @@ class TorqueDataConnectUploadSheet extends APIBase {
     $data = [
       'data_file' => curl_file_create($temp),
       'object_name' => $this->getParameter("object_name"),
-      'sheet_name' => $this->getParameter("sheet_name"),
-      'key_column' => $this->getParameter("key_column")
+      'collection_name' => $this->getParameter("collection_name"),
+      'key_field' => $this->getParameter("key_field")
     ];
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "$wgTorqueDataConnectServerLocation/upload/sheet");
+    curl_setopt($ch, CURLOPT_URL, "$wgTorqueDataConnectServerLocation/upload/collection");
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_exec ($ch);
     curl_close ($ch);
@@ -41,11 +41,11 @@ class TorqueDataConnectUploadSheet extends APIBase {
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
-      "sheet_name" => [
+      "collection_name" => [
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
-      "key_column" => [
+      "key_field" => [
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],

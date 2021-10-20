@@ -25,11 +25,11 @@
     "TorqueDataConnectUserLookup": "include/TorqueDataConnectUserLookup.php",
     "TorqueDataConnectQuery": "include/api/TorqueDataConnectQuery.php",
     "TorqueDataConnectSubmitEdit": "include/api/TorqueDataConnectSubmitEdit.php",
-    "TorqueDataConnectUploadSheet": "include/api/TorqueDataConnectUploadSheet.php",
+    "TorqueDataConnectUploadCollection": "include/api/TorqueDataConnectUploadCollection.php",
     "TorqueDataConnectUploadToc": "include/api/TorqueDataConnectUploadToc.php",
     "TorqueDataConnectUploadAttachment": "include/api/TorqueDataConnectUploadAttachment.php",
     "TorqueDataConnectAttachment": "include/specials/TorqueDataConnectAttachment.php",
-    "TorqueDataConnectColumns": "include/specials/TorqueDataConnectColumns.php",
+    "TorqueDataConnectFields": "include/specials/TorqueDataConnectFields.php",
     "TorqueDataConnectHooks": "include/hooks/TorqueDataConnectHooks.php"
   },
   "Hooks": {
@@ -45,24 +45,23 @@
   "APIModules": {
     "torquedataconnect": "TorqueDataConnectQuery",
     "torquedataconnectsubmitedit": "TorqueDataConnectSubmitEdit",
-    "torquedataconnectuploadsheet": "TorqueDataConnectUploadSheet",
+    "torquedataconnectuploadcollection": "TorqueDataConnectUploadCollection",
     "torquedataconnectuploadtoc": "TorqueDataConnectUploadToc",
     "torquedataconnectuploadattachment": "TorqueDataConnectUploadAttachment"
   },
   "ExtensionMessagesFiles": {
-    "TorqueDataConnectMagic": "TorqueDataConnect.i18n.php",
-    "TorqueDataConnectAlias": "TorqueDataConnect.i18n.alias.php"
+    "TorqueDataConnectMagic": "TorqueDataConnect.i18n.php"
   },
   "SpecialPages": {
     "TorqueDataConnectAttachment": "TorqueDataConnectAttachment",
-    "TorqueDataConnectColumns": "TorqueDataConnectColumns"
+    "TorqueDataConnectFields": "TorqueDataConnectFields"
   },
   "config": {
     "TorqueDataConnectConfigPage": "",
     "TorqueDataConnectServerLocation": "http://localhost:5000",
     "TorqueDataConnectGroup": false,
     "TorqueDataConnectView": false,
-    "TorqueDataConnectSheetName": "",
+    "TorqueDataConnectCollectionName": "",
     "TorqueDataConnectWikiKey": "",
     "TorqueDataConnectNotFoundMessage": "Torque Data Connect Error: Key Not Found",
     "TorqueDataConnectRaw": false,

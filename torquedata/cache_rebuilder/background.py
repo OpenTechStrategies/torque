@@ -6,11 +6,11 @@ import sys
 from django.contrib.postgres.search import SearchVector
 
 
-class RebuildSheetConfigs:
+class RebuildWikiConfigs:
     def run(self):
         from core import models
 
-        for config in models.SheetConfig.objects.filter(search_cache_dirty=True).all():
+        for config in models.WikiConfig.objects.filter(search_cache_dirty=True).all():
             # We do this outside of the transaction, because if someone comes
             # along and dirties it again while we're rebuilding, we want to
             # rebuild it after we're done rebuilding it.
@@ -36,18 +36,18 @@ class RebuildTOCs:
             print("Rebuilt toc %s" % toc_cache.toc.name)
 
 
-class RebuildSearchCacheRows:
+class RebuildSearchCacheDocuments:
     def run(self):
         from core import models
 
-        for cache_row in models.SearchCacheRow.objects.filter(dirty=True):
-            sheet = cache_row.row.sheet
-            for config in sheet.configs.all():
-                row_dict = cache_row.row.to_dict(config)
-                cache_row.data = " ".join(list(map(str, row_dict.values())))
-                cache_row.dirty = False
-                cache_row.save()
-                models.SearchCacheRow.objects.filter(id=cache_row.id).update(
+        for cache_document in models.SearchCacheDocument.objects.filter(dirty=True):
+            collection = cache_document.document.collection
+            for config in collection.configs.all():
+                document_dict = cache_document.document.to_dict(config)
+                cache_document.data = " ".join(list(map(str, document_dict.values())))
+                cache_document.dirty = False
+                cache_document.save()
+                models.SearchCacheDocument.objects.filter(id=cache_document.id).update(
                     data_vector=SearchVector("data")
                 )
 
@@ -62,9 +62,9 @@ class CacheRebuilder(Process):
 
         while True:
             try:
-                RebuildSheetConfigs().run()
+                RebuildWikiConfigs().run()
                 RebuildTOCs().run()
-                RebuildSearchCacheRows().run()
+                RebuildSearchCacheDocuments().run()
             except:
                 print("Rebuilder failed a loop due to %s" % sys.exc_info()[0])
 

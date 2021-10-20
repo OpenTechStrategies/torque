@@ -3,11 +3,11 @@ function addEditButtonListeners () {
     $(".torque-edit-button.paragraph").click(handleParagraphEdit);
     $(".torque-edit-button.list").click(handleListEdit);
 
-    const [sheetName, , key] = $("#page-info")
+    const [collectionName, , key] = $("#page-info")
         .data("location")
         .replace(".mwiki", "")
         .split("/");
-    window.sheetName = sheetName;
+    window.collectionName = collectionName;
     window.wikiKey = $("#page-info").data("wiki-key");
     window.key = key;
 }
@@ -23,7 +23,7 @@ async function submitEdit (field, value) {
     const postData = {
         field: field,
         newValue: value,
-        sheetName: window.sheetName,
+        collectionName: window.collectionName,
         wikiKey: window.wikiKey,
         key: window.key,
         title: mw.config.values.wgTitle,
@@ -54,9 +54,9 @@ async function submitEdit (field, value) {
 
 async function getFieldValue (field) {
     const actionName = "torquedataconnect";
-    const path = "/sheets/" +
-        window.sheetName +
-        "/rows/" +
+    const path = "/collections/" +
+        window.collectionName +
+        "/documents/" +
         window.key +
         "/fields/" +
         field;

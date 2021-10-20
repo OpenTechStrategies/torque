@@ -168,24 +168,16 @@
 * EIN
 * Annual Operating Budget
 * Number of Employees
-* Valid
-* View Attachments
+* Admin Review Status
+* Attachments
 * MediaWiki Title
-* Judge Overall Score Rank Normalized
-* Judge Sum of Scores Normalized
-* Judge Likelihood of Success
-* Judge Likelihood of Success Score Normalized
-* Judge Likelihood of Success Comments
-* Judge Likelihood of Success Comment Scores Normalized
-* Judge Magnitude of Impact
-* Judge Magnitude of Impact Score Normalized
-* Judge Magnitude of Impact Comments
-* Judge Magnitude of Impact Comment Scores Normalized
-* Judge Potential for Scale
-* Judge Potential for Scale Score Normalized
-* Judge Potential for Scale Comments
-* Judge Potential for Scale Comment Scores Normalized
-* Judge Strength of Evidence
-* Judge Strength of Evidence Score Normalized
-* Judge Strength of Evidence Comments
-* Judge Strength of Evidence Comment Scores Normalized
+* Panel Overall Score Rank Normalized
+* Panel Sum of Scores Normalized
+* Panel EVIDENCE-BASED Score Normalized
+* Panel EVIDENCE-BASED Judge Data
+* Panel IMPACTFUL Score Normalized
+* Panel IMPACTFUL Judge Data
+* Panel SCALABLE Score Normalized
+* Panel SCALABLE Judge Data
+* Panel DURABLE Score Normalized
+* Panel DURABLE Judge Data

@@ -15,9 +15,9 @@ class TorqueDataConnectUploadAttachment extends APIBase {
     file_put_contents($temp, $attachment->getStream()->getContents());
     $data = [
       'attachment' => curl_file_create($temp),
-      'sheet_name' => $this->getParameter("sheet_name"),
+      'collection_name' => $this->getParameter("collection_name"),
       'attachment_name' => $this->getParameter("attachment_name"),
-      'permissions_column' => $this->getParameter("permissions_column"),
+      'permissions_field' => $this->getParameter("permissions_field"),
       'object_id' => $this->getParameter("object_id")
     ];
 
@@ -39,7 +39,7 @@ class TorqueDataConnectUploadAttachment extends APIBase {
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
-      "permissions_column" => [
+      "permissions_field" => [
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
@@ -47,7 +47,7 @@ class TorqueDataConnectUploadAttachment extends APIBase {
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
-      "sheet_name" => [
+      "collection_name" => [
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],

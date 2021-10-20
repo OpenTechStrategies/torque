@@ -1,4 +1,3 @@
-import csv
 import hashlib
 import io
 import os
@@ -15,99 +14,108 @@ from django.contrib.postgres.indexes import GinIndex
 from jinja2 import Template as JinjaTemplate
 
 
-class Spreadsheet(models.Model):
-    """ An uploaded CSV file """
+class Collection(models.Model):
+    """An uploaded CSV file"""
 
     name = models.CharField(max_length=255, unique=True)
     object_name = models.CharField(max_length=255)
-    key_column = models.TextField()
+    key_field = models.TextField()
     last_updated = models.DateTimeField(auto_now=True)
 
-    def clean_rows(self, config):
-        # return a reduced list of rows based on permissions defined in config
-        # (SheetConfig instance)
-        new_rows = {}
-        for cell in (
-            Cell.objects.filter(
-                row__in=config.valid_ids.all(), column__in=config.valid_columns.all()
+    def clean_documents(self, config):
+        # return a reduced list of documents based on permissions defined in config
+        # (WikiConfig instance)
+        new_documents = {}
+        for value in (
+            Value.objects.filter(
+                document__in=config.valid_ids.all(), field__in=config.valid_fields.all()
             )
-            .prefetch_related("column")
-            .prefetch_related("row")
+            .prefetch_related("field")
+            .prefetch_related("document")
             .all()
         ):
-            if cell.row.id not in new_rows:
-                new_rows[cell.row.id] = {"key": cell.row.key}
-            new_rows[cell.row.id][cell.column.name] = cell.formatted_value()
-        return new_rows.values()
+            if value.document.id not in new_documents:
+                new_documents[value.document.id] = {"key": value.document.key}
+            new_documents[value.document.id][value.field.name] = value.to_python()
+        return new_documents.values()
 
     @classmethod
-    def from_csv(cls, name, object_name, key_column, file):
-        file_text = io.StringIO(file.read().decode())
-        reader = csv.DictReader(file_text)
-        if Spreadsheet.objects.filter(name=name).exists():
-            sheet = Spreadsheet.objects.get(name=name)
+    def from_json(cls, name, object_name, key_field, file):
+        file_text = file.read().decode()
+        data = json.loads(file_text)
+        if Collection.objects.filter(name=name).exists():
+            collection = Collection.objects.get(name=name)
         else:
-            sheet = cls(name=name, object_name=object_name, key_column=key_column)
-            sheet.save()
+            collection = cls(name=name)
 
-        cols = {}
-        rows = []
-        cells = []
-        sheet_cells = {}
-        for cell in (
-            Cell.objects.filter(row__in=Row.objects.filter(sheet=sheet))
-            .prefetch_related("column")
-            .prefetch_related("row")
-        ):
-            if cell.row not in sheet_cells:
-                sheet_cells[cell.row] = {}
-            if cell.column not in sheet_cells[cell.row]:
-                sheet_cells[cell.row][cell.column] = cell
+        collection.key_field = key_field
+        collection.object_name = object_name
+        collection.save()
 
-        for row_number, line in enumerate(reader):
-            if row_number == 0:
-                # Generate columns
-                for col_name, col_type in line.items():
-                    col, created = Column.objects.update_or_create(
-                        name=col_name,
-                        type=col_type,
-                        sheet=sheet,
-                    )
-                    col.save()
-                    cols[col_name] = col
-                continue
-
-            row, created = Row.objects.update_or_create(
-                sheet=sheet,
-                key=line[sheet.key_column],
+        fields = {}
+        documents = []
+        values = []
+        collection_values = {}
+        for value in (
+            Value.objects.filter(
+                document__in=Document.objects.filter(collection=collection)
             )
-            row.save()
-            rows.append(row)
-            for col_name, cell_value in line.items():
-                # found_cell = None
-                if row in sheet_cells and cols[col_name] in sheet_cells[row]:
-                    cell = sheet_cells[row][cols[col_name]]
-                    # Only update for cells whose value has changed
-                    if cell.original_value != cell_value:
-                        sheet.last_updated = datetime.now
-                        cell.original_value = cell_value
-                        cell.latest_value = cell_value
-                        cell.save()
-                else:
-                    sheet.last_updated = datetime.now
-                    cell = Cell(
-                        column=cols[col_name],
-                        original_value=cell_value,
-                        latest_value=cell_value,
-                        row=row,
-                    )
-                    cells.append(cell)
+            .prefetch_related("field")
+            .prefetch_related("document")
+        ):
+            if value.document not in collection_values:
+                collection_values[value.document] = {}
+            if value.field not in collection_values[value.document]:
+                collection_values[value.document][value.field] = value
 
-        Cell.objects.bulk_create(cells)
+        collection.fields.update(attached=False)
+
+        for document_number, document_in in enumerate(data):
+            if document_number == 0:
+                # Generate fields, but only on the first proposal
+                for field_name in document_in.keys():
+                    field, created = Field.objects.update_or_create(
+                        name=field_name,
+                        collection=collection,
+                    )
+                    field.attached = True
+                    field.save()
+                    fields[field_name] = field
+
+            db_document, created = Document.objects.update_or_create(
+                collection=collection,
+                key=document_in[collection.key_field],
+            )
+            db_document.save()
+            documents.append(db_document)
+            for field_name, value_value in document_in.items():
+                jsoned_value_value = json.dumps(value_value)
+                if (
+                    db_document in collection_values
+                    and fields[field_name] in collection_values[db_document]
+                ):
+                    value = collection_values[db_document][fields[field_name]]
+                    # Only update for values whose value has changed
+                    if value.original != jsoned_value_value:
+                        collection.last_updated = datetime.now
+                        value.original = jsoned_value_value
+                        value.latest = jsoned_value_value
+                        value.save()
+                else:
+                    collection.last_updated = datetime.now
+                    value = Value(
+                        field=fields[field_name],
+                        original=jsoned_value_value,
+                        latest=jsoned_value_value,
+                        document=db_document,
+                    )
+                    values.append(value)
+
+        Value.objects.bulk_create(values)
 
         # In case last_updated got set
-        sheet.save()
-        return sheet, rows
+        collection.save()
+        return collection, documents
 
 
 class Wiki(models.Model):
@@ -115,8 +123,8 @@ class Wiki(models.Model):
     by the wiki_key, which has the corresponding variable
     $wgTorqueDataConnectWikiKey in the mediawiki extension.
 
-    Not that this does not connect to any spreadsheet, because a wiki
-    can be connected to multiple spreadsheets through SheetConfigs"""
+    Not that this does not connect to any collection, because a wiki
+    can be connected to multiple collections through WikiConfigs"""
 
     wiki_key = models.TextField()
     server = models.TextField(null=True)
@@ -125,9 +133,9 @@ class Wiki(models.Model):
     password = models.TextField(null=True)
 
 
-class SheetConfig(models.Model):
-    sheet = models.ForeignKey(
-        Spreadsheet,
+class WikiConfig(models.Model):
+    collection = models.ForeignKey(
+        Collection,
         on_delete=models.CASCADE,
         related_name="configs",
     )
@@ -136,7 +144,7 @@ class SheetConfig(models.Model):
     )
     group = models.TextField()
 
-    # This field holds a hash of the valid ids/valid columns for this group
+    # This field holds a hash of the valid ids/valid fields for this group
     # The reason is to quickly check to see if this group has been created
     # identically before now.  Updating a group is an expensive operation
     # due to the search cache needing to be re-created andd re-indexed, so
@@ -157,46 +165,48 @@ class SheetConfig(models.Model):
     search_cache_dirty = models.BooleanField(default=False)
 
     def rebuild_search_index(self):
-        SearchCacheRow.objects.filter(sheet_config=self).delete()
-        sc_rows = []
-        for row_dict in self.sheet.clean_rows(self):
-            row = Row.objects.get(key=row_dict["key"], sheet=self.sheet)
-            if not SearchCacheRow.objects.filter(row=row, sheet_config=self).exists():
-                sc_rows.append(
-                    SearchCacheRow(
-                        row=row,
-                        sheet=self.sheet,
+        SearchCacheDocument.objects.filter(wiki_config=self).delete()
+        sc_documents = []
+        for document_dict in self.collection.clean_documents(self):
+            document = Document.objects.get(
+                key=document_dict["key"], collection=self.collection
+            )
+            if not SearchCacheDocument.objects.filter(
+                document=document, wiki_config=self
+            ).exists():
+                sc_documents.append(
+                    SearchCacheDocument(
+                        document=document,
+                        collection=self.collection,
                         wiki=self.wiki,
                         group=self.group,
-                        sheet_config=self,
-                        data=" ".join(list(map(str, row_dict.values()))),
+                        wiki_config=self,
+                        data=" ".join(list(map(str, document_dict.values()))),
                     )
                 )
 
-        SearchCacheRow.objects.bulk_create(sc_rows)
-        SearchCacheRow.objects.filter(sheet_config=self).update(
+        SearchCacheDocument.objects.bulk_create(sc_documents)
+        SearchCacheDocument.objects.filter(wiki_config=self).update(
             data_vector=SearchVector("data")
         )
 
 
-class Row(models.Model):
-    """ A single row in a spreadsheet """
+class Document(models.Model):
+    """A single document in a collection"""
 
-    sheet = models.ForeignKey(
-        Spreadsheet, on_delete=models.CASCADE, related_name="rows"
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, related_name="documents"
     )
     key = models.TextField()
-    sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_ids")
+    wiki_config = models.ManyToManyField(WikiConfig, related_name="valid_ids")
 
     def to_dict(self, config):
-        new_row = {"key": self.key}
-        valid_columns = config.valid_columns.all()
-        for cell in self.cells.filter(column__in=valid_columns).select_related(
-            "column"
-        ):
-            new_row[cell.column.name] = cell.formatted_value()
+        new_document = {"key": self.key}
+        valid_fields = config.valid_fields.all()
+        for value in self.values.filter(field__in=valid_fields).select_related("field"):
+            new_document[value.field.name] = value.to_python()
 
-        return new_row
+        return new_document
 
     def __getitem__(self, key):
         return self.data[key]
@@ -205,62 +215,71 @@ class Row(models.Model):
         return self.data.items()
 
     def clone(self):
-        return Row(sheet=self.sheet, key=self.key)
+        return Document(collection=self.collection, key=self.key)
 
     class Meta:
         constraints = [
             # enforced on save()
-            # useful for making sure any copies of a row can't be written to
+            # useful for making sure any copies of a document can't be written to
             # the database (would probably create some awful bugs)
-            models.UniqueConstraint(fields=["sheet", "key"], name="unique_key"),
+            models.UniqueConstraint(fields=["collection", "key"], name="unique_key"),
         ]
 
 
-class Column(models.Model):
+class Field(models.Model):
     name = models.CharField(max_length=255)
-    type = models.CharField(max_length=255)
-    sheet = models.ForeignKey(
-        Spreadsheet,
+    collection = models.ForeignKey(
+        Collection,
         on_delete=models.CASCADE,
-        related_name="columns",
+        related_name="fields",
     )
-    sheet_config = models.ManyToManyField(SheetConfig, related_name="valid_columns")
+    wiki_config = models.ManyToManyField(WikiConfig, related_name="valid_fields")
+
+    # Attached here represents fields that are actually attached to a collection.
+    #
+    # When uploading a collection, if fields have been dropped off, then they are
+    # no longer actively attached.  Instead of just removing them right away, and
+    # losing any Value or ValueEdits associated, we just mark them as unattached,
+    # and then we can later clean them up if we want.
+    attached = models.BooleanField(default=True)
 
 
-class Cell(models.Model):
-    column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="cells")
-    original_value = models.TextField(null=True)
-    latest_value = models.TextField(null=True)
-    row = models.ForeignKey(Row, on_delete=models.CASCADE, related_name="cells")
+class Value(models.Model):
+    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name="values")
+    original = models.TextField(null=True)
+    latest = models.TextField(null=True)
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name="values"
+    )
 
-    def formatted_value(self):
-        cell_value = self.latest_value
-
-        if self.column.type == "list":
-            cell_value = cell_value.split("\n")
-        elif self.column.type == "json":
-            if cell_value == "":
-                cell_value = {}
+    def to_python(self):
+        # For legacy purposes, we return the string representation
+        # if it's not valid json in the database.  Because some old
+        # data may still be in the database that isn't overwritten,
+        # we want to be able to soldier on.
+        try:
+            return json.loads(self.latest)
+        except json.JSONDecodeError:
+            if self.latest:
+                return self.latest
             else:
-                cell_value = json.loads(cell_value)
-
-        return cell_value
+                return ""
 
 
-class CellEdit(models.Model):
-    cell = models.ForeignKey(Cell, on_delete=models.CASCADE, related_name="edits")
-    value = models.TextField()
+class ValueEdit(models.Model):
+    value = models.ForeignKey(Value, on_delete=models.CASCADE, related_name="edits")
+    updated = models.TextField()
     message = models.CharField(max_length=255, null=True)
     edit_timestamp = models.DateTimeField(auto_now=True)
     approval_timestamp = models.DateTimeField(null=True)
-    sheet = models.ForeignKey(Spreadsheet, on_delete=models.CASCADE)
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
     wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     approval_code = models.CharField(max_length=255, null=True)
 
 
 class Template(models.Model):
-    sheet = models.ForeignKey(
-        Spreadsheet, on_delete=models.CASCADE, related_name="templates"
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, related_name="templates"
     )
     wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     type = models.TextField(null=True)  # enumeration?
@@ -274,14 +293,14 @@ class Template(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["sheet", "type", "name"], name="unique_template"
+                fields=["collection", "wiki", "type", "name"], name="unique_template"
             ),
         ]
 
 
 class TableOfContents(models.Model):
-    sheet = models.ForeignKey(
-        Spreadsheet,
+    collection = models.ForeignKey(
+        Collection,
         on_delete=models.CASCADE,
         related_name="tables_of_contents",
     )
@@ -292,16 +311,18 @@ class TableOfContents(models.Model):
     )
     raw = models.BooleanField(default=False)
 
-    def render_to_mwiki(self, sheet_config):
-        sheet = sheet_config.sheet
-        rows = sheet.clean_rows(sheet_config)
+    def render_to_mwiki(self, wiki_config):
+        collection = wiki_config.collection
+        documents = collection.clean_documents(wiki_config)
 
         data = json.loads(self.json_file)
-        data[sheet.name] = {row[sheet.key_column]: row for row in rows}
+        data[collection.name] = {
+            document[collection.key_field]: document for document in documents
+        }
 
         toc_templates = Template.objects.filter(
-            sheet=sheet,
-            wiki=sheet_config.wiki,
+            collection=collection,
+            wiki=wiki_config.wiki,
             type="TOC",
         )
         line_template = toc_templates.get(is_default=True)
@@ -310,39 +331,39 @@ class TableOfContents(models.Model):
         template_contents = self.template.template_file.read().decode("utf-8")
 
         data["toc_lines"] = {
-            row[sheet.key_column]: JinjaTemplate(line_template_contents).render(
-                {sheet.object_name: row}
-            )
-            for row in rows
+            document[collection.key_field]: JinjaTemplate(
+                line_template_contents
+            ).render({collection.object_name: document})
+            for document in documents
         }
         return JinjaTemplate(template_contents).render(data)
 
     class Meta:
         constraints = [
             # enforced on save()
-            # useful for making sure any copies of a row can't be written to
+            # useful for making sure any copies of a document can't be written to
             # the database (would probably create some awful bugs)
-            models.UniqueConstraint(fields=["sheet", "name"], name="unique_toc"),
+            models.UniqueConstraint(fields=["collection", "name"], name="unique_toc"),
         ]
 
 
 class Attachment(models.Model):
-    sheet = models.ForeignKey(
-        Spreadsheet, on_delete=models.CASCADE, related_name="attachments", default=None
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, related_name="attachments", default=None
     )
     name = models.TextField()
-    row = models.ForeignKey(
-        Row, on_delete=models.CASCADE, related_name="attachments", default=None
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name="attachments", default=None
     )
-    permissions_column = models.ForeignKey(
-        Column, on_delete=models.CASCADE, related_name="attachments", default=None
+    permissions_field = models.ForeignKey(
+        Field, on_delete=models.CASCADE, related_name="attachments", default=None
     )
     file = models.FileField(upload_to="attachments")
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["sheet", "row", "name"], name="unique_attachment"
+                fields=["collection", "document", "name"], name="unique_attachment"
             ),
         ]
 
@@ -355,13 +376,13 @@ class Permission(models.Model):
     permission_type = models.CharField(max_length=255)
 
 
-class SearchCacheRow(models.Model):
-    sheet = models.ForeignKey(
-        Spreadsheet,
+class SearchCacheDocument(models.Model):
+    collection = models.ForeignKey(
+        Collection,
         on_delete=models.CASCADE,
     )
-    sheet_config = models.ForeignKey(SheetConfig, on_delete=models.CASCADE)
-    row = models.ForeignKey(Row, on_delete=models.CASCADE)
+    wiki_config = models.ForeignKey(WikiConfig, on_delete=models.CASCADE)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
     wiki = models.ForeignKey(Wiki, on_delete=models.CASCADE, null=True)
     group = models.TextField()
     data = models.TextField()
@@ -373,8 +394,8 @@ class SearchCacheRow(models.Model):
 
 
 class TableOfContentsCache(models.Model):
-    sheet_config = models.ForeignKey(
-        SheetConfig, on_delete=models.CASCADE, related_name="cached_tocs"
+    wiki_config = models.ForeignKey(
+        WikiConfig, on_delete=models.CASCADE, related_name="cached_tocs"
     )
     toc = models.ForeignKey(TableOfContents, on_delete=models.CASCADE)
     dirty = models.BooleanField(default=True)
@@ -383,29 +404,31 @@ class TableOfContentsCache(models.Model):
     def rebuild(self):
         import mwclient
 
-        if self.sheet_config.wiki.server:
+        if self.wiki_config.wiki.server:
             if self.toc.raw:
-                self.rendered_html = self.toc.render_to_mwiki(self.sheet_config)
+                self.rendered_html = self.toc.render_to_mwiki(self.wiki_config)
                 self.save()
             else:
-                (scheme, server) = self.sheet_config.wiki.server.split("://")
+                (scheme, server) = self.wiki_config.wiki.server.split("://")
                 site = mwclient.Site(
-                    server, self.sheet_config.wiki.script_path + "/", scheme=scheme
+                    server, self.wiki_config.wiki.script_path + "/", scheme=scheme
                 )
-                site.login(self.sheet_config.wiki.username, self.sheet_config.wiki.password)
+                site.login(
+                    self.wiki_config.wiki.username, self.wiki_config.wiki.password
+                )
 
-                rendered_data = self.toc.render_to_mwiki(self.sheet_config)
+                rendered_data = self.toc.render_to_mwiki(self.wiki_config)
                 self.rendered_html = site.api(
                     "parse", text=rendered_data, contentmodel="wikitext", prop="text"
                 )["parse"]["text"]["*"]
                 self.save()
         else:
-            self.rendered_html = ''
+            self.rendered_html = ""
             self.save()
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["sheet_config", "toc"], name="unique_toc_cache"
+                fields=["wiki_config", "toc"], name="unique_toc_cache"
             ),
         ]

@@ -1,7 +1,7 @@
 These instructions outline how to install the example data on a running
-mediawiki and torque system.  Please first follow
-[the instructions](../INSTALL.md) regarding installing mediawiki,
-and also the ones for
+mediawiki and torque system.  Please first
+[install mediawiki](https://www.mediawiki.org/wiki/Manual:Installation_guide),
+and also follow the instructions for
 [installing and running torque](../torquedata/README.md#installation-and-startup).
 
 # Installing the plugin and mediawiki settings via ansible
@@ -34,10 +34,25 @@ Then run the playbook:
 $ ansible-playbook example.yml
 ```
 
+## Updating php variables
+
+The uploaded document is too large for the default upload sizes, so you need
+to increase the variables `post_max_size` and `upload_max_filesize`.  See
+[the file upload mediawiki page](https://www.mediawiki.org/wiki/Manual:Configuring_file_uploads)
+for more information.
+
+You can easily do it in your php.ini file, or in your apache configuration
+with the following in your virtual host block:
+
+```
+php_value upload_max_filesize 100M
+php_value post_max_size 100M
+```
+
 # Running an ETL pipeline and uploading the data
 
-There are two parts to the uploading of a spreadsheet.  The first is an
-ETL pipeline that converts the example spreadsheets to a single spreadsheet
+There are two parts to the uploading of a collection.  The first is an
+ETL pipeline that converts the example spreadsheets to a single data file
 to upload.  This is based on the work done in the
 [torque-sites repository](https://github.com/OpenTechStrategies/torque-sites),
 and while more complicated than the bare minimum necessary to demonstrate the

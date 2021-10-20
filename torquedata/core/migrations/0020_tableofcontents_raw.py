@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0019_auto_20210721_1720'),
+        ("core", "0019_auto_20210721_1720"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tableofcontents',
-            name='raw',
+            model_name="tableofcontents",
+            name="raw",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -18,22 +18,22 @@ class TorqueDataConnectAttachment extends SpecialPage {
       $wgTorqueDataConnectMultiWikiConfig;
     $id = $this->getRequest()->getVal('id');
     $attachment = $this->getRequest()->getVal('attachment');
-    $sheet_name = $this->getRequest()->getVal('sheet_name');
+    $collection_name = $this->getRequest()->getVal('collection_name');
 
     $wiki_key = $wgTorqueDataConnectWikiKey;
 
-    // If we're in multi wiki mode, set the wiki key for this sheet
+    // If we're in multi wiki mode, set the wiki key for this collection
     if($wgTorqueDataConnectMultiWikiConfig &&
-       array_key_exists($sheet_name, $wgTorqueDataConnectMultiWikiConfig)) {
-      $wiki_key = $wgTorqueDataConnectMultiWikiConfig[$sheet_name];
+       array_key_exists($collection_name, $wgTorqueDataConnectMultiWikiConfig)) {
+      $wiki_key = $wgTorqueDataConnectMultiWikiConfig[$collection_name];
     }
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL,
       $wgTorqueDataConnectServerLocation .
-      '/api/sheets/' .
-      $sheet_name .
-      '/rows/' .
+      '/api/collections/' .
+      $collection_name .
+      '/documents/' .
       $id .
       '/attachments/' .
       urlencode($attachment) .

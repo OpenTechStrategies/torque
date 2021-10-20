@@ -31,20 +31,20 @@ wfLoadExtension('TorqueDataConnect');
   as another user, or for non logged in users.
 * `$wgTorqueDataConnectView` - The current view used for rendering.  This is usually the
   one selected on the left menu, as a selection between configured groups.
-* `$wgTorqueDataConnectSheetName` - The uploaded sheet this wiki is configured to use.
-  This affects what sheet search will run against, as well as what sheet `$wgTorqueDataConnectConfigPage`
+* `$wgTorqueDataConnectCollectionName` - The uploaded collection this wiki is configured to use.
+  This affects what collection search will run against, as well as what collection `$wgTorqueDataConnectConfigPage`
   will be configured by.
 * `$wgTorqueDataConnectWikiKey` - The key identifying this wiki.  This is needed in case
   multiple wikis are using the same torquedata instance so that their permissions are distinct.
   A useful use case of this is a private and public version of the same data.
 * `$wgTorqueDataConnectNotFoundMessage` - An optional message to be displayed if a user doesn't
-  have permissions to view an object.  Defaults to "No `<key>` found for `<sheet>`".
+  have permissions to view a document.  Defaults to "No `<key>` found for `<collection>`".
 * `$wgTorqueDataConnectRaw` - Whether the response coming from torquedata is raw HTML or wiki markup.
   This lets TorqueDataConnect know to stop all MediaWiki processing on the response from torquedata.
 * `$wgTorqueDataConnectRenderToHTML` - Whether to render the wiki markup to HTML or not.  If
   TorqueDataConnect does the rendering, then things like inner tags will get parsed.  However,
   some users, especially API users, may want the wiki markup to do things like pdf rendering.
-* `$wgTorqueDataConnectMultiWikiConfig` - This is an associative array of `SheetName` to `WikiKey` as
+* `$wgTorqueDataConnectMultiWikiConfig` - This is an associative array of `CollectionName` to `WikiKey` as
   above.  See [below](#MultiWiki support) for more information.
 * `$wgTorqueDataConnectCache` - when set to true, torque will cache the rendered forms of certain
   things, such as tables of contents.  Defaults to false
@@ -54,7 +54,7 @@ wfLoadExtension('TorqueDataConnect');
   the username to log into the wiki to prerender cached data.  Defaults to ""
 * `$wgTorqueDataConnectCache`" - when set, torque will cache the html versions of pages as needed,
   most notably the table of contents pages, though later other pages could be added.  These
-  caches are built for each combination of group/row pairs as defined in the torque configuration
+  caches are built for each combination of group/document pairs as defined in the torque configuration
 * `$wgTorqueDataConnectWikiUsername`" - used in conjunction with `$wgTorqueDataConnectCache`, setting
   the username with which to log into the wiki for parsing (if needed).
 * `$wgTorqueDataConnectWikiPassword`" - used in conjunction with `$wgTorqueDataConnectCache`, setting
@@ -81,8 +81,8 @@ After which, the page setup needs to be of the form:
 
  {
 |Group
-|[[ColumnConfigPage]]
-|[[RowConfigPage]]
+|[[FieldConfigPage]]
+|[[DocumentConfigPage]]
 |}
 
 = Templates =
@@ -103,28 +103,28 @@ After which, the page setup needs to be of the form:
 ```
 
 There must be a "Permissions" heading and a "Templates" heading that each have a following table
-of at least 3 columns.
+of at least 3 fields.
 
 In the "Permissions" table, the columns are:
 * the MediaWiki group
-* a link to a page that lists the columns that group can see
+* a link to a page that lists the fields that group can see
   - the page linked to must be of the form
 ```
-* \<ColumnName\>
-* \<ColumnName2\>
-* \<ColumnName3\>
-* \<ColumnName4\>
+* \<FieldName\>
+* \<FieldName2\>
+* \<FieldName3\>
+* \<FieldName4\>
 ```
-  there, the column names are the spreadsheet header names (the values in the cells on the first row)
-* and a link to the page that lists what rows on the spreadsheet they have access to.
+  there, the field names in the documents uploaded.  It is assumed that each document has the same fields, and the first one is used.
+* and a link to the page that lists what documents in the collection they have access to.
   - the page linked must be of the form
 ```
 * \<ID1\>: 
 * \<ID2\>: 
 * \<ID3\>: 
 ```
-    where everything after the colon is discarded by Torque.  The ID here is related to the key_column
-    when uploading the sheet (see [below](#torquedataconnectuploadsheet)).
+    where everything after the colon is discarded by Torque.  The ID here is related to the key_field
+    when uploading the collection (see [below](#torquedataconnectuploadcollection)).
 
 In the "Templates" table the three columns must be:
 * The template Name
@@ -160,19 +160,19 @@ Parameters:
 
 * `path` - the path to pass on to Torque 
 
-#### torquedataconnectuploadsheet 
+#### torquedataconnectuploadcollection 
 
-Uploads a sheet to Torque.  For admins only, so whatever bot account you might make
+Uploads a collection to Torque.  For admins only, so whatever bot account you might make
 needs to be given the `torquedataconnect-admin` privilege.
 
 NOTE: you may need to increase your `upload_max_filesize` and `post_max_size` values
-in your PHP configuration if your spreadsheets are large.
+in your PHP configuration if your collections are large.
 
 Parameters:
 
 * `object_name` - The name of the object that will be referenced in templates
-* `sheet_name` - The name of the sheet for reference by tcdrender and the API
-* `key_column` - Which column in the spreadsheet should be used for keying into the data
+* `collection_name` - The name of the collection for reference by tcdrender and the API
+* `key_field` - Which field in the collection should be used for keying into the data
 * `data_file` - A CSV file respresenting the data
 
 #### torquedataconnectuploadtoc
@@ -182,7 +182,7 @@ Upload a Table of Contents.  For admins only, as above.
 Parameters:
 
 * `toc_name` - The name of the table of contents, for reference in templates
-* `sheet_name` - The name of the sheet the TOC is related to
+* `collection_name` - The name of the collection the TOC is related to
 * `json` - the JSON file that should be fed to the template
 * `template` - the template file used for rendering
 
@@ -193,9 +193,9 @@ Upload an attachment.  For admins only, as above.
 Parameters:
 
 * `attachment_name` - The name of the file that users will reference
-* `permissions_column` - The column that will have the `attachment_name` in to see if a user has permissions to view it
-* `object_id` - The associated object in the sheet, to see if the user has permissions to that object
-* `sheet_name` - The name of the sheet associated with this attachment
+* `permissions_field` - The field that will have the `attachment_name` in to see if a user has permissions to view it
+* `object_id` - The associated object in the collection, to see if the user has permissions to that object
+* `collection_name` - The name of the collection associated with this attachment
 * `attachemnt` - The actual data
 
 ### tdcrender hook
@@ -215,8 +215,8 @@ same as the `wiki_key` passed in here.  Requires `wiki_key` to be a value in
 
 The paths available from Torque are:
 
-* `\<sheet_name\>/id/\<id\>.mwiki` - for rendering an object (for example, `proposals/id/1234.mwiki`)
-* `\<sheet_name\>/toc/\<TOC_Name\>.mwiki` - for rendering a dynamic table of contents that had been uploaded previously (for example, `proposals/toc/Topic_TOC.mwiki`)
+* `collections/\<collection_name\>/documents/\<id\>.mwiki` - for rendering an object (for example, `collections/proposals/documents/1234.mwiki`)
+* `collections/\<collection_name\>/tocs/\<TOC_Name\>.mwiki` - for rendering a dynamic table of contents that had been uploaded previously (for example, `collections/proposals/tocs/Topic_TOC.mwiki`)
 
 ### Special page for attachments: Special:TorqueDataConnectAttachment
 
@@ -226,7 +226,7 @@ specified at upload time.
 
 Parameters:
 
-* `sheet_name` - The name of the sheet this attachment is part of
+* `collection_name` - The name of the collection this attachment is part of
 * `attachment` - The name of the attachment specified at upload time
 
 ### User Lookup
@@ -244,10 +244,10 @@ to how it manages integrating wiki search results.
 
 ## MultiWiki support
 
-While the normal operation for torque is to define a sheet (or N sheets) to work with
-this wiki, the configuration for the wiki is singular.  Things like the allowed columns,
-the available objects to view, and so on, are tied to the MainConfig for this.  If there
-are more than one sheet, then the configuration has to work for the union of all sheets.
+While the normal operation for torque is to define a collection (or N collections) to work with
+this wiki, the configuration for the wiki is singular.  Things like the allowed fields,
+the available documents to view, and so on, are tied to the MainConfig for this.  If there
+are more than one collection, then the configuration has to work for the union of all collections.
 
 However, there arise situations where there are multiple independent wikis, each with
 their own permissions and template setups.  Having a meta wiki that is able to search,
@@ -264,19 +264,19 @@ In order to fascilitate this, a number of things need to happen.
 ### Setting up configuration variables
 
 You need to add wikis to `$wgTorqueDataConnectMultiWikiConfig`, with the keys
-being the sheet, while the values being the wiki key that should be used for the sheet:
+being the collection, while the values being the wiki key that should be used for the collection:
 
 ```
-$wgTorqueDataConnectMultiWikiConfig["Sheet1"] = "Wiki1";
-$wgTorqueDataConnectMultiWikiConfig["Sheet2"] = "Wiki2";
+$wgTorqueDataConnectMultiWikiConfig["Collection1"] = "Wiki1";
+$wgTorqueDataConnectMultiWikiConfig["Collection2"] = "Wiki2";
 ```
 
 ### MainConfig file on the Meta Wiki
 
 Groups must still be added to the MainConfig file, as well templates for the TOC lines
 and Search results.  Because those templates are going to be applied to multiple
-sheets, they may require more conditional checks, or require those sheets to have certain
-columns in common.
+collections, they may require more conditional checks, or require those collections to have certain
+fields in common.
 
 ### Rendering pages
 

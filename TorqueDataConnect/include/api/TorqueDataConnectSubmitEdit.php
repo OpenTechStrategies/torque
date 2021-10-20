@@ -14,7 +14,7 @@ class TorqueDataConnectSubmitEdit extends APIBase {
     parent::checkUserRightsAny(["torquedataconnect-edit"]);
     $newValue = $this->getParameter('newValue');
     $field = $this->getParameter('field');
-    $sheetName = $this->getParameter('sheetName');
+    $collectionName = $this->getParameter('collectionName');
     $wiki_key = $this->getParameter('wikiKey');
     $key = $this->getParameter('key');
     $title = Title::newFromText($this->getParameter('title'));
@@ -31,9 +31,9 @@ class TorqueDataConnectSubmitEdit extends APIBase {
     }
 
     $url = $wgTorqueDataConnectServerLocation .
-      '/api/sheets/' .
-      $sheetName .
-      "/rows/" .
+      '/api/collections/' .
+      $collectionName .
+      "/documents/" .
       $key .
       "/fields/" .
       urlencode($field) .
@@ -76,7 +76,7 @@ class TorqueDataConnectSubmitEdit extends APIBase {
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
-      "sheetName" => [
+      "collectionName" => [
         ApiBase::PARAM_TYPE => 'string',
         ApiBase::PARAM_REQUIRED => 'true'
       ],
