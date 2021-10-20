@@ -130,6 +130,9 @@ class TorqueDataConnectHooks {
       $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
       $wgTorqueDataConnectMultiWikiConfig;
 
+    $output->addModuleStyles('ext.torquedataconnect.css');
+    $output->addModules('ext.torquedataconnect.js');
+
     $offset = $specialSearch->getRequest()->getInt("offset", 0);
 
     if($wgTorqueDataConnectMultiWikiConfig) {
@@ -190,24 +193,48 @@ class TorqueDataConnectHooks {
     }
     $header .= "</h2>";
 
-    $filter_html = "<div style='border:1px solid black;float:right;padding:10px'><h1>Filters</h1>";
-    foreach($filter_results as $name => $counts) {
-      $filter_html .= "<h3>$name</h3>";
+    $filter_html = "<div class='torquedataconnect-searchfilters'><h1>";
+    $filter_html .= wfMessage("torquedataconnect-filters");
+    $filter_html .= "</h1>";
+    $cleared_url = $output->getTitle()->getFullUrl(["offset" => 0, "search" => $term]);
+    $filter_html .= "<a href='$cleared_url'>";
+    $filter_html .= wfMessage("torquedataconnect-filters-clear");
+    $filter_html .= "</a>";
+    foreach($filter_results as $filter_result) {
+      $counts = $filter_result["counts"];
+      $filter_html .= "<h3>" . $filter_result["display"] . "</h3>";
       foreach($counts as $count) {
-        $filter_url = false;
-        if($current_filter[$name] != $count["name"]) {
+        $name = $filter_result["name"];
+        $filter_html .= "<div class='torquedataconnect-filterresult'><span class='torquedataconnect-filtername'>";
+        $filter_html .= "<input autocomplete=off class='torquedataconnect-filtercheckbox'";
+        if(in_array($count["name"], $current_filter[$name])) {
+          $filter_html .= " checked=checked";
           $link_filter = $current_filter;
-          $link_filter[$name] = $count["name"];
+          $current_names = $current_filter[$name];
+          $idx = array_search($count["name"], $current_names);
+          unset($current_names[$idx]);
+          $link_filter[$name] = $current_names;
           $filter_url = $output->getTitle()->getFullUrl(["offset" => 0, "search" => $term, "f" => urlencode(json_encode($link_filter))]);
-          $filter_html .= "<a href='$filter_url'>";
+          $url = $output->getTitle()->getFullUrl(["offset" => 0, "search" => $term, "f" => urlencode(json_encode($link_filter))]);
+          $filter_html .= " url='$url'";
+        } else {
+          $link_filter = $current_filter;
+          $current_names = $current_filter[$name];
+          array_push($current_names, $count["name"]);
+          $link_filter[$name] = $current_names;
+          $url = $output->getTitle()->getFullUrl(["offset" => 0, "search" => $term, "f" => urlencode(json_encode($link_filter))]);
+          $filter_html .= " url='$url'";
         }
+        $filter_html .=  " type='checkbox'>";
+        $link_filter = $current_filter;
+        $link_filter[$name] = [$count["name"]];
+        $filter_url = $output->getTitle()->getFullUrl(["offset" => 0, "search" => $term, "f" => urlencode(json_encode($link_filter))]);
+        $filter_html .= "<a href='$filter_url'>";
         $filter_html .= $count["name"];
-        if($filter_url) {
-          $filter_html .= "</a>";
-        }
-        $filter_html .= " (";
+        $filter_html .= "</a>";
+        $filter_html .= "</span> <span class='torquedataconnect-filtercount'>(";
         $filter_html .= $count["total"];
-        $filter_html .= ")<br>\n";
+        $filter_html .= ")</span></div>\n";
       }
     }
     $filter_html .= "</div>\n";

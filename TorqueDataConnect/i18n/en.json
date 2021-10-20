@@ -20,5 +20,7 @@
   "logentry-torquedataconnect-datachanges-collectionupload": "$1 uploaded a new version of the collection",
   "logentry-torquedataconnect-datachanges-edit": "$1 edited field \"$4\" on page $3",
   "torquedataconnect-sidebar-configpage": "Torque Configuration",
+  "torquedataconnect-filters": "Filters",
+  "torquedataconnect-filters-clear": "Clear All Filters",
   "torquedataconnectfields": "TorqueDataConnect Fields"
 }

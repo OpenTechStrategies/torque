@@ -89,14 +89,20 @@
   },
   "ResourceModules": {
     "ext.torquedataconnect.css": {
-      "styles": "resources/css/TorqueDataConnectEdit.css",
+      "styles": [
+        "resources/css/TorqueDataConnectEdit.css",
+        "resources/css/TorqueDataConnectSearch.css"
+      ],
       "targets": [
         "desktop",
         "mobile"
       ]
     },
     "ext.torquedataconnect.js": {
-      "scripts": "resources/js/TorqueDataConnectEdit.js",
+      "scripts": [
+         "resources/js/TorqueDataConnectEdit.js",
+         "resources/js/TorqueDataConnectSearch.js"
+      ],
       "dependencies": [
         "mediawiki.api"
       ],

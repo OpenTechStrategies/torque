@@ -42,31 +42,48 @@ def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
         .select_related("document")
         .select_related("collection")
     )
-    filter_results = {}
+    filter_results = []
     for filter in config.FILTERS:
-        additional_filters = {
-            ("filtered_data__%s" % k): v
-            for k, v in filters.items()
-            if k != filter.name()
+        additional_filters = []
+        for name, values in filters.items():
+            if name != filter.name():
+                q_objects = Q()
+                for value in values:
+                    q_dict = {"filtered_data__%s" % name: value}
+                    q_objects |= Q(**q_dict)
+                additional_filters.append(q_objects)
+        filter_result = {
+            "name" : filter.name(),
+            "display": filter.display_name(),
+            "counts": {},
         }
-        filter_results[filter.name()] = []
         grouped_results = (
-            results.filter(Q(**additional_filters))
+            results.filter(*additional_filters)
             .values("filtered_data__%s" % filter.name())
             .annotate(total=Count("id"))
         )
         for result in grouped_results:
-            filter_results[filter.name()].append(
-                {
-                    "name": result["filtered_data__%s" % filter.name()],
+            name = result["filtered_data__%s" % filter.name()]
+            filter_result["counts"][name] = {
+                    "name": name,
                     "total": result["total"],
                 }
-            )
 
-    additional_filters = {("filtered_data__%s" % k): v for k, v in filters.items()}
+        names = list(filter_result["counts"].keys())
+        names = filter.sort(names)
+        filter_result["counts"] = [filter_result["counts"][name] for name in names]
+        filter_results.append(filter_result)
+
+    additional_filters = []
+    for name, values in filters.items():
+        q_objects = Q()
+        for value in values:
+            q_dict = {"filtered_data__%s" % name: value}
+            q_objects |= Q(**q_dict)
+        additional_filters.append(q_objects)
 
     returned_results = (
-        results.filter(Q(**additional_filters))
+        results.filter(*additional_filters)
         .annotate(rank=SearchRank(F("data_vector"), SearchQuery(q)))
         .order_by("-rank")
     )
