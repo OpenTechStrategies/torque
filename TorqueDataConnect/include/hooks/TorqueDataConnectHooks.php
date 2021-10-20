@@ -220,7 +220,11 @@ class TorqueDataConnectHooks {
         } else {
           $link_filter = $current_filter;
           $current_names = $current_filter[$name];
-          array_push($current_names, $count["name"]);
+          if($current_names) {
+            array_push($current_names, $count["name"]);
+          } else {
+            $current_names = [$count["name"]];
+          }
           $link_filter[$name] = $current_names;
           $url = $output->getTitle()->getFullUrl(["offset" => 0, "search" => $term, "f" => urlencode(json_encode($link_filter))]);
           $filter_html .= " url='$url'";
