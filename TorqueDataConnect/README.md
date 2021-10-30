@@ -29,8 +29,9 @@ wfLoadExtension('TorqueDataConnect');
   server.  This defaults to the first group that is in the list of known Torque groups that
   is also a group the current user is in.  Overriding it can be useful to view data
   as another user, or for non logged in users.
-* `$wgTorqueDataConnectView` - The current view used for rendering.  This is usually the
-  one selected on the left menu, as a selection between configured groups.
+* `$wgTorqueDataConnectView` - The current view used for rendering.  You can set this in localsettings
+  to override the normally selected view.  If it is set to the json document `{ "wiki_key": "<KEY>", "view": "<VIEW>" }`,
+  the view will be pulled from the provided wiki, rather than from natural one.
 * `$wgTorqueDataConnectCollectionName` - The uploaded collection this wiki is configured to use.
   This affects what collection search will run against, as well as what collection `$wgTorqueDataConnectConfigPage`
   will be configured by.

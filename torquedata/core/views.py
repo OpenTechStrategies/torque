@@ -314,8 +314,20 @@ def get_document(group, wiki, key, fmt, collection_name, view=None):
             wiki=wiki,
             type="View",
         )
+
         if view is not None:
-            template = templates.get(name=view)
+            try:
+                view_object = json.loads(view)
+
+                view_wiki = models.Wiki.objects.get(wiki_key=view_object['wiki_key'])
+                view = view_object['view']
+                template = models.Template.objects.get(
+                    wiki=view_wiki,
+                    type="View",
+                    name=view
+                )
+            except json.JSONDecodeError:
+                template = templates.get(name=view)
         else:
             template = templates.get(is_default=True)
 
