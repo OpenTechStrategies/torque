@@ -260,18 +260,6 @@ class TorqueDataConnectConfig {
     return false;
   }
 
-  public static function getCurrentView() {
-    if(array_key_exists("torqueview", $_COOKIE)) {
-      $cookieView = $_COOKIE["torqueview"];
-
-      if(in_array($cookieView, self::getAvailableViews())) {
-        return $cookieView;
-      }
-    }
-
-    return false;
-  }
-
   public static function getValidGroup($user) {
     $manager = MediaWiki\MediaWikiServices::getInstance()->getUserGroupManager();
     $wikiGroups = $manager->getUserGroups($user);

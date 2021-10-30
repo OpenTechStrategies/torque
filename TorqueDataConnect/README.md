@@ -136,9 +136,10 @@ In the "Templates" table the three columns must be:
     * TOC: TOC templates are provided with objects passed through this template in addition to their
       specified JSON data.  Having multiple allows toc writers to choose which template to
       view a given `tdcrender` call with.
-    * View: Different views for the page.  Having multiple leads to a dropdown on the sidebar
-      allowing the user to choose what way they'd like to show the data.  It also allows the
-      wiki page writers to choose the template to view a given `tdcrender` call with.
+    * View: Different views for the page.  Having multiple allws the wiki page writers to choose
+      which template they'd like to show the data.  It also allows server configuration to choose
+      what view to use to render based on outside variables (for instance, whether the user is logged
+      in or not).
     * Raw View: The same as View, but instead is raw html.  Use this when the template isn't
       returning wiki text, but rather html that should just be put right out to the screen.
       As a warning, this html is not sanitized, so ensure that the template lives in a protected

@@ -95,10 +95,6 @@ class TorqueDataConnectHooks {
     if($user && !$wgTorqueDataConnectGroup) {
       $wgTorqueDataConnectGroup = TorqueDataConnectConfig::getValidGroup($user);
     }
-
-    if(!$wgTorqueDataConnectView) {
-      $wgTorqueDataConnectView = TorqueDataConnectConfig::getCurrentView();
-    }
   }
 
   public static function siteNoticeAfter(&$siteNotice, $skin) {
@@ -251,27 +247,6 @@ class TorqueDataConnectHooks {
   }
 
   public static function onSidebarBeforeOutput(Skin $skin, &$bar) {
-    # Do this all inline here for now because it's quick, and it would actually
-    # be more confusing to set up the entire javascript infrastructure.  The moment
-    # we do more things with js, this should all get broken out and modularized
-    # correctly!
-    #
-    # Also depending on jquery here, which should get loaded by mediawiki.
-    $out  = "<div style='line-height: 1.125em; font-size: 0.75em'>";
-    $out .= "<select autocomplete=off id='torque-view-select' style='width:130px'";
-    $out .= "onchange='";
-    $out .= "var view = $(\"#torque-view-select\").children(\"option:selected\").val();";
-    $out .= "document.cookie = \"torqueview=\" + view + \"; path=/;\";";
-    $out .= "window.location.reload(true);";
-    $out .= "'>";
-    foreach(TorqueDataConnectConfig::getAvailableViews() as $view) {
-      $selected = (array_key_exists("torqueview", $_COOKIE) && $view == $_COOKIE["torqueview"]) ? " selected=selected" : "";
-      $out .= "<option $selected value='$view'>$view</option>";
-    }
-    $out .= "</select>";
-    $out .= "</div>";
-    $bar['View'] = $out;
-
     global $wgTorqueDataConnectConfigPage;
 
     $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
