@@ -9,12 +9,12 @@ from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.postgres.search import SearchVector
-from jinja2 import Template as JinjaTemplate
 from core import models
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 import magic
 import config
-
+from core import utils
+jinja_env = utils.get_jinja_env()
 
 def get_wiki(request, collection_name):
     wiki_key = request.GET["wiki_key"]
@@ -97,7 +97,7 @@ def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
         mwiki_text = ""
 
         for result in returned_results[offset : (offset + 20)]:
-            template = JinjaTemplate(
+            template = jinja_env.from_string(
                 models.Template.objects.get(
                     name="Search", collection=template_config.collection
                 ).get_file_contents()
@@ -331,7 +331,7 @@ def get_document(group, wiki, key, fmt, collection_name, view=None):
         else:
             template = templates.get(is_default=True)
 
-        rendered_template = JinjaTemplate(template.get_file_contents()).render(
+        rendered_template = jinja_env.from_string(template.get_file_contents()).render(
             {collection.object_name: document}
         )
         return HttpResponse(rendered_template)
