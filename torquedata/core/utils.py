@@ -1,3 +1,6 @@
+from jinja2 import Environment
+import config
+
 class Filter:
     """A search filter"""
 
@@ -21,3 +24,14 @@ class Filter:
         """Sorts the names, which are keys for the filter.  Defaults to alphabetical."""
         names.sort()
         return names
+
+
+## A factory method for getting a jinja environment
+def get_jinja_env():
+    enabled_extensions = []
+    if config.ENABLED_JINJA_EXTENSIONS:
+      enabled_extensions = enabled_extensions + config.ENABLED_JINJA_EXTENSIONS
+
+    return Environment(
+        extensions=enabled_extensions,
+    )
