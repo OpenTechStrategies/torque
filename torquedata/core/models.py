@@ -11,8 +11,8 @@ from django.contrib.postgres.search import SearchVector
 from django.contrib.postgres.search import SearchVectorField
 from django.contrib.postgres.indexes import GinIndex
 
-from jinja2 import Template as JinjaTemplate
-
+from core import utils
+jinja_env = utils.get_jinja_env()
 
 class Collection(models.Model):
     """An uploaded CSV file"""
@@ -338,12 +338,12 @@ class TableOfContents(models.Model):
         template_contents = self.template.template_file.read().decode("utf-8")
 
         data["toc_lines"] = {
-            document[collection.key_field]: JinjaTemplate(
+            document[collection.key_field]: jinja_env.from_string(
                 line_template_contents
             ).render({collection.object_name: document})
             for document in documents
         }
-        return JinjaTemplate(template_contents).render(data)
+        return jinja_env.from_string(template_contents).render(data)
 
     class Meta:
         constraints = [
