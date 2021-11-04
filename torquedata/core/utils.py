@@ -1,6 +1,7 @@
 from jinja2 import Environment
 import config
 
+
 class Filter:
     """A search filter"""
 
@@ -30,7 +31,7 @@ class Filter:
 def get_jinja_env():
     enabled_extensions = []
     if config.ENABLED_JINJA_EXTENSIONS:
-      enabled_extensions = enabled_extensions + config.ENABLED_JINJA_EXTENSIONS
+        enabled_extensions = enabled_extensions + config.ENABLED_JINJA_EXTENSIONS
 
     return Environment(
         extensions=enabled_extensions,

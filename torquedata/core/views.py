@@ -14,7 +14,9 @@ from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 import magic
 import config
 from core import utils
+
 jinja_env = utils.get_jinja_env()
+
 
 def get_wiki(request, collection_name):
     wiki_key = request.GET["wiki_key"]
@@ -53,7 +55,7 @@ def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
                     q_objects |= Q(**q_dict)
                 additional_filters.append(q_objects)
         filter_result = {
-            "name" : filter.name(),
+            "name": filter.name(),
             "display": filter.display_name(),
             "counts": {},
         }
@@ -65,9 +67,9 @@ def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
         for result in grouped_results:
             name = result["filtered_data__%s" % filter.name()]
             filter_result["counts"][name] = {
-                    "name": name,
-                    "total": result["total"],
-                }
+                "name": name,
+                "total": result["total"],
+            }
 
         names = list(filter_result["counts"].keys())
         names = filter.sort(names)
@@ -319,12 +321,10 @@ def get_document(group, wiki, key, fmt, collection_name, view=None):
             try:
                 view_object = json.loads(view)
 
-                view_wiki = models.Wiki.objects.get(wiki_key=view_object['wiki_key'])
-                view = view_object['view']
+                view_wiki = models.Wiki.objects.get(wiki_key=view_object["wiki_key"])
+                view = view_object["view"]
                 template = models.Template.objects.get(
-                    wiki=view_wiki,
-                    type="View",
-                    name=view
+                    wiki=view_wiki, type="View", name=view
                 )
             except json.JSONDecodeError:
                 template = templates.get(name=view)

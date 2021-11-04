@@ -12,7 +12,9 @@ from django.contrib.postgres.search import SearchVectorField
 from django.contrib.postgres.indexes import GinIndex
 
 from core import utils
+
 jinja_env = utils.get_jinja_env()
+
 
 class Collection(models.Model):
     """An uploaded CSV file"""
