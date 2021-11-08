@@ -38,7 +38,9 @@ class TorqueDataConnectQuery extends APIBase {
       $payload = json_encode(
         array(
           "new_value" => $this->getParameter("new_value"),
-          "wiki_key" => $wiki_key,
+          "wiki_key" => $wgTorqueDataConnectWikiKey,
+          "wiki_keys" => $wiki_keys,
+          "collection_names" => $collection_names,
           "group" => $valid_group,
         )
       );

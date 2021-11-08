@@ -17,13 +17,12 @@ from core import utils
 
 jinja_env = utils.get_jinja_env()
 
+def get_wiki(dictionary, collection_name):
+    wiki_key = dictionary["wiki_key"]
 
-def get_wiki(request, collection_name):
-    wiki_key = request.GET["wiki_key"]
-
-    if "wiki_keys" in request.GET:
-        wiki_keys = request.GET["wiki_keys"].split(",")
-        collection_names = request.GET["collection_names"].split(",")
+    if "wiki_keys" in dictionary:
+        wiki_keys = dictionary["wiki_keys"].split(",")
+        collection_names = dictionary["collection_names"].split(",")
         mapping = dict(zip(collection_names, wiki_keys))
 
         if collection_name in mapping:
@@ -31,6 +30,8 @@ def get_wiki(request, collection_name):
 
     return models.Wiki.objects.get_or_create(wiki_key=wiki_key)[0]
 
+def get_wiki_from_request(request, collection_name):
+    return get_wiki(request.GET, collection_name)
 
 def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
     results = (
@@ -65,7 +66,7 @@ def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
             .annotate(total=Count("id"))
         )
         for result in grouped_results:
-            name = result["filtered_data__%s" % filter.name()]
+            name = result["filtered_data__%s" % filter.name()] or "None"
             filter_result["counts"][name] = {
                 "name": name,
                 "total": result["total"],
@@ -163,7 +164,7 @@ def search_collection(request, collection_name, fmt):
     f = json.loads(request.GET["f"]) if "f" in request.GET and request.GET["f"] else {}
     offset = int(request.GET.get("offset", 0))
     group = request.GET["group"]
-    wiki = get_wiki(request, collection_name)
+    wiki = get_wiki_from_request(request, collection_name)
     configs = models.WikiConfig.objects.filter(
         collection__name=collection_name, wiki=wiki, group=group
     )
@@ -229,7 +230,7 @@ def get_collection(request, collection_name, fmt):
 
         if "group" in request.GET:
             group = request.GET["group"]
-            wiki = get_wiki(request, collection_name)
+            wiki = get_wiki_from_request(request, collection_name)
             wiki_config = models.WikiConfig.objects.get(
                 collection=collection,
                 wiki=wiki,
@@ -251,7 +252,7 @@ def get_collection(request, collection_name, fmt):
 
 def get_toc(request, collection_name, toc_name, fmt):
     group = request.GET["group"]
-    wiki = get_wiki(request, collection_name)
+    wiki = get_wiki_from_request(request, collection_name)
     collection = models.Collection.objects.get(name=collection_name)
 
     try:
@@ -281,7 +282,7 @@ def get_toc(request, collection_name, toc_name, fmt):
 def get_documents(request, collection_name, fmt):
     collection = models.Collection.objects.get(name=collection_name)
     group = request.GET["group"]
-    wiki = get_wiki(request, collection_name)
+    wiki = get_wiki_from_request(request, collection_name)
 
     wiki_config = models.WikiConfig.objects.get(
         collection=collection,
@@ -347,7 +348,7 @@ def get_document(group, wiki, key, fmt, collection_name, view=None):
 
 def get_document_view(request, collection_name, key, fmt):
     group = request.GET["group"]
-    wiki = get_wiki(request, collection_name)
+    wiki = get_wiki_from_request(request, collection_name)
     return get_document(
         group, wiki, key, fmt, collection_name, request.GET.get("view", None)
     )
@@ -357,7 +358,7 @@ def field(request, collection_name, key, field, fmt):
     field = urllib.parse.unquote_plus(field)
     if request.method == "GET":
         group = request.GET["group"]
-        wiki = get_wiki(request, collection_name)
+        wiki = get_wiki_from_request(request, collection_name)
         document = get_document(group, wiki, key, "dict", collection_name, None)
 
         value = document
@@ -368,7 +369,7 @@ def field(request, collection_name, key, field, fmt):
     elif request.method == "POST":
         post_fields = json.loads(request.body)
         group = post_fields["group"]
-        wiki = models.Wiki.objects.get(wiki_key=post_fields["wiki_key"])
+        wiki = get_wiki(post_fields, collection_name)
         new_value = post_fields["new_value"]
         edit_record(collection_name, key, group, wiki, field, new_value)
         return HttpResponse(201)
@@ -376,7 +377,7 @@ def field(request, collection_name, key, field, fmt):
 
 def get_attachment(request, collection_name, key, attachment):
     group = request.GET["group"]
-    wiki = get_wiki(request, collection_name)
+    wiki = get_wiki_from_request(request, collection_name)
     attachment_name = secure_filename(urllib.parse.unquote_plus(attachment))
 
     collection = models.Collection.objects.get(name=collection_name)
