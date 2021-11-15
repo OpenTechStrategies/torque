@@ -473,7 +473,7 @@ def set_group_config(request, collection_name, wiki_key):
         valid_documents = models.Document.objects.filter(
             collection=collection, key__in=new_config.get("valid_ids")
         )
-        valid_fields = models.Field.objects.filter(name__in=new_config.get("fields"))
+        valid_fields = models.Field.objects.filter(name__in=new_config.get("fields"), collection=collection)
         config.save()
         config.valid_ids.add(*valid_documents)
         config.valid_fields.add(*valid_fields)
