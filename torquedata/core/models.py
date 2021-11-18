@@ -177,7 +177,7 @@ class WikiConfig(models.Model):
             )
             filtered_data = {}
             for filter in config.FILTERS:
-                filtered_data[filter.name()] = filter.document_value(document)
+                filtered_data[filter.name()] = filter.document_value(document_dict)
 
             if not SearchCacheDocument.objects.filter(
                 document=document, wiki_config=self

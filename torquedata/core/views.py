@@ -74,8 +74,11 @@ def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
 
         names = list(filter_result["counts"].keys())
         names = filter.sort(names)
-        filter_result["counts"] = [filter_result["counts"][name] for name in names]
-        filter_results.append(filter_result)
+        filter_result["counts"] = [filter_result["counts"][name] for name in names if name not in filter.ignored_values()]
+
+        # If the only values returned are ignored ones, then we don't want to show the filter at all!
+        if len(filter_result["counts"]) > 0:
+            filter_results.append(filter_result)
 
     additional_filters = []
     for name, values in filters.items():

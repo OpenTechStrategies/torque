@@ -15,16 +15,24 @@ class Filter:
         """The name to display on the wiki.  Defaults to just the name."""
         return self.name()
 
-    def document_value(self, document):
-        """Returns a value for a given document.  Most of the time, this will
-        just be a Value within the document, but sometimes there is extra processing
-        in order to group documents for filtering."""
+    def document_value(self, document_dict):
+        """Returns a value for a given document dictionary.  Most of the time, this will
+        just be a value within the document, but sometimes there is extra processing
+        in order to group documents for filtering.
+
+        The dictionary provided will be permissioned for the specific user group attached
+        to the cache."""
         pass
 
     def sort(self, names):
         """Sorts the names, which are keys for the filter.  Defaults to alphabetical."""
         names.sort()
         return names
+
+    def ignored_values(self):
+        """Returns a list of ignored values, which could be set if someone doesn't
+        have permissions, or just in general if they want to be ignored."""
+        return []
 
 
 ## A factory method for getting a jinja environment
