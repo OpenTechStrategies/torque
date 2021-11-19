@@ -9,7 +9,7 @@
   "descriptionmsg": "torquedataconnect-desc",
   "type": "api",
   "requires": {
-    "MediaWiki": ">= 1.31.0"
+    "MediaWiki": ">= 1.35.0"
   },
   "MessagesDirs": {
     "TorqueDataConnect": [
