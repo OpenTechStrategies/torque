@@ -5,6 +5,7 @@ import config
 urlpatterns = [
     # When changing, or adding to one of these, ensure that you also do in the section
     # below that respects COLLECTIONS_ALIAS and DOCUMENTS_ALIAS
+    path("api/system.<fmt>", views.get_system_information),
     path("api/collections.<fmt>", views.get_collections),
     path("api/search.<fmt>", views.search_global),
     path("api/collections/<collection_name>.<fmt>", views.get_collection),

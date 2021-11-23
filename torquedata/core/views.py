@@ -33,6 +33,22 @@ def get_wiki(dictionary, collection_name):
 def get_wiki_from_request(request, collection_name):
     return get_wiki(request.GET, collection_name)
 
+
+def get_system_information(request, fmt):
+    if fmt == "json":
+        information = {}
+        if config.COLLECTIONS_ALIAS and config.DOCUMENTS_ALIAS:
+            information["collections_alias"] = config.COLLECTIONS_ALIAS
+            information["documents_alias"] = config.DOCUMENTS_ALIAS
+
+        return JsonResponse(
+            information,
+            safe=False,
+        )
+    else:
+        raise Exception(f"Invalid format {fmt}")
+
+
 def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
     results = (
         models.SearchCacheDocument.objects.filter(
