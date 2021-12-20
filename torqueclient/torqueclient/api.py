@@ -48,6 +48,41 @@ class Torque:
         """Utility method to get data from the server located at PATH"""
         return self.site.api('torquedataconnect', format='json', path=path)["result"]
 
+    def bulk_fetch(self, documents, num_threads=10):
+        """Fetch DOCUMENTS in bulk, split over NUM_THREADS threads.
+
+        As DOCUMENTS are lazy loaded in the system, this greedily fills
+        them with the data from the server.  This is done in a multi threaded
+        way to save time."""
+        if isinstance(documents, list):
+            docs_to_process = documents.copy()
+        elif isinstance(documents, Documents):
+            docs_to_process = [doc for doc in documents]
+        else:
+            raise Exception("bulk_fetch expects list or Documents")
+
+        import threading
+        lock = threading.Lock()
+
+        def fetch_document():
+            document = True
+            while document:
+                with lock:
+                    if len(docs_to_process) > 0:
+                        document = docs_to_process.pop()
+                    else:
+                        document = None
+                if document:
+                    document.get_data()
+
+        threads = [threading.Thread(target=fetch_document) for x in range(num_threads)]
+
+        for thread in threads:
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
 
 class Collections:
     def __init__(self, torque):
