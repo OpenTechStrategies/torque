@@ -1,6 +1,11 @@
 from jinja2 import Environment
 import config
 
+# This is hardcoded here, while we figure out a better path forward
+#
+# It's used to handshake with the python client to ensure that everything
+# works correctly together.
+SERVER_VERSION="0.1"
 
 class Filter:
     """A search filter"""

@@ -41,6 +41,7 @@ def get_system_information(request, fmt):
             information["collections_alias"] = config.COLLECTIONS_ALIAS
             information["documents_alias"] = config.DOCUMENTS_ALIAS
 
+        information["server_version"] = utils.SERVER_VERSION
         return JsonResponse(
             information,
             safe=False,
