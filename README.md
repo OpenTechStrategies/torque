@@ -39,3 +39,8 @@ It uses hooks to ask torquedata to render pages formatted for MediaWiki, and
 provides JSON versions of the data through MediaWiki's api.
 
 See the [TorqueDataConnect README](TorqueDataConnect/README.md) for more in depth information.
+
+# Releasing
+
+Look at the [Releasing documentation](RELEASING.md) for notes about versioning
+and releasing torque.
