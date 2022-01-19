@@ -17,6 +17,7 @@ from core import utils
 
 jinja_env = utils.get_jinja_env()
 
+
 def get_wiki(dictionary, collection_name):
     wiki_key = dictionary["wiki_key"]
 
@@ -29,6 +30,7 @@ def get_wiki(dictionary, collection_name):
             wiki_key = mapping[collection_name]
 
     return models.Wiki.objects.get_or_create(wiki_key=wiki_key)[0]
+
 
 def get_wiki_from_request(request, collection_name):
     return get_wiki(request.GET, collection_name)
@@ -91,7 +93,11 @@ def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
 
         names = list(filter_result["counts"].keys())
         names = filter.sort(names)
-        filter_result["counts"] = [filter_result["counts"][name] for name in names if name not in filter.ignored_values()]
+        filter_result["counts"] = [
+            filter_result["counts"][name]
+            for name in names
+            if name not in filter.ignored_values()
+        ]
 
         # If the only values returned are ignored ones, then we don't want to show the filter at all!
         if len(filter_result["counts"]) > 0:
@@ -493,7 +499,9 @@ def set_group_config(request, collection_name, wiki_key):
         valid_documents = models.Document.objects.filter(
             collection=collection, key__in=new_config.get("valid_ids")
         )
-        valid_fields = models.Field.objects.filter(name__in=new_config.get("fields"), collection=collection)
+        valid_fields = models.Field.objects.filter(
+            name__in=new_config.get("fields"), collection=collection
+        )
         config.save()
         config.valid_ids.add(*valid_documents)
         config.valid_fields.add(*valid_fields)

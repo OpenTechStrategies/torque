@@ -5,7 +5,8 @@ import config
 #
 # It's used to handshake with the python client to ensure that everything
 # works correctly together.
-SERVER_VERSION="0.1"
+SERVER_VERSION = "0.1"
+
 
 class Filter:
     """A search filter"""

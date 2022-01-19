@@ -7,6 +7,7 @@ from .cache import DiskCache, MemoryCache
 from .version import __version__
 from datetime import datetime
 
+
 class Torque:
     """The entrypoint to accessing a torque system.
 
@@ -67,16 +68,23 @@ class Torque:
             setattr(self, information["collections_alias"], self.collections)
 
         if information["server_version"] != __version__:
-            raise Exception("API version %s does not match server version %s, aborting" % (__version__, information["server_version"]))
+            raise Exception(
+                "API version %s does not match server version %s, aborting"
+                % (__version__, information["server_version"])
+            )
 
     def search(self, search_term, collection_name=None):
         """Search the connected torque system for SEARCH_TERM.
 
         Optionally pass in a COLLECTION_NAME to restrict the results
         to that collection."""
-        path = "/collections/%s/search" % collection_name if collection_name else "/search"
+        path = (
+            "/collections/%s/search" % collection_name if collection_name else "/search"
+        )
         response = []
-        for uri in self.site.api('torquedataconnect', format='json', path=path, q=search_term)["result"]:
+        for uri in self.site.api(
+            "torquedataconnect", format="json", path=path, q=search_term
+        )["result"]:
             parts = uri.split("/", 4)
             response.append(self.collections[parts[2]].documents[parts[4]])
 
@@ -84,7 +92,7 @@ class Torque:
 
     def _get_data(self, path):
         """Internal utility method to get data from the server located at PATH"""
-        return self.site.api('torquedataconnect', format='json', path=path)["result"]
+        return self.site.api("torquedataconnect", format="json", path=path)["result"]
 
     def bulk_fetch(self, documents, num_threads=10):
         """Fetch DOCUMENTS in bulk, split over NUM_THREADS threads.
@@ -104,6 +112,7 @@ class Torque:
             raise Exception("bulk_fetch expects list or Documents")
 
         import threading
+
         lock = threading.Lock()
 
         def fetch_document():
@@ -154,6 +163,7 @@ class Collections:
     names : list
         The names of the available collections
     """
+
     def __init__(self, torque):
         """Initializes a lazy loaded list of collections
 
@@ -184,7 +194,9 @@ class Collections:
         If this doesn't exist yet in memory, lazily instantiate it, which will
         involve server calls to populating it."""
         if collection_name not in self.collection_data:
-            self.collection_data[collection_name] = Collection(self.torque, collection_name)
+            self.collection_data[collection_name] = Collection(
+                self.torque, collection_name
+            )
 
         return self.collection_data[collection_name]
 
@@ -245,13 +257,19 @@ class Collection:
         for cache invalidation for documents."""
         collection_information = self.torque._get_data("/collections/%s" % self.name)
         self.fields = collection_information["fields"]
-        self.last_updated = dateutil.parser.isoparse(collection_information["last_updated"])
+        self.last_updated = dateutil.parser.isoparse(
+            collection_information["last_updated"]
+        )
         self.refreshed_at = datetime.now()
 
     def _evaluate_cache(self):
         """Refresh data from the server if it's been too long since last looked,
         depending on the information from the Torque Cache"""
-        if self.torque.cache is not None and (datetime.now() - self.refreshed_at).seconds > self.torque.cache.cache_timeout():
+        if (
+            self.torque.cache is not None
+            and (datetime.now() - self.refreshed_at).seconds
+            > self.torque.cache.cache_timeout()
+        ):
             self._refresh_from_server()
 
 
@@ -293,6 +311,7 @@ class Documents:
     keys : list
         The keys for the available documents
     """
+
     def __init__(self, torque, collection):
         self.torque = torque
         self.collection = collection
@@ -301,7 +320,9 @@ class Documents:
     def __iter__(self):
         """Fetches the keys on the first use"""
         if self.keys is None:
-            self.keys = self.torque._get_data("/collections/%s/documents" % self.collection.name)
+            self.keys = self.torque._get_data(
+                "/collections/%s/documents" % self.collection.name
+            )
         self.idx = 0
         return self
 
@@ -347,6 +368,7 @@ class Document:
     uri()
         the uri of the document, which is a useful index when creating a cache
     """
+
     def __init__(self, torque, collection, key):
         self.torque = torque
         self.collection = collection
@@ -361,13 +383,11 @@ class Document:
         to the server."""
         self._get_data()
         self.torque.site.api(
-            'torquedataconnect',
-            format='json',
-            path="%s/fields/%s" % (
-                self.uri(),
-                field
-            ),
-            new_value=new_value)
+            "torquedataconnect",
+            format="json",
+            path="%s/fields/%s" % (self.uri(), field),
+            new_value=new_value,
+        )
         self.data[field] = new_value
 
         if self.torque.cache is not None:
@@ -389,13 +409,20 @@ class Document:
         if self.data is None:
             if self.torque.cache is not None:
                 self.collection._evaluate_cache()
-                if self.torque.cache.contains_document_data(self, self.collection.last_updated):
+                if self.torque.cache.contains_document_data(
+                    self, self.collection.last_updated
+                ):
                     self.data = self.torque.cache.retrieve_document_data(self)
 
             if self.data is None:
                 self.data = self.torque._get_data(self.uri())
 
-            if self.torque.cache is not None and not self.torque.cache.contains_document_data(self, self.collection.last_updated):
+            if (
+                self.torque.cache is not None
+                and not self.torque.cache.contains_document_data(
+                    self, self.collection.last_updated
+                )
+            ):
                 self.torque.cache.persist_document(self, self.collection.last_updated)
 
         return self.data

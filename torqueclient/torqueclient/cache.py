@@ -5,6 +5,7 @@ import json
 
 import sqlite3
 
+
 class Cache:
     """The interface for torque cache objects.
 
@@ -24,6 +25,7 @@ class Cache:
     cache_timeout()
         returns the cache timeout, in seconds
     """
+
     def contains_document_data(self, document, last_updated_time):
         """Returns whether the cache has the specifiec DOCUMENT that is newer
         than LAST_UPDATED_TIME.
@@ -76,6 +78,7 @@ class MemoryCache(Cache):
     cache_timeout()
         returns the cache timeout, in seconds
     """
+
     def __init__(self, cache_timeout_seconds=3600):
         """Initializes the cache with the specified timeout (defaults to 3600 seconds)"""
         self.cache = {}
@@ -83,7 +86,10 @@ class MemoryCache(Cache):
 
     def contains_document_data(self, document, last_updated_time):
         """Implements the Cache interface in memory"""
-        return document.uri() in self.cache and self.cache[document.uri()]["persisted_time"] >= last_updated_time
+        return (
+            document.uri() in self.cache
+            and self.cache[document.uri()]["persisted_time"] >= last_updated_time
+        )
 
     def retrieve_document_data(self, document):
         """Implements the Cache interface in memory"""
@@ -91,7 +97,10 @@ class MemoryCache(Cache):
 
     def persist_document(self, document, last_updated_time):
         """Implements the Cache interface in memory"""
-        self.cache[document.uri()] = {"data": document.data, "persisted_time": last_updated_time}
+        self.cache[document.uri()] = {
+            "data": document.data,
+            "persisted_time": last_updated_time,
+        }
 
     def cache_timeout(self):
         """Implements the Cache interface in memory"""
@@ -122,7 +131,7 @@ class DiskCache(Cache):
 
         Within that directory, cached documents are kept as json in the
         directory structure:
-        
+
         <base_location>/<collection>/<key>.json
 
         The cache creates these directories as they're needed.
@@ -141,7 +150,9 @@ class DiskCache(Cache):
 
     def _document_path(self, document):
         """Internal function to get the disk cache path for DOCUMENT"""
-        return os.path.join(self.location, document.collection.name, "%s.json" % document.key)
+        return os.path.join(
+            self.location, document.collection.name, "%s.json" % document.key
+        )
 
     def contains_document_data(self, document, last_updated_time):
         """Implements the Cache interface on disk."""
@@ -158,9 +169,17 @@ class DiskCache(Cache):
 
     def persist_document(self, document, last_updated_time):
         """Implements the Cache interface on disk."""
-        Path(os.path.join(self.location, document.collection.name)).mkdir(parents=True, exist_ok=True)
+        Path(os.path.join(self.location, document.collection.name)).mkdir(
+            parents=True, exist_ok=True
+        )
         with open(self._document_path(document), "w") as f:
-            json.dump({"data": document.data, "persisted_time": last_updated_time.timestamp()}, f)
+            json.dump(
+                {
+                    "data": document.data,
+                    "persisted_time": last_updated_time.timestamp(),
+                },
+                f,
+            )
 
     def cache_timeout(self):
         """Implements the Cache interface on disk."""
