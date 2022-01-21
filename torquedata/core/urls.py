@@ -33,6 +33,8 @@ urlpatterns = [
     path("upload/toc", views.upload_toc),
     path("upload/attachment", views.upload_attachment),
     path("users/username/<username>", views.user_by_username),
+    path("csv", views.add_csv),
+    path("csv/<name>.<fmt>", views.get_csv),
 ]
 
 # This is duplicated, rather than overriding the above generic "collections"/"documents" endpoints

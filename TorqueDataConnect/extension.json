@@ -30,6 +30,7 @@
     "TorqueDataConnectUploadAttachment": "include/api/TorqueDataConnectUploadAttachment.php",
     "TorqueDataConnectAttachment": "include/specials/TorqueDataConnectAttachment.php",
     "TorqueDataConnectFields": "include/specials/TorqueDataConnectFields.php",
+    "TorqueDataConnectCsv": "include/specials/TorqueDataConnectCsv.php",
     "TorqueDataConnectHooks": "include/hooks/TorqueDataConnectHooks.php"
   },
   "Hooks": {
@@ -54,7 +55,8 @@
   },
   "SpecialPages": {
     "TorqueDataConnectAttachment": "TorqueDataConnectAttachment",
-    "TorqueDataConnectFields": "TorqueDataConnectFields"
+    "TorqueDataConnectFields": "TorqueDataConnectFields",
+    "TorqueCSV": "TorqueDataConnectCsv"
   },
   "config": {
     "TorqueDataConnectConfigPage": "",
@@ -101,7 +103,8 @@
     "ext.torquedataconnect.js": {
       "scripts": [
          "resources/js/TorqueDataConnectEdit.js",
-         "resources/js/TorqueDataConnectSearch.js"
+         "resources/js/TorqueDataConnectSearch.js",
+         "resources/js/TorqueDataConnectCsv.js"
       ],
       "dependencies": [
         "mediawiki.api"

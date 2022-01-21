@@ -188,6 +188,12 @@ class TorqueDataConnectHooks {
       $header .= ")";
     }
     $header .= "</h2>";
+    $header .= "<h3>";
+    $header .= "<a href='";
+    $csvPage = Title::newFromText("Special:TorqueCSV");
+    $header .= $csvPage->getFullUrl(["s" => $term, "f" => $specialSearch->getRequest()->getVal("f")]);
+    $header .= "'>Download results as CSV</a>";
+    $header .= "</h3>";
 
     $filter_html = "<div class='torquedataconnect-searchfilters'><h1>";
     $filter_html .= wfMessage("torquedataconnect-filters");
@@ -250,10 +256,15 @@ class TorqueDataConnectHooks {
     global $wgTorqueDataConnectConfigPage;
 
     $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
+    $csvPage = Title::newFromText("Special:TorqueCSV");
     if($wgTorqueDataConnectConfigPage && $configPage->exists()) {
       $bar["TOOLBOX"][] = [
         "msg" => "torquedataconnect-sidebar-configpage",
         "href" => $configPage->getLocalUrl()
+      ];
+      $bar["TOOLBOX"][] = [
+        "msg" => "torquedataconnect-sidebar-csv",
+        "href" => $csvPage->getLocalUrl()
       ];
     }
 

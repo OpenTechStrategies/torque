@@ -14,6 +14,7 @@ from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 import magic
 import config
 from core import utils
+import csv
 
 jinja_env = utils.get_jinja_env()
 
@@ -320,6 +321,29 @@ def get_documents(request, collection_name, fmt):
         return JsonResponse(
             [document.key for document in wiki_config.valid_ids.all()], safe=False
         )
+    elif fmt == "mwiki":
+        # Because we use mwiki as a format marker for when the mediawiki extension
+        # is contacting us, we're going to not fully follow the expected functionality,
+        # which would be to return a valid mediawiki page.  Rather, we're going to
+        # return the TOC style mediawiki text for the documents in the collection.
+        #
+        # An alternate path would be figure out how to call document.mwiki with
+        # the appropriate template.
+        line_template = models.Template.objects.get(
+            collection=collection,
+            wiki=wiki_config.wiki,
+            type="TOC",
+            is_default=True
+        )
+        line_template_contents = line_template.template_file.read().decode("utf-8")
+        documents = collection.clean_documents(wiki_config)
+
+        return JsonResponse({
+            document[collection.key_field]: jinja_env.from_string(
+                line_template_contents
+            ).render({collection.object_name: document})
+            for document in documents
+        })
     else:
         raise Exception(f"Invalid format {fmt}")
 
@@ -654,3 +678,96 @@ def user_by_username(request, username):
         user.save()
 
     return JsonResponse({"username": user.username, "id": user.pk})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def add_csv(request):
+    def determine_name():
+        import string
+        import random
+        characters = string.ascii_lowercase + string.ascii_uppercase + string.digits
+        possible_name = ''.join([random.choice(characters) for i in range(6)])
+        if models.CsvSpecification.objects.filter(name=possible_name).count() > 0:
+            return determine_name()
+        else:
+            return possible_name
+
+    name = determine_name()
+    post_fields = json.loads(request.body)
+
+    documents = []
+    for post_doc in post_fields["documents"]:
+        documents.append(models.Document.objects.get(collection__name=post_doc[0], key=post_doc[1]))
+
+    csv_spec = models.CsvSpecification(
+            name=name,
+            filename = post_fields["filename"],
+            fields = post_fields["fields"]
+    )
+    # Save first so the many to many below works correctly
+    csv_spec.save()
+    csv_spec.documents.set(documents)
+    csv_spec.save()
+    return JsonResponse({"name": name,})
+
+def get_csv(request, name, fmt):
+    csv_spec = models.CsvSpecification.objects.get(name=name)
+
+    group = request.GET["group"]
+
+    documents = csv_spec.documents.all()
+    valid_documents = []
+    wiki_configs_for_csv = set()
+    for document in documents:
+        if document.wiki_config.filter(group=group).count() > 0:
+            valid_documents.append(document)
+            wiki_configs_for_csv.add(document.wiki_config.get(group=group))
+
+    if fmt == "json":
+        return JsonResponse({
+            "name": name,
+            "filename": csv_spec.filename,
+            "fields": sorted(csv_spec.fields),
+            "documents": [document.key for document in documents],
+        })
+    elif fmt == "csv":
+        field_names = sorted(csv_spec.fields)
+
+        valid_field_names = []
+        for wiki_config in wiki_configs_for_csv:
+            for field_name in field_names:
+                if wiki_config.valid_fields.filter(name=field_name).count() > 0:
+                    valid_field_names.append(field_name)
+
+        response = HttpResponse(
+            content_type = 'text/csv',
+            headers = {'Content-Disposition': 'attachment; filename="%s.csv"' % csv_spec.filename},
+        )
+        writer = csv.writer(response)
+
+        columns = []
+        for field_name in valid_field_names:
+            if field_name in config.CSV_PROCESSORS:
+                columns.extend(config.CSV_PROCESSORS[field_name].field_names(field_name))
+            else:
+                columns.append(field_name)
+        writer.writerow(columns)
+
+        for document in valid_documents:
+            row = []
+            values_by_field = {
+                v.field.name: v for v in document.values.filter(field__name__in=valid_field_names).prefetch_related('field')
+            }
+            for field_name in valid_field_names:
+                if field_name in config.CSV_PROCESSORS:
+                    row.extend(config.CSV_PROCESSORS[field_name].process_value(values_by_field[field_name].to_python()))
+                elif field_name in values_by_field:
+                    row.append(values_by_field[field_name].to_python())
+                else:
+                    row.append("")
+            writer.writerow(row)
+
+        return response
+    else:
+        raise Exception(f"Invalid format {fmt}")

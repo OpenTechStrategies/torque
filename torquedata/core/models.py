@@ -442,3 +442,9 @@ class TableOfContentsCache(models.Model):
                 fields=["wiki_config", "toc"], name="unique_toc_cache"
             ),
         ]
+
+class CsvSpecification(models.Model):
+    fields = models.JSONField()
+    documents = models.ManyToManyField(Document)
+    name = models.TextField()
+    filename = models.TextField()

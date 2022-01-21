@@ -165,6 +165,7 @@ class TorqueDataConnectConfig {
 
     $permissionsParser = new PermissionsSectionParser();
     $templateParser = new TemplatesSectionParser();
+    $csvGroupsParser = new CsvGroupsSectionParser();
     $parser = false;
 
     foreach(explode("\n", $configText) as $line) {
@@ -173,12 +174,14 @@ class TorqueDataConnectConfig {
         $parser = $permissionsParser;
       } else if(preg_match("/= *templates *=/i", $line)) {
         $parser = $templateParser;
+      } else if(preg_match("/= *csv groups *=/i", $line)) {
+        $parser = $csvGroupsParser;
       } else if($parser) {
         $parser->parseLine($line);
       }
     }
 
-    return [$permissionsParser->getConfig(), $templateParser->getConfig()];
+    return [$permissionsParser->getConfig(), $templateParser->getConfig(), $csvGroupsParser->getConfig()];
   }
 
   public static function commitConfigToTorqueData() {
@@ -231,10 +234,18 @@ class TorqueDataConnectConfig {
 
   public static function checkForErrors() {
     self::$errors = [];
-    [$groupConfig, $templateConfig] = TorqueDataConnectConfig::parseConfig();
+    [$groupConfig, $templateConfig, $csvGroupsConfig] = TorqueDataConnectConfig::parseConfig();
     foreach($groupConfig as $group) {
       TorqueDataConnectConfig::convertPagesToFieldConfig($group["fieldsPages"]);
       TorqueDataConnectConfig::convertPagesToIdConfig($group["idsPages"]);
+    }
+    foreach($csvGroupsConfig as $csvGroup) {
+      if($csvGroup["groupType"] == "Field") {
+        TorqueDataConnectConfig::convertPagesToFieldConfig($csvGroup["groupPages"]);
+      }
+      if($csvGroup["groupType"] == "Document") {
+        TorqueDataConnectConfig::convertPagesToIdConfig($csvGroup["groupPages"]);
+      }
     }
     return self::$errors;
   }
@@ -276,6 +287,26 @@ class TorqueDataConnectConfig {
       array_push($groupNames, $group["groupName"]);
     }
     return $groupNames;
+  }
+
+  public static function getCsvFieldGroups() {
+    $groups = [];
+    foreach(TorqueDataConnectConfig::parseConfig()[2] as $csvGroup) {
+      if($csvGroup["groupType"] == "Field") {
+        $groups[$csvGroup["groupName"]] = TorqueDataConnectConfig::convertPagesToFieldConfig($csvGroup["groupPages"]);
+      }
+    }
+    return $groups;
+  }
+
+  public static function getCsvDocumentGroups() {
+    $groups = [];
+    foreach(TorqueDataConnectConfig::parseConfig()[2] as $csvGroup) {
+      if($csvGroup["groupType"] == "Document") {
+        $groups[$csvGroup["groupName"]] = TorqueDataConnectConfig::convertPagesToIdConfig($csvGroup["groupPages"]);
+      }
+    }
+    return $groups;
   }
 }
 
@@ -375,6 +406,67 @@ class TemplatesSectionParser {
 
   public function getConfig() {
     return $this->templateConfig;
+  }
+}
+
+class CsvGroupsSectionParser {
+  private $groupType = false;
+  private $groupName = false;
+  private $groupPages = [];
+  private $cell = "";
+  private $csvGroupsConfig = [];
+  private static $validGroupTypes = ["Field", "Document"];
+
+  public function parseLine($line) {
+    if (preg_match("/^\|/", $line)) {
+      if($this->cell) {
+        if(!$this->groupName) {
+          $this->groupName = $this->cell;
+        } else if(!$this->groupType) {
+          $this->groupType = $this->cell;
+          if(!in_array($this->groupType, self::$validGroupTypes)) {
+            # We continue on here, because it doesn't hurt anything to do so,
+            # as it's just used by the csv special page, and will end up being discarded
+            # from a functional point of view.
+            # 
+            # We still need to error about it!
+            array_push(TorqueDataConnectConfig::$errors, wfMessage("torquedataconnect-config-gt", $this->groupType)->parse());
+          }
+        } else if(!$this->groupPages) {
+          foreach(explode("\n", $this->cell) as $potential) {
+            $matches = [];
+            if(preg_match("/\\[\\[(.*)\\]\\]/", $potential, $matches)) {
+              array_push($this->groupPages, $matches[1]);
+            }
+          }
+        } else {
+          // Do nothing here, since a fourth field is ok for user notes if they like
+        }
+
+        if($this->groupType && $this->groupPages && $this->groupName) {
+          array_push($this->csvGroupsConfig, [
+            "groupName" => $this->groupName,
+            "groupType" => $this->groupType,
+            "groupPages" => $this->groupPages
+          ]);
+        }
+      }
+
+      $this->cell = trim(substr($line, 1));
+
+      if(preg_match("/^\|\\-/", $line)) {
+        $this->groupName = false;
+        $this->groupPages = [];
+        $this->groupType = false;
+        $this->cell = "";
+      }
+    } else {
+      $this->cell .= "\n" . $line;
+    }
+  }
+
+  public function getConfig() {
+    return $this->csvGroupsConfig;
   }
 }
 ?>

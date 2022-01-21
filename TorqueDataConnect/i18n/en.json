@@ -12,6 +12,7 @@
   "torquedataconnect-config-ne": "Config page $1 does not exist.",
   "torquedataconnect-config-ns": "Config page variable ($wgTorqueDataConnectConfigPage) not set.",
   "torquedataconnect-config-it": "Template $1 is invalid, must be 'View', 'Raw View', 'TOC', or 'Search'",
+  "torquedataconnect-config-gt": "CSV Group type \"$1\" is invalid, must be 'Field', or 'Document'",
   "torquedataconnect-apiaccesslog": "Torque Api Access Log",
   "torquedataconnect-apiaccesslog-header": "Logs events happening in the torque system regarding api access",
   "torquedataconnect-datachangeslog": "Torque Data Changes Log",
@@ -20,6 +21,7 @@
   "logentry-torquedataconnect-datachanges-collectionupload": "$1 uploaded a new version of the collection",
   "logentry-torquedataconnect-datachanges-edit": "$1 edited field \"$4\" on page $3",
   "torquedataconnect-sidebar-configpage": "Torque Configuration",
+  "torquedataconnect-sidebar-csv": "Download Torque CSV",
   "torquedataconnect-filters": "Filters",
   "torquedataconnect-filters-clear": "Clear All Filters",
   "torquedataconnectfields": "TorqueDataConnect Fields"

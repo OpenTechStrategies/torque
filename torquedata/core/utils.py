@@ -40,6 +40,12 @@ class Filter:
         have permissions, or just in general if they want to be ignored."""
         return []
 
+class CsvFieldProcessor:
+    def field_names(self, field_name):
+        pass
+
+    def process_value(self, value):
+        pass
 
 ## A factory method for getting a jinja environment
 def get_jinja_env():
