@@ -740,6 +740,8 @@ def get_csv(request, name, fmt):
                 if wiki_config.valid_fields.filter(name=field_name).count() > 0:
                     valid_field_names.append(field_name)
 
+        valid_field_names = sorted(list(set(valid_field_names)))
+
         response = HttpResponse(
             content_type = 'text/csv',
             headers = {'Content-Disposition': 'attachment; filename="%s.csv"' % csv_spec.filename},
@@ -760,7 +762,7 @@ def get_csv(request, name, fmt):
                 v.field.name: v for v in document.values.filter(field__name__in=valid_field_names).prefetch_related('field')
             }
             for field_name in valid_field_names:
-                if field_name in config.CSV_PROCESSORS:
+                if field_name in values_by_field and field_name in config.CSV_PROCESSORS:
                     row.extend(config.CSV_PROCESSORS[field_name].process_value(values_by_field[field_name].to_python()))
                 elif field_name in values_by_field:
                     row.append(values_by_field[field_name].to_python())

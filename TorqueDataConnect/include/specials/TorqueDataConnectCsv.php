@@ -45,12 +45,6 @@ class TorqueDataConnectCsv extends SpecialPage {
       $resp = curl_exec($ch);
       $this->getOutput()->redirect("?c=" . json_decode($resp, true)["name"]);
     } else if($this->getRequest()->getVal('c')) {
-/*      // If we're in multi wiki mode, set the wiki key for this collection
-      if($wgTorqueDataConnectMultiWikiConfig &&
-         array_key_exists($collection_name, $wgTorqueDataConnectMultiWikiConfig)) {
-        $wiki_key = $wgTorqueDataConnectMultiWikiConfig[$collection_name];
-      }*/
-
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_URL,
         $wgTorqueDataConnectServerLocation .
@@ -65,20 +59,40 @@ class TorqueDataConnectCsv extends SpecialPage {
       $csv_information = json_decode(curl_exec($ch), true);
       $included_documents = $csv_information["documents"];
     } else if($this->getRequest()->getVal('s')) {
-      $results = json_decode(file_get_contents(
-        $wgTorqueDataConnectServerLocation .
-        "/api/collections/" .  $wgTorqueDataConnectCollectionName . "/search.json" .
-        "?group=" .  $wgTorqueDataConnectGroup .
-        "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
-        "&q=" . urlencode($this->getRequest()->getVal('s')) .
-        "&f=" . $this->getRequest()->getVal('f')
-        ));
+      // Coming from search
+      if($wgTorqueDataConnectMultiWikiConfig) {
+        $wiki_keys = "";
+        $collection_names = "";
+        foreach($wgTorqueDataConnectMultiWikiConfig as $collection_name => $wiki_key) {
+          $wiki_keys .= "$wiki_key,";
+          $collection_names .= "$collection_name,";
+        }
+        $results = json_decode(file_get_contents(
+          $wgTorqueDataConnectServerLocation .
+          "/api/search.json" .
+          "?group=" . $wgTorqueDataConnectGroup .
+          "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
+          "&collection_name=" . $wgTorqueDataConnectCollectionName .
+          "&wiki_keys=" . $wiki_keys .
+          "&collection_names=" . $collection_names .
+          "&q=" . urlencode($this->getRequest()->getVal('s')) .
+          "&f=" . $this->getRequest()->getVal('f')
+          ), true);
+      } else {
+        $results = json_decode(file_get_contents(
+          $wgTorqueDataConnectServerLocation .
+          "/api/collections/" .  $wgTorqueDataConnectCollectionName . "/search.json" .
+          "?group=" .  $wgTorqueDataConnectGroup .
+          "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
+          "&q=" . urlencode($this->getRequest()->getVal('s')) .
+          "&f=" . $this->getRequest()->getVal('f')
+          ), true);
+      }
 
       $included_documents = [];
       foreach($results as $result) {
         array_push($included_documents, explode("/", $result, 5)[4]);
       }
-      // Coming from search
     }
 
     if ($this->getRequest()->getVal('download')) {
@@ -103,44 +117,72 @@ class TorqueDataConnectCsv extends SpecialPage {
 
       $this->getOutput()->disable();
     } else {
-      $ch = curl_init();
-      curl_setopt(
-        $ch,
-        CURLOPT_URL,
-        $wgTorqueDataConnectServerLocation .
-        '/api/collections/' .
-        $wgTorqueDataConnectCollectionName . '.json' .
-        "?group=" .
-        $wgTorqueDataConnectGroup .
-        "&wiki_key=" .
-        $wiki_key
-      );
+      if($wgTorqueDataConnectMultiWikiConfig) {
+        $documents_information = [];
+        foreach($wgTorqueDataConnectMultiWikiConfig as $collection => $wiki) {
+          $documents_information[$collection] = array_merge(
+            $documents_information,
+            json_decode(file_get_contents(
+              $wgTorqueDataConnectServerLocation .
+              '/api/collections/' .
+              $collection .
+              '/documents.json' .
+              "?group=" .
+              $wgTorqueDataConnectGroup .
+              "&wiki_key=" .
+              $wiki
+            ))
+          );
+        }
 
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      $collection_information = json_decode(curl_exec($ch), true);
-      curl_close($ch);
+        $fields = [];
+        foreach($wgTorqueDataConnectMultiWikiConfig as $collection => $wiki) {
+          $fields = array_merge(
+            $fields,
+            json_decode(file_get_contents(
+              $wgTorqueDataConnectServerLocation .
+              '/api/collections/' .
+              $collection . '.json' .
+              "?group=" .
+              $wgTorqueDataConnectGroup .
+              "&wiki_key=" .
+              $wiki), true)["fields"]);
+        }
+        $fields = array_unique($fields);
+        sort($fields);
+      } else {
+        $documents_information = [];
+        $documents_information[$wgTorqueDataConnectCollectionName] = json_decode(file_get_contents(
+          $wgTorqueDataConnectServerLocation .
+          '/api/collections/' .
+          $wgTorqueDataConnectCollectionName .
+          '/documents.json' .
+          "?group=" .
+          $wgTorqueDataConnectGroup .
+          "&wiki_key=" .
+          $wiki_key
+        ));
+        $documents_as_templates = json_decode(file_get_contents(
+          $wgTorqueDataConnectServerLocation .
+          '/api/collections/' .
+          $wgTorqueDataConnectCollectionName .
+          '/documents.mwiki' .
+          "?group=" .
+          $wgTorqueDataConnectGroup .
+          "&wiki_key=" .
+          $wiki_key
+        ), true);
 
-      $documents_information = json_decode(file_get_contents(
-        $wgTorqueDataConnectServerLocation .
-        '/api/collections/' .
-        $wgTorqueDataConnectCollectionName .
-        '/documents.json' .
-        "?group=" .
-        $wgTorqueDataConnectGroup .
-        "&wiki_key=" .
-        $wiki_key
-      ));
+        $fields = json_decode(file_get_contents(
+          $wgTorqueDataConnectServerLocation .
+          '/api/collections/' .
+          $wgTorqueDataConnectCollectionName . '.json' .
+          "?group=" .
+          $wgTorqueDataConnectGroup .
+          "&wiki_key=" .
+          $wiki_key), true)["fields"];
+      }
 
-      $documents_as_templates = json_decode(file_get_contents(
-        $wgTorqueDataConnectServerLocation .
-        '/api/collections/' .
-        $wgTorqueDataConnectCollectionName .
-        '/documents.mwiki' .
-        "?group=" .
-        $wgTorqueDataConnectGroup .
-        "&wiki_key=" .
-        $wiki_key
-      ), true);
       $out = $this->getOutput();
 
       $out->addHtml("<form method='POST'>\n");
@@ -164,7 +206,7 @@ class TorqueDataConnectCsv extends SpecialPage {
         $out->addHtml("</select>");
         $out->addHtml("<button>Use</button><br>");
       }
-      foreach ($collection_information["fields"] as $field) {
+      foreach ($fields as $field) {
         $csv_groups = "";
         foreach($csvFieldGroups as $groupName => $group) {
           if(in_array($field, $group)) {
@@ -189,20 +231,26 @@ class TorqueDataConnectCsv extends SpecialPage {
         $out->addHtml("</select>");
         $out->addHtml("<button>Use</button><br>");
       }
-      foreach ($documents_information as $document) {
-        $csv_groups = "";
-        foreach($csvDocumentGroups as $groupName => $group) {
-          if(in_array($document, $group)) {
-            $csv_groups = "$csv_groups|$groupName|";
+      foreach ($documents_information as $collection => $documents) {
+        foreach($documents as $document) {
+          $csv_groups = "";
+          foreach($csvDocumentGroups as $groupName => $group) {
+            if(in_array($document, $group)) {
+              $csv_groups = "$csv_groups|$groupName|";
+            }
           }
+          $checked = "checked=checked";
+          if($included_documents && !array_search($document, $included_documents)) {
+            $checked = "";
+          }
+          $out->addHtml("<input type='checkbox' csvgroups='$csv_groups' name='document[]' value='$collection||$document' $checked>");
+          if(array_key_exists($document, $documents_as_templates)) {
+            $out->addHtml($out->parseInlineAsInterface($documents_as_templates[$document], false));
+          } else {
+            $out->addHtml($collection . ": " . $document);
+          }
+          $out->addHtml("<br>");
         }
-        $checked = "checked=checked";
-        if($included_documents && !array_search($document, $included_documents)) {
-          $checked = "";
-        }
-        $out->addHtml("<input type='checkbox' csvgroups='$csv_groups' name='document[]' value='$wgTorqueDataConnectCollectionName||$document' $checked>");
-        $out->addHtml($out->parseInlineAsInterface($documents_as_templates[$document], false));
-        $out->addHtml("<br>");
       }
       $out->addHtml( "</div>");
       $out->addHtml( "</form>\n");
