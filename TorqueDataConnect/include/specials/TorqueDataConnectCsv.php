@@ -185,7 +185,8 @@ class TorqueDataConnectCsv extends SpecialPage {
 
       $out = $this->getOutput();
 
-      $out->addHtml("<form method='POST'>\n");
+      $action = $out->getTitle()->getFullUrl();
+      $out->addHtml("<form method='POST' action='$action'>\n");
       $out->addHtml("<input type='hidden' name='build' value='build'/>\n");
       if($csv_information) {
         $defaultfilename = $csv_information["filename"];
