@@ -18,6 +18,7 @@ class TorqueDataConnectCsv extends SpecialPage {
 
     $wiki_key = $wgTorqueDataConnectWikiKey;
     $csv_information = false;
+    $included_fields = false;
     $included_documents = false;
 
     if ($this->getRequest()->getVal('build')) {
@@ -57,6 +58,7 @@ class TorqueDataConnectCsv extends SpecialPage {
         $wiki_key);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
       $csv_information = json_decode(curl_exec($ch), true);
+      $included_fields = $csv_information["fields"];
       $included_documents = $csv_information["documents"];
     } else if($this->getRequest()->getVal('s')) {
       // Coming from search
@@ -204,23 +206,41 @@ class TorqueDataConnectCsv extends SpecialPage {
         foreach(array_keys($csvFieldGroups) as $group) {
           $out->addHtml("<option value='$group'>$group</option>");
         }
+        $out->addHtml("<option value='All'>All</option>");
+        $out->addHtml("<option value='None'>None</option>");
         $out->addHtml("</select>");
-        $out->addHtml("<button>Use</button><br>");
+        $out->addHtml("<button>Select Template</button><br>");
+
+        foreach($csvFieldGroups as $groupName => $group) {
+          if(!$included_fields && $groupName == "Default") {
+            $included_fields = $group;
+          }
+        }
       }
+      $primary_fields = "";
+      $secondary_fields = "";
       foreach ($fields as $field) {
-        $csv_groups = "";
+        $csv_groups = "|All|";
         foreach($csvFieldGroups as $groupName => $group) {
           if(in_array($field, $group)) {
             $csv_groups = "$csv_groups|$groupName|";
           }
         }
-        $checked = "checked=checked";
-        if($csv_information && !array_search($field, $csv_information["fields"])) {
-          $checked = "";
+        if($included_fields) {
+          if(array_search($field, $included_fields) !== False) {
+            $primary_fields .= "<input type='checkbox' csvgroups='$csv_groups' name='field[]' value='$field' checked=checked>";
+            $primary_fields .= "$field<br>";
+          } else {
+            $secondary_fields .= "<input type='checkbox' csvgroups='$csv_groups' name='field[]' value='$field'>";
+            $secondary_fields .= "$field<br>";
+          }
+        } else {
+          $primary_fields .= "<input type='checkbox' csvgroups='$csv_groups' name='field[]' value='$field' checked=checked>";
+          $primary_fields .= "$field<br>";
         }
-        $out->addHtml( "<input type='checkbox' csvgroups='$csv_groups' name='field[]' value='$field' $checked>");
-        $out->addHtml( "$field<br>");
       }
+      $out->addHtml($primary_fields);
+      $out->addHtml($secondary_fields);
       $out->addHtml( "</div>");
       $out->addHtml("<div style='float:left;width:60%' class='documentgroup'>");
       $csvDocumentGroups = TorqueDataConnectConfig::getCsvDocumentGroups();
