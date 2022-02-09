@@ -149,7 +149,6 @@ class TorqueDataConnectCsv extends SpecialPage {
               $wiki), true)["fields"]);
         }
         $fields = array_unique($fields);
-        sort($fields);
       } else {
         $documents_information = [];
         $documents_information[$wgTorqueDataConnectCollectionName] = json_decode(file_get_contents(
@@ -182,6 +181,7 @@ class TorqueDataConnectCsv extends SpecialPage {
           "&wiki_key=" .
           $wiki_key), true)["fields"];
       }
+      sort($fields);
 
       $out = $this->getOutput();
 
