@@ -72,7 +72,7 @@ class TorqueDataConnectConfig {
     curl_close ($ch);
   }
 
-  public static function commitTemplateConfig($templateName, $templatePage, $templateType) {
+  public static function commitTemplateConfig($templateName, $templatePage, $templateType, $default) {
     global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL,
@@ -93,7 +93,8 @@ class TorqueDataConnectConfig {
         "name" => $templateName,
         "wiki_key" => $wgTorqueDataConnectWikiKey,
         "template" => TorqueDataConnectConfig::getMwikiTemplate($templatePage),
-        "type" => $templateType
+        "type" => $templateType,
+        "default" => $default
       ]));
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
     curl_exec ($ch);
@@ -200,11 +201,18 @@ class TorqueDataConnectConfig {
         $group["idsPages"]
       );
     }
+    $typesSeen = [];
     foreach($templateConfig as $template) {
+      $default = False;
+      if(array_search($template["templateType"], $typesSeen) === False) {
+        $default = True;
+        array_push($typesSeen, $template["templateType"]);
+      }
       TorqueDataConnectConfig::commitTemplateConfig(
         $template["templateName"],
         $template["templatePage"],
-        $template["templateType"]
+        $template["templateType"],
+        $default
       );
     }
     TorqueDataConnectConfig::completeConfig();

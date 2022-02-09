@@ -321,6 +321,16 @@ class Template(models.Model):
     is_default = models.BooleanField(default=False)
     template_file = models.FileField(upload_to="templates/", null=False, blank=False)
 
+    # When resetting the config, we need to note which templates should be removed at
+    # the end in the case that they were removed from the configuration.
+    #
+    # This is highly NOT threadsafe, and will probably cause annoying problems
+    # if two people are messing around with the configurations at the same time.
+    #
+    # Fortunately, that is highly unlikely, and the only real downside is that
+    # the tempate cache needs to be reindexed, which is not the worst
+    in_config = models.BooleanField(default=False)
+
     def get_file_contents(self):
         return b"".join(self.template_file.open().readlines()).decode("utf-8")
 

@@ -448,7 +448,8 @@ def reset_config(request, collection_name, wiki_key):
     models.WikiConfig.objects.filter(
         collection__name=collection_name, wiki=wiki
     ).update(in_config=False)
-    models.Template.objects.filter(collection__name=collection_name, wiki=wiki).delete()
+
+    models.Template.objects.filter(collection__name=collection_name, wiki=wiki).update(in_config=False)
 
     return HttpResponse(status=200)
 
@@ -530,6 +531,9 @@ def complete_config(request, collection_name, wiki_key):
     models.WikiConfig.objects.filter(
         collection__name=collection_name, wiki__wiki_key=wiki_key, in_config=False
     ).delete()
+    models.Template.objects.filter(
+        collection__name=collection_name, wiki__wiki_key=wiki_key, in_config=False
+    ).delete()
 
     return HttpResponse(status=200)
 
@@ -541,34 +545,22 @@ def set_template_config(request, collection_name, wiki_key):
 
     conf_name = new_config["name"]
     conf_type = new_config["type"]
+    default = new_config["default"]
 
     collection = models.Collection.objects.get(name=collection_name)
     wiki = models.Wiki.objects.get(wiki_key=wiki_key)
-    try:
-        config = models.Template.objects.get(
-            collection=collection,
-            wiki=wiki,
-            type=conf_type,
-            name=conf_name,
-        )
-    except models.Template.DoesNotExist:
-        # create if does not exist
-        config = models.Template(
-            collection=collection,
-            wiki=wiki,
-            type=conf_type,
-            name=conf_name,
-            # set as default if first template of this type
-            is_default=not models.Template.objects.filter(
-                collection__name=collection.name,
-                wiki=wiki,
-                type=conf_type,
-            ).exists(),
-        )
+    config = models.Template.objects.get_or_create(
+        collection=collection,
+        wiki=wiki,
+        type=conf_type,
+        name=conf_name
+    )[0]
 
     config.template_file.save(
         f"{wiki_key}-{conf_name}", ContentFile(new_config["template"])
     )
+    config.in_config = True
+    config.is_default = default
     config.save()
 
     return HttpResponse(status=200)
