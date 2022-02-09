@@ -372,7 +372,7 @@ class TemplatesSectionParser {
   private $templatePage = false;
   private $templateType = false;
   private $templateConfig = [];
-  private static $validTemplateTypes = ["View", "TOC", "Search", "Raw View"];
+  private static $validTemplateTypes = ["View", "TOC", "CSV", "Search", "Raw View"];
 
   public function parseLine($line) {
     if(preg_match("/^\|\\-/", $line)) {

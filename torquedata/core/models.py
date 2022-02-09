@@ -164,7 +164,7 @@ class WikiConfig(models.Model):
     # the search cache has to be re-indexed, which is not a catastrophic error.
     in_config = models.BooleanField(default=False)
 
-    search_cache_dirty = models.BooleanField(default=False)
+    cache_dirty = models.BooleanField(default=False)
 
     def rebuild_search_index(self):
         import config
@@ -198,6 +198,31 @@ class WikiConfig(models.Model):
         SearchCacheDocument.objects.filter(wiki_config=self).update(
             data_vector=SearchVector("data")
         )
+
+    def rebuild_template_cache(self):
+        TemplateCacheDocument.objects.filter(wiki_config=self).delete()
+        template_documents = []
+        if Template.objects.filter(wiki=self.wiki, type="CSV", is_default=True).exists():
+            csv_template = Template.objects.get(wiki=self.wiki, type="CSV", is_default=True)
+            jinja_template = jinja_env.from_string(csv_template.template_file.read().decode("utf-8"))
+            for document_dict in self.collection.clean_documents(self):
+                document = Document.objects.get(
+                    key=document_dict["key"], collection=self.collection
+                )
+
+                if not TemplateCacheDocument.objects.filter(
+                    document=document, wiki_config=self, template=csv_template
+                ).exists():
+                    template_documents.append(
+                        TemplateCacheDocument(
+                            document=document,
+                            wiki_config=self,
+                            template=csv_template,
+                            rendered_text=jinja_template.render({self.collection.object_name: document_dict}),
+                        )
+                    )
+
+            TemplateCacheDocument.objects.bulk_create(template_documents)
 
 
 class Document(models.Model):
@@ -448,3 +473,9 @@ class CsvSpecification(models.Model):
     documents = models.ManyToManyField(Document)
     name = models.TextField()
     filename = models.TextField()
+
+class TemplateCacheDocument(models.Model):
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    wiki_config = models.ForeignKey(WikiConfig, on_delete=models.CASCADE)
+    template = models.ForeignKey(Template, on_delete=models.CASCADE)
+    rendered_text = models.TextField(null=True)

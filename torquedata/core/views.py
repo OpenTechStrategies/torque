@@ -329,21 +329,10 @@ def get_documents(request, collection_name, fmt):
         #
         # An alternate path would be figure out how to call document.mwiki with
         # the appropriate template.
-        line_template = models.Template.objects.get(
-            collection=collection,
-            wiki=wiki_config.wiki,
-            type="TOC",
-            is_default=True
-        )
-        line_template_contents = line_template.template_file.read().decode("utf-8")
-        documents = collection.clean_documents(wiki_config)
-
-        return JsonResponse({
-            document[collection.key_field]: jinja_env.from_string(
-                line_template_contents
-            ).render({collection.object_name: document})
-            for document in documents
-        })
+        caches = {
+            cache.document.key: cache.rendered_text for cache in models.TemplateCacheDocument.objects.filter(wiki_config=wiki_config).prefetch_related('document')
+        }
+        return JsonResponse(caches)
     else:
         raise Exception(f"Invalid format {fmt}")
 
@@ -529,7 +518,7 @@ def set_group_config(request, collection_name, wiki_key):
         config.save()
         config.valid_ids.add(*valid_documents)
         config.valid_fields.add(*valid_fields)
-        config.search_cache_dirty = True
+        config.cache_dirty = True
 
     config.in_config = True
     config.save()
@@ -603,7 +592,7 @@ def upload_collection(request):
     # and failing.
 
     for config in models.WikiConfig.objects.filter(collection=collection):
-        config.search_cache_dirty = True
+        config.cache_dirty = True
         config.save()
 
     return HttpResponse(status=200)

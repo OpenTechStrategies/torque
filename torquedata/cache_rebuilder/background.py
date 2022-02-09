@@ -6,19 +6,22 @@ import sys
 from django.contrib.postgres.search import SearchVector
 import traceback
 
-
 class RebuildWikiConfigs:
     def run(self):
         from core import models
 
-        for config in models.WikiConfig.objects.filter(search_cache_dirty=True).all():
+        for config in models.WikiConfig.objects.filter(cache_dirty=True).all():
             # We do this outside of the transaction, because if someone comes
             # along and dirties it again while we're rebuilding, we want to
             # rebuild it after we're done rebuilding it.
-            config.search_cache_dirty = False
+            config.cache_dirty = False
             config.save()
+            print("Rebuilding search index for %s: %s" % (config.wiki.wiki_key, config.group))
             with transaction.atomic():
                 config.rebuild_search_index()
+            print("Rebuilding template index for %s: %s" % (config.wiki.wiki_key, config.group))
+            with transaction.atomic():
+                config.rebuild_template_cache()
 
 
 class RebuildTOCs:
