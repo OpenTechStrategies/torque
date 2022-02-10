@@ -195,10 +195,11 @@ class TorqueDataConnectCsv extends SpecialPage {
       } else {
         $defaultfilename = $wgTorqueDataConnectWikiKey . date("-Y-m-d");
       }
-      $out->addHtml("<div>");
-      $out->addHtml("<input type='text' name='filename' value='$defaultfilename'/>\n");
-      $out->addHtml("<input type='submit' value='Download'/>\n");
+      $out->addHtml("<div style='font-size:120%'>");
+      $out->addHtml("Filename: <input style='font-size:100%;width:400px' type='text' name='filename' value='$defaultfilename'/><br>\n");
+      $out->addHtml("<input style='font-size:100%;margin-top:4px' type='submit' value='Download CSV'/>\n");
       $out->addHtml("</div>");
+      $out->addHtml("<hr>");
       $out->addHtml("<div style='float:left;width:40%' class='fieldgroup'>");
       $csvFieldGroups = TorqueDataConnectConfig::getCsvFieldGroups();
       if(count($csvFieldGroups) > 0) {
