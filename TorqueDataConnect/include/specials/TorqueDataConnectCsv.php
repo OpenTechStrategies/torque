@@ -137,6 +137,20 @@ class TorqueDataConnectCsv extends SpecialPage {
           );
         }
 
+        $documents_as_templates = [];
+        foreach($wgTorqueDataConnectMultiWikiConfig as $collection => $wiki) {
+          $documents_as_templates[$collection] = json_decode(file_get_contents(
+            $wgTorqueDataConnectServerLocation .
+            '/api/collections/' .
+            $collection .
+            '/documents.mwiki' .
+            "?group=" .
+            $wgTorqueDataConnectGroup .
+            "&wiki_key=" .
+            $wiki
+          ), true);
+        }
+
         $fields = [];
         foreach($wgTorqueDataConnectMultiWikiConfig as $collection => $wiki) {
           $fields = array_merge(
@@ -163,7 +177,8 @@ class TorqueDataConnectCsv extends SpecialPage {
           "&wiki_key=" .
           $wiki_key
         ));
-        $documents_as_templates = json_decode(file_get_contents(
+        $documents_as_templates = [];
+        $documents_as_templates[$wgTorqueDataConnectCollectionName] = json_decode(file_get_contents(
           $wgTorqueDataConnectServerLocation .
           '/api/collections/' .
           $wgTorqueDataConnectCollectionName .
@@ -254,6 +269,7 @@ class TorqueDataConnectCsv extends SpecialPage {
         $out->addHtml("<button>Use</button><br>");
       }
       foreach ($documents_information as $collection => $documents) {
+        $templates = $documents_as_templates[$collection];
         foreach($documents as $document) {
           $csv_groups = "";
           foreach($csvDocumentGroups as $groupName => $group) {
@@ -264,8 +280,8 @@ class TorqueDataConnectCsv extends SpecialPage {
 
           if(!$included_documents || array_search($document, $included_documents)) {
             $out->addHtml("<input type='checkbox' csvgroups='$csv_groups' name='document[]' value='$collection||$document' checked=checked>");
-            if(array_key_exists($document, $documents_as_templates)) {
-              $out->addHtml($documents_as_templates[$document]);
+            if(array_key_exists($document, $templates)) {
+              $out->addHtml($collection . ": " . $templates[$document]);
             } else {
               $out->addHtml($collection . ": " . $document);
             }
