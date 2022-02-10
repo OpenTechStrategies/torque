@@ -283,7 +283,9 @@ class TorqueDataConnectCsv extends SpecialPage {
             }
           }
 
-          if(!$included_documents || array_search($document, $included_documents[$collection])) {
+          if(!$included_documents ||
+             (array_key_exists($collection, $included_documents) &&
+              array_search($document, $included_documents[$collection]) !== false)) {
             $out->addHtml("<input type='checkbox' csvgroups='$csv_groups' name='document[]' value='$collection||$document' checked=checked>");
             if(array_key_exists($document, $templates)) {
               $out->addHtml($collection . ": " . $templates[$document]);
