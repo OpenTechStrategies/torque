@@ -7,23 +7,47 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0033_csvspecification'),
+        ("core", "0033_csvspecification"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='wikiconfig',
-            old_name='search_cache_dirty',
-            new_name='cache_dirty',
+            model_name="wikiconfig",
+            old_name="search_cache_dirty",
+            new_name="cache_dirty",
         ),
         migrations.CreateModel(
-            name='TemplateCacheDocument',
+            name="TemplateCacheDocument",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('rendered_text', models.TextField(null=True)),
-                ('document', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.document')),
-                ('template', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.template')),
-                ('wiki_config', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.wikiconfig')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("rendered_text", models.TextField(null=True)),
+                (
+                    "document",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="core.document"
+                    ),
+                ),
+                (
+                    "template",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="core.template"
+                    ),
+                ),
+                (
+                    "wiki_config",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.wikiconfig",
+                    ),
+                ),
             ],
         ),
     ]

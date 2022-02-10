@@ -6,6 +6,7 @@ import sys
 from django.contrib.postgres.search import SearchVector
 import traceback
 
+
 class RebuildWikiConfigs:
     def run(self):
         from core import models
@@ -16,10 +17,16 @@ class RebuildWikiConfigs:
             # rebuild it after we're done rebuilding it.
             config.cache_dirty = False
             config.save()
-            print("Rebuilding search index for %s: %s" % (config.wiki.wiki_key, config.group))
+            print(
+                "Rebuilding search index for %s: %s"
+                % (config.wiki.wiki_key, config.group)
+            )
             with transaction.atomic():
                 config.rebuild_search_index()
-            print("Rebuilding template index for %s: %s" % (config.wiki.wiki_key, config.group))
+            print(
+                "Rebuilding template index for %s: %s"
+                % (config.wiki.wiki_key, config.group)
+            )
             with transaction.atomic():
                 config.rebuild_template_cache()
 

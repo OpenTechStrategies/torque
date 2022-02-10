@@ -8,6 +8,8 @@ class CacheRebuilderConfig(AppConfig):
 
     def ready(self):
         # This check makes sure that this only boots once
-        if os.environ.get("RUN_MAIN", None) != "true" and not os.environ.get("DISABLE_CACHE_REBUILDER", False):
+        if os.environ.get("RUN_MAIN", None) != "true" and not os.environ.get(
+            "DISABLE_CACHE_REBUILDER", False
+        ):
             cache_rebuilder = background.CacheRebuilder()
             cache_rebuilder.start()

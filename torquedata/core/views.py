@@ -330,7 +330,10 @@ def get_documents(request, collection_name, fmt):
         # An alternate path would be figure out how to call document.mwiki with
         # the appropriate template.
         caches = {
-            cache.document.key: cache.rendered_text for cache in models.TemplateCacheDocument.objects.filter(wiki_config=wiki_config).prefetch_related('document')
+            cache.document.key: cache.rendered_text
+            for cache in models.TemplateCacheDocument.objects.filter(
+                wiki_config=wiki_config
+            ).prefetch_related("document")
         }
         return JsonResponse(caches)
     else:
@@ -449,7 +452,9 @@ def reset_config(request, collection_name, wiki_key):
         collection__name=collection_name, wiki=wiki
     ).update(in_config=False)
 
-    models.Template.objects.filter(collection__name=collection_name, wiki=wiki).update(in_config=False)
+    models.Template.objects.filter(collection__name=collection_name, wiki=wiki).update(
+        in_config=False
+    )
 
     return HttpResponse(status=200)
 
@@ -550,10 +555,7 @@ def set_template_config(request, collection_name, wiki_key):
     collection = models.Collection.objects.get(name=collection_name)
     wiki = models.Wiki.objects.get(wiki_key=wiki_key)
     config = models.Template.objects.get_or_create(
-        collection=collection,
-        wiki=wiki,
-        type=conf_type,
-        name=conf_name
+        collection=collection, wiki=wiki, type=conf_type, name=conf_name
     )[0]
 
     config.template_file.save(
@@ -667,8 +669,9 @@ def add_csv(request):
     def determine_name():
         import string
         import random
+
         characters = string.ascii_lowercase + string.ascii_uppercase + string.digits
-        possible_name = ''.join([random.choice(characters) for i in range(6)])
+        possible_name = "".join([random.choice(characters) for i in range(6)])
         if models.CsvSpecification.objects.filter(name=possible_name).count() > 0:
             return determine_name()
         else:
@@ -679,18 +682,23 @@ def add_csv(request):
 
     documents = []
     for post_doc in post_fields["documents"]:
-        documents.append(models.Document.objects.get(collection__name=post_doc[0], key=post_doc[1]))
+        documents.append(
+            models.Document.objects.get(collection__name=post_doc[0], key=post_doc[1])
+        )
 
     csv_spec = models.CsvSpecification(
-            name=name,
-            filename = post_fields["filename"],
-            fields = post_fields["fields"]
+        name=name, filename=post_fields["filename"], fields=post_fields["fields"]
     )
     # Save first so the many to many below works correctly
     csv_spec.save()
     csv_spec.documents.set(documents)
     csv_spec.save()
-    return JsonResponse({"name": name,})
+    return JsonResponse(
+        {
+            "name": name,
+        }
+    )
+
 
 def get_csv(request, name, fmt):
     csv_spec = models.CsvSpecification.objects.get(name=name)
@@ -706,17 +714,19 @@ def get_csv(request, name, fmt):
             wiki_configs_for_csv.add(document.wiki_config.get(group=group))
 
     if fmt == "json":
-        document_information = {};
+        document_information = {}
         for document in documents:
             if document.collection.name not in document_information:
                 document_information[document.collection.name] = []
             document_information[document.collection.name].append(document.key)
-        return JsonResponse({
-            "name": name,
-            "filename": csv_spec.filename,
-            "fields": sorted(csv_spec.fields),
-            "documents": document_information,
-        })
+        return JsonResponse(
+            {
+                "name": name,
+                "filename": csv_spec.filename,
+                "fields": sorted(csv_spec.fields),
+                "documents": document_information,
+            }
+        )
     elif fmt == "csv":
         field_names = sorted(csv_spec.fields)
 
@@ -729,15 +739,20 @@ def get_csv(request, name, fmt):
         valid_field_names = sorted(list(set(valid_field_names)))
 
         response = HttpResponse(
-            content_type = 'text/csv',
-            headers = {'Content-Disposition': 'attachment; filename="%s.csv"' % csv_spec.filename},
+            content_type="text/csv",
+            headers={
+                "Content-Disposition": 'attachment; filename="%s.csv"'
+                % csv_spec.filename
+            },
         )
         writer = csv.writer(response)
 
         columns = []
         for field_name in valid_field_names:
             if field_name in config.CSV_PROCESSORS:
-                columns.extend(config.CSV_PROCESSORS[field_name].field_names(field_name))
+                columns.extend(
+                    config.CSV_PROCESSORS[field_name].field_names(field_name)
+                )
             else:
                 columns.append(field_name)
         writer.writerow(columns)
@@ -745,11 +760,21 @@ def get_csv(request, name, fmt):
         for document in valid_documents:
             row = []
             values_by_field = {
-                v.field.name: v for v in document.values.filter(field__name__in=valid_field_names).prefetch_related('field')
+                v.field.name: v
+                for v in document.values.filter(
+                    field__name__in=valid_field_names
+                ).prefetch_related("field")
             }
             for field_name in valid_field_names:
-                if field_name in values_by_field and field_name in config.CSV_PROCESSORS:
-                    row.extend(config.CSV_PROCESSORS[field_name].process_value(values_by_field[field_name].to_python()))
+                if (
+                    field_name in values_by_field
+                    and field_name in config.CSV_PROCESSORS
+                ):
+                    row.extend(
+                        config.CSV_PROCESSORS[field_name].process_value(
+                            values_by_field[field_name].to_python()
+                        )
+                    )
                 elif field_name in values_by_field:
                     row.append(values_by_field[field_name].to_python())
                 else:

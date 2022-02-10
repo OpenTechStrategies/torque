@@ -6,18 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0032_searchcachedocument_filtered_data'),
+        ("core", "0032_searchcachedocument_filtered_data"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CsvSpecification',
+            name="CsvSpecification",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fields', models.JSONField()),
-                ('name', models.TextField()),
-                ('filename', models.TextField()),
-                ('documents', models.ManyToManyField(to='core.Document')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("fields", models.JSONField()),
+                ("name", models.TextField()),
+                ("filename", models.TextField()),
+                ("documents", models.ManyToManyField(to="core.Document")),
             ],
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0034_auto_20220209_1209'),
+        ("core", "0034_auto_20220209_1209"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='template',
-            name='in_config',
+            model_name="template",
+            name="in_config",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -202,9 +202,15 @@ class WikiConfig(models.Model):
     def rebuild_template_cache(self):
         TemplateCacheDocument.objects.filter(wiki_config=self).delete()
         template_documents = []
-        if Template.objects.filter(wiki=self.wiki, type="CSV", is_default=True).exists():
-            csv_template = Template.objects.get(wiki=self.wiki, type="CSV", is_default=True)
-            jinja_template = jinja_env.from_string(csv_template.template_file.read().decode("utf-8"))
+        if Template.objects.filter(
+            wiki=self.wiki, type="CSV", is_default=True
+        ).exists():
+            csv_template = Template.objects.get(
+                wiki=self.wiki, type="CSV", is_default=True
+            )
+            jinja_template = jinja_env.from_string(
+                csv_template.template_file.read().decode("utf-8")
+            )
             for document_dict in self.collection.clean_documents(self):
                 document = Document.objects.get(
                     key=document_dict["key"], collection=self.collection
@@ -218,7 +224,9 @@ class WikiConfig(models.Model):
                             document=document,
                             wiki_config=self,
                             template=csv_template,
-                            rendered_text=jinja_template.render({self.collection.object_name: document_dict}),
+                            rendered_text=jinja_template.render(
+                                {self.collection.object_name: document_dict}
+                            ),
                         )
                     )
 
@@ -478,11 +486,13 @@ class TableOfContentsCache(models.Model):
             ),
         ]
 
+
 class CsvSpecification(models.Model):
     fields = models.JSONField()
     documents = models.ManyToManyField(Document)
     name = models.TextField()
     filename = models.TextField()
+
 
 class TemplateCacheDocument(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
