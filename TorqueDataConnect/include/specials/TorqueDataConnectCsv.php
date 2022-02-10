@@ -93,7 +93,12 @@ class TorqueDataConnectCsv extends SpecialPage {
 
       $included_documents = [];
       foreach($results as $result) {
-        array_push($included_documents, explode("/", $result, 5)[4]);
+        $exploded_result = explode("/", $result, 5);
+        $collection = $exploded_result[2];
+        if(!array_key_exists($collection, $included_documents)) {
+          $included_documents[$collection] = [];
+        }
+        array_push($included_documents[$collection], $exploded_result[4]);
       }
     }
 
@@ -278,7 +283,7 @@ class TorqueDataConnectCsv extends SpecialPage {
             }
           }
 
-          if(!$included_documents || array_search($document, $included_documents)) {
+          if(!$included_documents || array_search($document, $included_documents[$collection])) {
             $out->addHtml("<input type='checkbox' csvgroups='$csv_groups' name='document[]' value='$collection||$document' checked=checked>");
             if(array_key_exists($document, $templates)) {
               $out->addHtml($collection . ": " . $templates[$document]);

@@ -706,11 +706,16 @@ def get_csv(request, name, fmt):
             wiki_configs_for_csv.add(document.wiki_config.get(group=group))
 
     if fmt == "json":
+        document_information = {};
+        for document in documents:
+            if document.collection.name not in document_information:
+                document_information[document.collection.name] = []
+            document_information[document.collection.name].append(document.key)
         return JsonResponse({
             "name": name,
             "filename": csv_spec.filename,
             "fields": sorted(csv_spec.fields),
-            "documents": [document.key for document in documents],
+            "documents": document_information,
         })
     elif fmt == "csv":
         field_names = sorted(csv_spec.fields)
