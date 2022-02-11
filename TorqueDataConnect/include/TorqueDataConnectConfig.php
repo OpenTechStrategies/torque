@@ -86,6 +86,11 @@ class TorqueDataConnectConfig {
     // Raw View is a special type that's a view that's treated differently on the mediawiki side
     if($templateType == "Raw View") {
       $templateType = "View";
+
+      // Raw views can't be the default view, because then there would be two default
+      // views (if there's already another View).  If Raw View is the only kind that
+      // exists, then this will break, and we will need to add more logic.
+      $default = False;
     }
 
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
