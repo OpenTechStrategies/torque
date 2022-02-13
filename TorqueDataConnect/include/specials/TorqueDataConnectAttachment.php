@@ -14,8 +14,7 @@ class TorqueDataConnectAttachment extends SpecialPage {
   }
 
   public function execute($subPage) {
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
-      $wgTorqueDataConnectMultiWikiConfig;
+    global $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectMultiWikiConfig;
     $id = $this->getRequest()->getVal('id');
     $attachment = $this->getRequest()->getVal('attachment');
     $collection_name = $this->getRequest()->getVal('collection_name');
@@ -28,27 +27,16 @@ class TorqueDataConnectAttachment extends SpecialPage {
       $wiki_key = $wgTorqueDataConnectMultiWikiConfig[$collection_name];
     }
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL,
-      $wgTorqueDataConnectServerLocation .
+    $resp = TorqueDataConnect::get_file(
       '/api/collections/' .
       $collection_name .
       '/documents/' .
       $id .
       '/attachments/' .
-      urlencode($attachment) .
-      "?group=" .
-      $wgTorqueDataConnectGroup .
-      "&wiki_key=" .
-      $wiki_key);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $resp = curl_exec ($ch);
-
-    header('Content-Type: ' . curl_getinfo($ch, CURLINFO_CONTENT_TYPE));
-    header('Content-Length: ' . curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD));
-    header('Content-Disposition: inline; filename="' . $attachment . '"');
+      urlencode($attachment),
+      $attachment,
+      $query_args=["wiki_key" => $wiki_key]);
     print($resp);
-    curl_close ($ch);
 
     $out = $this->getOutput()->disable();
   }

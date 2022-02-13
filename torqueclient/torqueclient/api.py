@@ -391,7 +391,7 @@ class Document:
         self.data[field] = new_value
 
         if self.torque.cache is not None:
-            self.torque.cache.persist_document(self)
+            self.torque.cache.persist_document(self, self.collection.last_updated)
 
     def uri(self):
         """Returns the uri of the doucment on the server."""

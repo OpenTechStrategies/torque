@@ -21,6 +21,7 @@
     "torquedataconnect-edit"
   ],
   "AutoloadClasses": {
+    "TorqueDataConnect": "include/TorqueDataConnect.php",
     "TorqueDataConnectConfig": "include/TorqueDataConnectConfig.php",
     "TorqueDataConnectUserLookup": "include/TorqueDataConnectUserLookup.php",
     "TorqueDataConnectQuery": "include/api/TorqueDataConnectQuery.php",

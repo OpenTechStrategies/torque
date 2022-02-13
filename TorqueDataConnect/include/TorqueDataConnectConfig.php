@@ -51,37 +51,19 @@ class TorqueDataConnectConfig {
   }
 
   public static function commitGroupConfig($groupName, $fieldsPages, $proposalPages) {
-    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL,
-      $wgTorqueDataConnectServerLocation .
-      "/config/" .
-      $wgTorqueDataConnectCollectionName .
-      "/" .
-      $wgTorqueDataConnectWikiKey .
-      "/group");
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey;
+    TorqueDataConnect::post_json(
+      "/config/" .  $wgTorqueDataConnectCollectionName .  "/" .  $wgTorqueDataConnectWikiKey .  "/group",
       [
         "group" => $groupName,
-        "wiki_key" => $wgTorqueDataConnectWikiKey,
         "fields" => TorqueDataConnectConfig::convertPagesToFieldConfig($fieldsPages),
         "valid_ids" => TorqueDataConnectConfig::convertPagesToIdConfig($proposalPages)
-      ]));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-    curl_exec ($ch);
-    curl_close ($ch);
+      ]
+    );
   }
 
   public static function commitTemplateConfig($templateName, $templatePage, $templateType, $default) {
-    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL,
-      $wgTorqueDataConnectServerLocation .
-      "/config/" .
-      $wgTorqueDataConnectCollectionName .
-      "/" .
-      $wgTorqueDataConnectWikiKey .
-      "/template");
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey;
 
     // Raw View is a special type that's a view that's treated differently on the mediawiki side
     if($templateType == "Raw View") {
@@ -93,64 +75,42 @@ class TorqueDataConnectConfig {
       $default = False;
     }
 
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
+    TorqueDataConnect::post_json(
+      "/config/" .  $wgTorqueDataConnectCollectionName .  "/" .  $wgTorqueDataConnectWikiKey .  "/template",
       [
         "name" => $templateName,
-        "wiki_key" => $wgTorqueDataConnectWikiKey,
         "template" => TorqueDataConnectConfig::getMwikiTemplate($templatePage),
         "type" => $templateType,
         "default" => $default
-      ]));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-    curl_exec ($ch);
-    curl_close ($ch);
+      ]);
   }
 
   public static function resetConfig() {
-    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
-    file_get_contents(
-      $wgTorqueDataConnectServerLocation .
-      "/config/" .
-      $wgTorqueDataConnectCollectionName .
-      "/" .
-      $wgTorqueDataConnectWikiKey .
-      "/reset");
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey;
+    TorqueDataConnect::get_raw(
+      "/config/" .  $wgTorqueDataConnectCollectionName .  "/" .  $wgTorqueDataConnectWikiKey .  "/reset"
+    );
   }
 
   public static function commitWikiConfig() {
-    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey,
       $wgTorqueDataConnectWikiUsername, $wgTorqueDataConnectWikiPassword, $wgServer, $wgScriptPath;
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL,
-      $wgTorqueDataConnectServerLocation .
-      "/config/" .
-      $wgTorqueDataConnectCollectionName .
-      "/" .
-      $wgTorqueDataConnectWikiKey .
-      "/wiki");
-
-    $data = [
-      "username" => $wgTorqueDataConnectWikiUsername,
-      "password" => $wgTorqueDataConnectWikiPassword,
-      "script_path" => $wgScriptPath,
-      "server" => $wgServer
-    ];
-
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    curl_exec ($ch);
-    curl_close ($ch);
+    TorqueDataConnect::post_raw(
+      "/config/" .  $wgTorqueDataConnectCollectionName .  "/" .  $wgTorqueDataConnectWikiKey .  "/wiki",
+      [
+        "username" => $wgTorqueDataConnectWikiUsername,
+        "password" => $wgTorqueDataConnectWikiPassword,
+        "script_path" => $wgScriptPath,
+        "server" => $wgServer
+      ]);
   }
 
   public static function completeConfig() {
-    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
-    file_get_contents(
-      $wgTorqueDataConnectServerLocation .
-      "/config/" .
-      $wgTorqueDataConnectCollectionName .
-      "/" .
-      $wgTorqueDataConnectWikiKey .
-      "/complete");
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey;
+    TorqueDataConnect::get_raw(
+      "/config/" .  $wgTorqueDataConnectCollectionName .  "/" .  $wgTorqueDataConnectWikiKey .  "/complete"
+    );
   }
 
   private static function parseConfig() {
