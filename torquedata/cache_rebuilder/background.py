@@ -40,14 +40,15 @@ class RebuildTOCs:
             # along and dirties it again while we're rebuilding, we want to
             # rebuild it after we're done rebuilding it.
             print(
-                "Rebuilding toc %s: %s"
-                % (toc_cache.toc.collection.name, toc_cache.toc.name)
+                "Rebuilding toc %s (%s): %s..."
+                % (toc_cache.toc.collection.name, toc_cache.wiki_config.group, toc_cache.toc.name),
+                end=''
             )
             toc_cache.dirty = False
             toc_cache.save()
             with transaction.atomic():
                 toc_cache.rebuild()
-            print("Rebuilt toc %s" % toc_cache.toc.name)
+            print("Rebuilt")
 
 
 class RebuildSearchCacheDocuments:
