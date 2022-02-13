@@ -24,5 +24,6 @@
   "torquedataconnect-sidebar-csv": "Download Torque CSV",
   "torquedataconnect-filters": "Filters",
   "torquedataconnect-filters-clear": "Clear All Filters",
-  "torquedataconnectfields": "TorqueDataConnect Fields"
+  "torquedataconnectfields": "TorqueDataConnect Fields",
+  "torquecsv": "Torque CSV Download"
 }

@@ -93,7 +93,8 @@
     "ext.torquedataconnect.css": {
       "styles": [
         "resources/css/TorqueDataConnectEdit.css",
-        "resources/css/TorqueDataConnectSearch.css"
+        "resources/css/TorqueDataConnectSearch.css",
+        "resources/css/TorqueDataConnectCsv.css"
       ],
       "targets": [
         "desktop",
