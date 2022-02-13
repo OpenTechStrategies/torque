@@ -240,7 +240,7 @@ an error if you're in the `torquedataconnect-admin` user group.
 
 ### Template Page
 
-There are three different types of templates: View, TOC, and Search.
+There are four different types of templates: View, TOC, Search, and CSV.
 
 For each type, the template listed first in the configuration becomes
 the default template for that type.
@@ -286,6 +286,12 @@ Since the table of contents already has a template, this feature is
 somewhat redundant.  However, the uploaded template is usually set at
 setup time, and Torque wants to give flexibility to users of the system
 to adjust the look and feel without requiring more uploads.
+
+#### CSV
+
+CSV tempaltes are similar to the TOC, but for output during the
+Special:TorqueCSV page.  See below in the "CSV Downloads" section for
+more information.
 
 ### tdcrender Hook
 
@@ -381,6 +387,8 @@ hook, but instead of returning a rendered wiki page, returns a JSON
 representation of the authorized data.  This allows Torque systems to be
 the central data repository for projects, instead of just a consumer.
 
+You can use the published (to pypi) torqueclient if using python.
+
 ### Conditional override of LocalSettings Parameters
 
 Some of the [parameters](TorqueDataConnect/README) used by TorqueDataConnect
@@ -424,3 +432,37 @@ To see how to define filters, see [config file](torquedata/config.py.tmpl).
 
 To adjust how the filter interface looks, use css, such as in the
 MediaWiki:Common.css page.
+
+### CSV Downloads
+
+Torque provides the ability to download CSV versions of the data.  This is
+through two interfaces: a special page (Special:TorqueCSV) linked int he Tools
+section, and via a "Download CSV" link provided on search results.
+
+Both options take you to the special page, where two lists are provided.  On
+the left are is a column with the list of fields that can be selected, and
+on the right is the list of documents.  When coming from a search page,
+this list of documents is reduced to just the search results.
+
+The filename for the CSV can be selected, and then downloaded.  A unique key
+is given to the CSV to later return to and modify.
+
+#### Configuration - CSV Template
+
+Like the TOC template, you can add a CSV type of template that will format
+the right column of Documents.  Note, this is not parsed as mediawiki text
+and is treated raw.
+
+#### Configuration - CSV Groups section
+
+In the Main config, a "= CSV Groups =" section can be set up.  This should
+be followed by a wiki table with three columns titled:
+
+* Name - The name of the group
+* Type - Either "Field" or "Document"
+* Group - A link to one or more wiki pages that work like the Columns
+  section in Permissions for Field, or Proposals Groups in Permissions
+  for Document
+
+If there is a Field group named "Default", then that will be used as the
+default set of fields enabled when going to the csv page.
