@@ -22,6 +22,8 @@
   "logentry-torquedataconnect-datachanges-edit": "$1 edited field \"$4\" on page $3",
   "torquedataconnect-sidebar-configpage": "Torque Configuration",
   "torquedataconnect-sidebar-csv": "Download Torque CSV",
+  "torquedataconnect-searchcsv-title": "Search Results as CSV",
+  "torquedataconnect-searchcsv-download": "Download",
   "torquedataconnect-filters": "Filters",
   "torquedataconnect-filters-clear": "Clear All Filters",
   "torquedataconnectfields": "TorqueDataConnect Fields",

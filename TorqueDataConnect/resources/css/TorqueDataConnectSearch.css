@@ -1,5 +1,24 @@
+div.torquedataconnect-searchrightmenu {
+  float:right;
+}
+
 div.torquedataconnect-searchfilters {
   border:1px solid black;
   padding:10px;
-  float:right;
+  width:250px;
+}
+
+div.torquedataconnect-searchcsv {
+  border:1px solid black;
+  padding:10px;
+  width:250px;
+}
+
+div.torquedataconnect-searchspacer {
+  width:20px;
+  height:20px;
+}
+
+span.torquedataconnect-csv-collection-name {
+  font-weight: bold;
 }

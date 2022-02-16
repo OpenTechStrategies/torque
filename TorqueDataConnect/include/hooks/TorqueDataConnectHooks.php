@@ -177,12 +177,16 @@ class TorqueDataConnectHooks {
       $header .= ")";
     }
     $header .= "</h2>";
-    $header .= "<h3>";
-    $header .= "<a href='";
+
+    $csv_download = "<div class='torquedataconnect-searchcsv'><h1>";
+    $csv_download .= wfMessage("torquedataconnect-searchcsv-title");
+    $csv_download .= "</h1>";
+    $csv_download .= "<a href='";
     $csvPage = Title::newFromText("Special:TorqueCSV");
-    $header .= $csvPage->getFullUrl(["s" => $term, "f" => $specialSearch->getRequest()->getVal("f")]);
-    $header .= "'>Download results as CSV</a>";
-    $header .= "</h3>";
+    $csv_download .= $csvPage->getFullUrl(["s" => $term, "f" => $specialSearch->getRequest()->getVal("f")]);
+    $csv_download .= "'>";
+    $csv_download .= wfMessage("torquedataconnect-searchcsv-download");
+    $csv_download .= "</a></div>";
 
     $filter_html = "<div class='torquedataconnect-searchfilters'><h1>";
     $filter_html .= wfMessage("torquedataconnect-filters");
@@ -235,7 +239,12 @@ class TorqueDataConnectHooks {
     $filter_html .= "</div>\n";
 
     $output->addHTML($header);
+
+    $output->addHtml("<div class='torquedataconnect-searchrightmenu'>");
+    $output->addHTML($csv_download);
+    $output->addHtml("<div class='torquedataconnect-searchspacer'></div>");
     $output->addHTML($filter_html);
+    $output->addHtml("</div>");
     $output->addWikiTextAsInterface($mwiki_results);
 
     return false;
