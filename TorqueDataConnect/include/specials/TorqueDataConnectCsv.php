@@ -164,28 +164,43 @@ class TorqueDataConnectCsv extends SpecialPage {
       $defaultfilename = $wgTorqueDataConnectWikiKey . date("-Y-m-d");
     }
     $out->addHtml("<div class='csvheader'>");
-    $out->addHtml("Filename: <input class='filename' type='text' name='filename' value='$defaultfilename'/><br>\n");
-    $out->addHtml("<input class='download' type='submit' value='Download CSV'/>\n");
+    $out->addHtml(wfMessage("torquedataconnect-csv-filename"));
+    $out->addHtml(": <input class='filename' type='text' name='filename' value='$defaultfilename'/>\n");
+    $out->addHtml("<input class='download' type='submit' value='" . wfMessage("torquedataconnect-csv-download") ."'/>\n");
     $out->addHtml("</div>");
-    $out->addHtml("<hr>");
     $out->addHtml("<div class='fieldgroup'>");
+    $out->addHtml("<h1>" . wfMessage("torquedataconnect-csv-field-header") . "</h1>");
     $csvFieldGroups = TorqueDataConnectConfig::getCsvFieldGroups();
-    if(count($csvFieldGroups) > 0) {
-      $out->addHtml("<select>");
-      foreach(array_keys($csvFieldGroups) as $group) {
-        $out->addHtml("<option value='$group'>$group</option>");
-      }
-      $out->addHtml("<option value='All'>All</option>");
-      $out->addHtml("<option value='None'>None</option>");
-      $out->addHtml("</select>");
-      $out->addHtml("<button>Select Template</button><br>");
-
-      foreach($csvFieldGroups as $groupName => $group) {
-        if(!$this->included_fields && $groupName == "Default") {
-          $this->included_fields = $group;
-        }
+    $use_default = false;
+    foreach($csvFieldGroups as $groupName => $group) {
+      if(!$this->included_fields && $groupName == "Default") {
+        $this->included_fields = $group;
+        $use_default = true;
       }
     }
+
+    $out->addHtml("<select autocomplete=off>");
+    $out->addHtml("<option value='All'");
+    if(!$this->included_fields && !$use_default) {
+      $out->addHtml(" selected");
+    }
+    $out->addHtml(">" . wfMessage('torquedataconnect-csv-all-fields') . "</option>");
+    $out->addHtml("<option value='None'>" . wfMessage('torquedataconnect-csv-none-fields') . "</option>");
+    foreach(array_keys($csvFieldGroups) as $group) {
+      $out->addHtml("<option value='$group'");
+      if($use_default && $group == "Default") {
+        $out->addHtml(" selected");
+      }
+      $out->addHtml(">");
+      $out->addHtml(wfMessage('torquedataconnect-csv-template-fields', $group));
+      $out->addHtml("</option>");
+    }
+    $out->addHtml("<option value='Custom'");
+    if($this->included_fields && !$use_default) {
+      $out->addHtml(" selected");
+    }
+    $out->addHtml(">" . wfMessage('torquedataconnect-csv-custom-fields') . "</option>");
+    $out->addHtml("</select><br>");
     $primary_fields = "";
     $secondary_fields = "";
     foreach ($fields as $field) {
@@ -212,19 +227,45 @@ class TorqueDataConnectCsv extends SpecialPage {
     $out->addHtml($secondary_fields);
     $out->addHtml("</div>");
     $out->addHtml("<div class='documentgroup'>");
+    $out->addHtml("<h1>" . wfMessage("torquedataconnect-csv-document-header") . "</h1>");
+
+
     $csvDocumentGroups = TorqueDataConnectConfig::getCsvDocumentGroups();
-    if(count($csvDocumentGroups) > 0) {
-      $out->addHtml("<select>");
-      foreach(array_keys($csvDocumentGroups) as $group) {
-        $out->addHtml("<option value='$group'>$group</option>");
+    $use_default = false;
+    foreach($csvDocumentGroups as $groupName => $group) {
+      if(!$this->included_documents && $groupName == "Default") {
+        $this->included_documents = $group;
+        $use_default = true;
       }
-      $out->addHtml("</select>");
-      $out->addHtml("<button>Use</button><br>");
     }
+
+    $out->addHtml("<select autocomplete=off>");
+    $out->addHtml("<option value='All'");
+    if(!$this->included_documents && !$use_default) {
+      $out->addHtml(" selected");
+    }
+    $out->addHtml(">" . wfMessage('torquedataconnect-csv-all-documents') . "</option>");
+    $out->addHtml("<option value='None'>" . wfMessage('torquedataconnect-csv-none-documents') . "</option>");
+    foreach(array_keys($csvDocumentGroups) as $group) {
+      $out->addHtml("<option value='$group'");
+      if($use_default && $group == "Default") {
+        $out->addHtml(" selected");
+      }
+      $out->addHtml(">");
+      $out->addHtml(wfMessage('torquedataconnect-csv-template-documents', $group));
+      $out->addHtml("</option>");
+    }
+    $out->addHtml("<option value='Custom'");
+    if($this->included_documents && !$use_default) {
+      $out->addHtml(" selected");
+    }
+    $out->addHtml(">" . wfMessage('torquedataconnect-csv-custom-documents') . "</option>");
+    $out->addHtml("</select><br>");
+
     foreach ($documents_information as $collection => $documents) {
       $templates = $documents_as_templates[$collection];
       foreach($documents as $document) {
-        $csv_groups = "";
+        $csv_groups = "|All|";
         foreach($csvDocumentGroups as $groupName => $group) {
           if(in_array($document, $group)) {
             $csv_groups = "$csv_groups|$groupName|";
@@ -235,10 +276,13 @@ class TorqueDataConnectCsv extends SpecialPage {
            (array_key_exists($collection, $this->included_documents) &&
             array_search($document, $this->included_documents[$collection]) !== false)) {
           $out->addHtml("<input type='checkbox' csvgroups='$csv_groups' name='document[]' value='$collection||$document' checked=checked>");
+          $out->addHtml("<span class='torquedataconnect-csv-collection-name'>");
+          $out->addHtml($collection . ": ");
+          $out->addHtml("</span>");
           if(array_key_exists($document, $templates)) {
-            $out->addHtml($collection . ": " . $templates[$document]);
+            $out->addHtml($templates[$document]);
           } else {
-            $out->addHtml($collection . ": " . $document);
+            $out->addHtml($document);
           }
           $out->addHtml("<br>");
         }

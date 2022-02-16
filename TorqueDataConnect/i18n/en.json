@@ -27,5 +27,17 @@
   "torquedataconnect-filters": "Filters",
   "torquedataconnect-filters-clear": "Clear All Filters",
   "torquedataconnectfields": "TorqueDataConnect Fields",
+  "torquedataconnect-csv-document-header": "Documents",
+  "torquedataconnect-csv-field-header": "Fields",
+  "torquedataconnect-csv-filename": "CSV Filename",
+  "torquedataconnect-csv-download": "Download CSV",
+  "torquedataconnect-csv-all-fields": "Select All Fields",
+  "torquedataconnect-csv-none-fields": "Unselect All Fields",
+  "torquedataconnect-csv-template-fields": "Use $1 Fields",
+  "torquedataconnect-csv-custom-fields": "Use Custom Fields",
+  "torquedataconnect-csv-all-documents": "Select All Documents",
+  "torquedataconnect-csv-none-documents": "Unselect All Documents",
+  "torquedataconnect-csv-template-documents": "Use $1 Documents",
+  "torquedataconnect-csv-custom-documents": "Use Custom Documents",
   "torquecsv": "Torque CSV Download"
 }
