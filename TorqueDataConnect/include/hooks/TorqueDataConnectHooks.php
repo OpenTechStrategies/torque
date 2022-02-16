@@ -249,10 +249,12 @@ class TorqueDataConnectHooks {
     if($wgTorqueDataConnectConfigPage && $configPage->exists()) {
       $bar["TOOLBOX"][] = [
         "msg" => "torquedataconnect-sidebar-configpage",
+        "id" => "t-torquedataconnect-config",
         "href" => $configPage->getLocalUrl()
       ];
       $bar["TOOLBOX"][] = [
         "msg" => "torquedataconnect-sidebar-csv",
+        "id" => "t-torquedataconnect-csv",
         "href" => $csvPage->getLocalUrl()
       ];
     }
