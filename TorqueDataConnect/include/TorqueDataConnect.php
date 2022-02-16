@@ -40,12 +40,12 @@ class TorqueDataConnect {
     return [$ch, $resp];
   }
 
-  public static function get_file($uri, $filename, $query_args=[]) {
+  public static function get_file($uri, $filename, $query_args=[], $disposition="inline") {
     [$ch, $resp] = TorqueDataConnect::query_with_curl($uri, $query_args);
 
     header('Content-Type: ' . curl_getinfo($ch, CURLINFO_CONTENT_TYPE));
     header('Content-Length: ' . curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD));
-    header('Content-Disposition: inline; filename="' . $filename . '"');
+    header('Content-Disposition: ' . $disposition . '; filename="' . $filename . '"');
 
     curl_close ($ch);
 

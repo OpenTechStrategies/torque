@@ -101,7 +101,9 @@ class TorqueDataConnectCsv extends SpecialPage {
   private function downloadCsv() {
     $resp = TorqueDataConnect::get_file(
       '/csv/' .  $this->getRequest()->getVal('c') .  '.csv',
-      $this->csv_information["filename"] . ".csv"
+      $this->csv_information["filename"] . ".csv",
+      [],
+      "attachment"
     );
     print($resp);
     $this->getOutput()->disable();
