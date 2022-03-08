@@ -8,8 +8,7 @@ class TorqueDataConnectSubmitEdit extends APIBase {
 
   public function execute() {
     $valid_group = TorqueDataConnectConfig::getValidGroup($this->getUser());
-    global $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
-      $wgTorqueDataConnectMultiWikiConfig;
+    global $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectMultiWikiConfig;
 
     parent::checkUserRightsAny(["torquedataconnect-edit"]);
     $newValue = $this->getParameter('newValue');
@@ -30,8 +29,7 @@ class TorqueDataConnectSubmitEdit extends APIBase {
       $wiki_key = $wgTorqueDataConnectWikiKey;
     }
 
-    $url = $wgTorqueDataConnectServerLocation .
-      '/api/collections/' .
+    $url = '/api/collections/' .
       $collectionName .
       "/documents/" .
       $key .
@@ -39,22 +37,13 @@ class TorqueDataConnectSubmitEdit extends APIBase {
       urlencode($field) .
       ".json";
 
-    $ch = curl_init( $url );
     # Setup request to send json via POST.
-    $payload = json_encode(
-      array(
-        "new_value" => $newValue,
-        "wiki_key" => $wiki_key,
-        "group" => $valid_group,
-      )
-    );
-    curl_setopt( $ch, CURLOPT_POSTFIELDS, $payload );
-    curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-    # Return response instead of printing.
-    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-    # Send request.
-    $result = curl_exec($ch);
-    curl_close($ch);
+    $payload = [
+      "new_value" => $newValue,
+      "wiki_key" => $wiki_key,
+      "group" => $valid_group,
+    ];
+    $result = TorqueDataConnect::post_json($url, $payload);
 
     $parser = \MediaWiki\MediaWikiServices::getInstance()->getParser();
     $text = (new WikiPage($title))->getContent()->getText();

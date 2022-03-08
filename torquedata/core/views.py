@@ -14,6 +14,7 @@ from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 import magic
 import config
 from core import utils
+import csv
 
 jinja_env = utils.get_jinja_env()
 
@@ -320,6 +321,21 @@ def get_documents(request, collection_name, fmt):
         return JsonResponse(
             [document.key for document in wiki_config.valid_ids.all()], safe=False
         )
+    elif fmt == "mwiki":
+        # Because we use mwiki as a format marker for when the mediawiki extension
+        # is contacting us, we're going to not fully follow the expected functionality,
+        # which would be to return a valid mediawiki page.  Rather, we're going to
+        # return the TOC style mediawiki text for the documents in the collection.
+        #
+        # An alternate path would be figure out how to call document.mwiki with
+        # the appropriate template.
+        caches = {
+            cache.document.key: cache.rendered_text
+            for cache in models.TemplateCacheDocument.objects.filter(
+                wiki_config=wiki_config
+            ).prefetch_related("document")
+        }
+        return JsonResponse(caches)
     else:
         raise Exception(f"Invalid format {fmt}")
 
@@ -435,7 +451,10 @@ def reset_config(request, collection_name, wiki_key):
     models.WikiConfig.objects.filter(
         collection__name=collection_name, wiki=wiki
     ).update(in_config=False)
-    models.Template.objects.filter(collection__name=collection_name, wiki=wiki).delete()
+
+    models.Template.objects.filter(collection__name=collection_name, wiki=wiki).update(
+        in_config=False
+    )
 
     return HttpResponse(status=200)
 
@@ -505,7 +524,7 @@ def set_group_config(request, collection_name, wiki_key):
         config.save()
         config.valid_ids.add(*valid_documents)
         config.valid_fields.add(*valid_fields)
-        config.search_cache_dirty = True
+        config.cache_dirty = True
 
     config.in_config = True
     config.save()
@@ -515,6 +534,9 @@ def set_group_config(request, collection_name, wiki_key):
 
 def complete_config(request, collection_name, wiki_key):
     models.WikiConfig.objects.filter(
+        collection__name=collection_name, wiki__wiki_key=wiki_key, in_config=False
+    ).delete()
+    models.Template.objects.filter(
         collection__name=collection_name, wiki__wiki_key=wiki_key, in_config=False
     ).delete()
 
@@ -528,34 +550,19 @@ def set_template_config(request, collection_name, wiki_key):
 
     conf_name = new_config["name"]
     conf_type = new_config["type"]
+    default = new_config["default"]
 
     collection = models.Collection.objects.get(name=collection_name)
     wiki = models.Wiki.objects.get(wiki_key=wiki_key)
-    try:
-        config = models.Template.objects.get(
-            collection=collection,
-            wiki=wiki,
-            type=conf_type,
-            name=conf_name,
-        )
-    except models.Template.DoesNotExist:
-        # create if does not exist
-        config = models.Template(
-            collection=collection,
-            wiki=wiki,
-            type=conf_type,
-            name=conf_name,
-            # set as default if first template of this type
-            is_default=not models.Template.objects.filter(
-                collection__name=collection.name,
-                wiki=wiki,
-                type=conf_type,
-            ).exists(),
-        )
+    config = models.Template.objects.get_or_create(
+        collection=collection, wiki=wiki, type=conf_type, name=conf_name
+    )[0]
 
     config.template_file.save(
         f"{wiki_key}-{conf_name}", ContentFile(new_config["template"])
     )
+    config.in_config = True
+    config.is_default = default
     config.save()
 
     return HttpResponse(status=200)
@@ -579,7 +586,7 @@ def upload_collection(request):
     # and failing.
 
     for config in models.WikiConfig.objects.filter(collection=collection):
-        config.search_cache_dirty = True
+        config.cache_dirty = True
         config.save()
 
     return HttpResponse(status=200)
@@ -654,3 +661,126 @@ def user_by_username(request, username):
         user.save()
 
     return JsonResponse({"username": user.username, "id": user.pk})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def add_csv(request):
+    def determine_name():
+        import string
+        import random
+
+        characters = string.ascii_lowercase + string.ascii_uppercase + string.digits
+        possible_name = "".join([random.choice(characters) for i in range(6)])
+        if models.CsvSpecification.objects.filter(name=possible_name).count() > 0:
+            return determine_name()
+        else:
+            return possible_name
+
+    name = determine_name()
+    post_fields = json.loads(request.body)
+
+    documents = []
+    for post_doc in post_fields["documents"]:
+        documents.append(
+            models.Document.objects.get(collection__name=post_doc[0], key=post_doc[1])
+        )
+
+    csv_spec = models.CsvSpecification(
+        name=name, filename=post_fields["filename"], fields=post_fields["fields"]
+    )
+    # Save first so the many to many below works correctly
+    csv_spec.save()
+    csv_spec.documents.set(documents)
+    csv_spec.save()
+    return JsonResponse(
+        {
+            "name": name,
+        }
+    )
+
+
+def get_csv(request, name, fmt):
+    csv_spec = models.CsvSpecification.objects.get(name=name)
+
+    group = request.GET["group"]
+
+    documents = csv_spec.documents.all()
+    valid_documents = []
+    wiki_configs_for_csv = set()
+    for document in documents:
+        if document.wiki_config.filter(group=group).count() > 0:
+            valid_documents.append(document)
+            wiki_configs_for_csv.add(document.wiki_config.get(group=group))
+
+    if fmt == "json":
+        document_information = {}
+        for document in documents:
+            if document.collection.name not in document_information:
+                document_information[document.collection.name] = []
+            document_information[document.collection.name].append(document.key)
+        return JsonResponse(
+            {
+                "name": name,
+                "filename": csv_spec.filename,
+                "fields": sorted(csv_spec.fields),
+                "documents": document_information,
+            }
+        )
+    elif fmt == "csv":
+        field_names = sorted(csv_spec.fields)
+
+        valid_field_names = []
+        for wiki_config in wiki_configs_for_csv:
+            for field_name in field_names:
+                if wiki_config.valid_fields.filter(name=field_name).count() > 0:
+                    valid_field_names.append(field_name)
+
+        valid_field_names = sorted(list(set(valid_field_names)))
+
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={
+                "Content-Disposition": 'attachment; filename="%s.csv"'
+                % csv_spec.filename
+            },
+        )
+        writer = csv.writer(response)
+
+        columns = []
+        for field_name in valid_field_names:
+            if field_name in config.CSV_PROCESSORS:
+                columns.extend(
+                    config.CSV_PROCESSORS[field_name].field_names(field_name)
+                )
+            else:
+                columns.append(field_name)
+        writer.writerow(columns)
+
+        for document in valid_documents:
+            row = []
+            values_by_field = {
+                v.field.name: v
+                for v in document.values.filter(
+                    field__name__in=valid_field_names
+                ).prefetch_related("field")
+            }
+            for field_name in valid_field_names:
+                if (
+                    field_name in values_by_field
+                    and field_name in config.CSV_PROCESSORS
+                ):
+                    row.extend(
+                        config.CSV_PROCESSORS[field_name].process_value(
+                            values_by_field[field_name].to_python()
+                        )
+                    )
+                elif field_name in values_by_field:
+                    row.append(values_by_field[field_name].to_python())
+                else:
+                    row.append("")
+            writer.writerow(row)
+
+        return response
+    else:
+        raise Exception(f"Invalid format {fmt}")

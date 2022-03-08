@@ -164,7 +164,7 @@ class WikiConfig(models.Model):
     # the search cache has to be re-indexed, which is not a catastrophic error.
     in_config = models.BooleanField(default=False)
 
-    search_cache_dirty = models.BooleanField(default=False)
+    cache_dirty = models.BooleanField(default=False)
 
     def rebuild_search_index(self):
         import config
@@ -198,6 +198,39 @@ class WikiConfig(models.Model):
         SearchCacheDocument.objects.filter(wiki_config=self).update(
             data_vector=SearchVector("data")
         )
+
+    def rebuild_template_cache(self):
+        TemplateCacheDocument.objects.filter(wiki_config=self).delete()
+        template_documents = []
+        if Template.objects.filter(
+            wiki=self.wiki, type="CSV", is_default=True
+        ).exists():
+            csv_template = Template.objects.get(
+                wiki=self.wiki, type="CSV", is_default=True
+            )
+            jinja_template = jinja_env.from_string(
+                csv_template.template_file.read().decode("utf-8")
+            )
+            for document_dict in self.collection.clean_documents(self):
+                document = Document.objects.get(
+                    key=document_dict["key"], collection=self.collection
+                )
+
+                if not TemplateCacheDocument.objects.filter(
+                    document=document, wiki_config=self, template=csv_template
+                ).exists():
+                    template_documents.append(
+                        TemplateCacheDocument(
+                            document=document,
+                            wiki_config=self,
+                            template=csv_template,
+                            rendered_text=jinja_template.render(
+                                {self.collection.object_name: document_dict}
+                            ),
+                        )
+                    )
+
+            TemplateCacheDocument.objects.bulk_create(template_documents)
 
 
 class Document(models.Model):
@@ -295,6 +328,16 @@ class Template(models.Model):
     name = models.TextField()
     is_default = models.BooleanField(default=False)
     template_file = models.FileField(upload_to="templates/", null=False, blank=False)
+
+    # When resetting the config, we need to note which templates should be removed at
+    # the end in the case that they were removed from the configuration.
+    #
+    # This is highly NOT threadsafe, and will probably cause annoying problems
+    # if two people are messing around with the configurations at the same time.
+    #
+    # Fortunately, that is highly unlikely, and the only real downside is that
+    # the tempate cache needs to be reindexed, which is not the worst
+    in_config = models.BooleanField(default=False)
 
     def get_file_contents(self):
         return b"".join(self.template_file.open().readlines()).decode("utf-8")
@@ -442,3 +485,17 @@ class TableOfContentsCache(models.Model):
                 fields=["wiki_config", "toc"], name="unique_toc_cache"
             ),
         ]
+
+
+class CsvSpecification(models.Model):
+    fields = models.JSONField()
+    documents = models.ManyToManyField(Document)
+    name = models.TextField()
+    filename = models.TextField()
+
+
+class TemplateCacheDocument(models.Model):
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    wiki_config = models.ForeignKey(WikiConfig, on_delete=models.CASCADE)
+    template = models.ForeignKey(Template, on_delete=models.CASCADE)
+    rendered_text = models.TextField(null=True)

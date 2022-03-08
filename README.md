@@ -3,7 +3,7 @@
 A Python web server and MediaWiki extension that work
 to turn a MediaWiki instance into a CMS.
 
-The basic workflow is that, after installation, you can upload a csv
+The basic workflow is that, after installation, you can upload a json document
 to the torque system through MediaWiki, and then tailor the output
 of that system based on what MediaWiki group a user is part of.
 

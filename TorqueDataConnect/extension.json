@@ -21,6 +21,7 @@
     "torquedataconnect-edit"
   ],
   "AutoloadClasses": {
+    "TorqueDataConnect": "include/TorqueDataConnect.php",
     "TorqueDataConnectConfig": "include/TorqueDataConnectConfig.php",
     "TorqueDataConnectUserLookup": "include/TorqueDataConnectUserLookup.php",
     "TorqueDataConnectQuery": "include/api/TorqueDataConnectQuery.php",
@@ -30,6 +31,7 @@
     "TorqueDataConnectUploadAttachment": "include/api/TorqueDataConnectUploadAttachment.php",
     "TorqueDataConnectAttachment": "include/specials/TorqueDataConnectAttachment.php",
     "TorqueDataConnectFields": "include/specials/TorqueDataConnectFields.php",
+    "TorqueDataConnectCsv": "include/specials/TorqueDataConnectCsv.php",
     "TorqueDataConnectHooks": "include/hooks/TorqueDataConnectHooks.php"
   },
   "Hooks": {
@@ -54,7 +56,8 @@
   },
   "SpecialPages": {
     "TorqueDataConnectAttachment": "TorqueDataConnectAttachment",
-    "TorqueDataConnectFields": "TorqueDataConnectFields"
+    "TorqueDataConnectFields": "TorqueDataConnectFields",
+    "TorqueCSV": "TorqueDataConnectCsv"
   },
   "config": {
     "TorqueDataConnectConfigPage": "",
@@ -91,7 +94,8 @@
     "ext.torquedataconnect.css": {
       "styles": [
         "resources/css/TorqueDataConnectEdit.css",
-        "resources/css/TorqueDataConnectSearch.css"
+        "resources/css/TorqueDataConnectSearch.css",
+        "resources/css/TorqueDataConnectCsv.css"
       ],
       "targets": [
         "desktop",
@@ -101,7 +105,8 @@
     "ext.torquedataconnect.js": {
       "scripts": [
          "resources/js/TorqueDataConnectEdit.js",
-         "resources/js/TorqueDataConnectSearch.js"
+         "resources/js/TorqueDataConnectSearch.js",
+         "resources/js/TorqueDataConnectCsv.js"
       ],
       "dependencies": [
         "mediawiki.api"

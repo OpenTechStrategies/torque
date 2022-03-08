@@ -41,6 +41,14 @@ class Filter:
         return []
 
 
+class CsvFieldProcessor:
+    def field_names(self, field_name):
+        pass
+
+    def process_value(self, value):
+        pass
+
+
 ## A factory method for getting a jinja environment
 def get_jinja_env():
     enabled_extensions = []

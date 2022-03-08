@@ -11,8 +11,8 @@ class TorqueDataConnectQuery extends APIBase {
 
     $valid_group = TorqueDataConnectConfig::getValidGroup($this->getUser());
 
-    global $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
-      $wgTorqueDataConnectMultiWikiConfig, $wgTorqueDataConnectCollectionName;
+    global $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectMultiWikiConfig,
+      $wgTorqueDataConnectCollectionName;
 
     $wiki_keys = "";
     $collection_names = "";
@@ -28,49 +28,30 @@ class TorqueDataConnectQuery extends APIBase {
 
     if($this->getParameter("new_value") !== null) {
       parent::checkUserRightsAny(["torquedataconnect-edit"]);
-      $url = $wgTorqueDataConnectServerLocation .
-        '/api' .
-        urlencode($this->getParameter("path")) .
-        ".json";
-
-      $ch = curl_init( $url );
-      # Setup request to send json via POST.
-      $payload = json_encode(
-        array(
+      TorqueDataConnect::post_json(
+        '/api' .  urlencode($this->getParameter("path")) .  ".json",
+        [
           "new_value" => $this->getParameter("new_value"),
           "wiki_key" => $wgTorqueDataConnectWikiKey,
           "wiki_keys" => $wiki_keys,
           "collection_names" => $collection_names,
           "group" => $valid_group,
-        )
-      );
-      curl_setopt( $ch, CURLOPT_POSTFIELDS, $payload );
-      curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-      # Return response instead of printing.
-      curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-      # Send request.
-      curl_exec($ch);
+        ]);
       $this->getResult()->addValue(null, "result", "Success");
     } else {
-      $extra_args = "";
+      $query_args = [
+        "group" => $valid_group,
+        "collection_name" => $wgTorqueDataConnectCollectionName,
+        "wiki_keys" => $wiki_keys,
+        "collection_names" => $collection_names
+      ];
       if($this->getParameter("q") !== null) {
-        $extra_args .= "&q=" . urlencode($this->getParameter("q"));
+        $query_args["q"] = urlencode($this->getParameter("q"));
       }
-      $contents = file_get_contents(
-        $wgTorqueDataConnectServerLocation .
-        "/api" .
-        urlencode($this->getParameter("path")) .
-        ".json" .
-        "?group=" .
-        $valid_group .
-        "&wiki_key=" .
-        $wgTorqueDataConnectWikiKey .
-        "&collection_name=" . $wgTorqueDataConnectCollectionName .
-        "&wiki_keys=" . $wiki_keys .
-        "&collection_names=" . $collection_names .
-        $extra_args);
 
-      $response = json_decode($contents);
+      $response = TorqueDataConnect::get_json(
+        "/api" .  urlencode($this->getParameter("path")) .  ".json",
+        $query_args);
       $this->getResult()->addValue(null, "result", $response);
     }
   }

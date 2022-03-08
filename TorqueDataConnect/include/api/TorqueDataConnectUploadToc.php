@@ -6,7 +6,6 @@ class TorqueDataConnectUploadToc extends APIBase {
   }
 
   public function execute() {
-    global $wgTorqueDataConnectServerLocation;
     parent::checkUserRightsAny(["torquedataconnect-admin"]);
     # We use phpcurl here because it's really straightforward, and
     # research (stackoverflow) didn't produce a compelling native php method.
@@ -16,19 +15,15 @@ class TorqueDataConnectUploadToc extends APIBase {
     $templatetemp = tempnam(sys_get_temp_dir(), 'TDC');
     file_put_contents($jsontemp, $json->getStream()->getContents());
     file_put_contents($templatetemp, $template->getStream()->getContents());
-    $data = [
-      'json' => curl_file_create($jsontemp),
-      'template' => curl_file_create($templatetemp),
-      'collection_name' => $this->getParameter("collection_name"),
-      'toc_name' => $this->getParameter("toc_name"),
-      'raw' => $this->getParameter("raw_toc")
-    ];
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "$wgTorqueDataConnectServerLocation/upload/toc");
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    curl_exec ($ch);
-    curl_close ($ch);
+    TorqueDataConnect::post_raw("/upload/toc",
+      [
+        'json' => curl_file_create($jsontemp),
+        'template' => curl_file_create($templatetemp),
+        'collection_name' => $this->getParameter("collection_name"),
+        'toc_name' => $this->getParameter("toc_name"),
+        'raw' => $this->getParameter("raw_toc")
+      ]);
     unlink($jsontemp);
     unlink($templatetemp);
   }

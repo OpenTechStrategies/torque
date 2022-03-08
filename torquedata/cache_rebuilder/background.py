@@ -11,14 +11,24 @@ class RebuildWikiConfigs:
     def run(self):
         from core import models
 
-        for config in models.WikiConfig.objects.filter(search_cache_dirty=True).all():
+        for config in models.WikiConfig.objects.filter(cache_dirty=True).all():
             # We do this outside of the transaction, because if someone comes
             # along and dirties it again while we're rebuilding, we want to
             # rebuild it after we're done rebuilding it.
-            config.search_cache_dirty = False
+            config.cache_dirty = False
             config.save()
+            print(
+                "Rebuilding search index for %s: %s"
+                % (config.wiki.wiki_key, config.group)
+            )
             with transaction.atomic():
                 config.rebuild_search_index()
+            print(
+                "Rebuilding template index for %s: %s"
+                % (config.wiki.wiki_key, config.group)
+            )
+            with transaction.atomic():
+                config.rebuild_template_cache()
 
 
 class RebuildTOCs:
@@ -30,14 +40,15 @@ class RebuildTOCs:
             # along and dirties it again while we're rebuilding, we want to
             # rebuild it after we're done rebuilding it.
             print(
-                "Rebuilding toc %s: %s"
-                % (toc_cache.toc.collection.name, toc_cache.toc.name)
+                "Rebuilding toc %s (%s): %s..."
+                % (toc_cache.toc.collection.name, toc_cache.wiki_config.group, toc_cache.toc.name),
+                end=''
             )
             toc_cache.dirty = False
             toc_cache.save()
             with transaction.atomic():
                 toc_cache.rebuild()
-            print("Rebuilt toc %s" % toc_cache.toc.name)
+            print("Rebuilt")
 
 
 class RebuildSearchCacheDocuments:

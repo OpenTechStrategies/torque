@@ -12,8 +12,7 @@ class TorqueDataConnectHooks {
     $po->addModuleStyles('ext.torquedataconnect.css');
 
     global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView,
-      $wgTorqueDataConnectRaw, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
-      $wgTorqueDataConnectMultiWikiConfig;
+      $wgTorqueDataConnectRaw, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectMultiWikiConfig;
 
     // Let the tdcrender view be top priority
     if(!$view || $view == "false") {
@@ -42,18 +41,19 @@ class TorqueDataConnectHooks {
       $location = substr($location, 0, strlen($location) - 6);
     }
 
-    $path = $wgTorqueDataConnectServerLocation . "/api/" . "${location}";
-    $args = "group=" . $wgTorqueDataConnectGroup .
-      "&wiki_key=" . $wiki_key .
-      ($view ? "&view=" . $view : "");
+    $path = "/api/" . "${location}";
+    $query_args = ["wiki_key" => $wiki_key];
+    if($view) {
+      $query_args["view"] = $view;
+    }
 
     // For now, this is only for the cached version
     $using_html = true;
-    $contents = file_get_contents("${path}.html?${args}");
+    $contents = TorqueDataConnect::get_raw("${path}.html", $query_args);
 
     if(strlen($contents) === 0) {
       $using_html = false;
-      $contents = file_get_contents("${path}.mwiki?${args}");
+      $contents = TorqueDataConnect::get_raw("${path}.mwiki", $query_args);
     }
     
     $contents = $contents . '<span id="page-info" data-location="' . $location . '" data-wiki-key="' . $wiki_key . '"></span>';
@@ -122,14 +122,22 @@ class TorqueDataConnectHooks {
   }
 
   public static function onSpecialSearchResultsPrepend($specialSearch, $output, $term) {
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectCollectionName,
-      $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
-      $wgTorqueDataConnectMultiWikiConfig;
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectMultiWikiConfig;
 
     $output->addModuleStyles('ext.torquedataconnect.css');
     $output->addModules('ext.torquedataconnect.js');
 
     $offset = $specialSearch->getRequest()->getInt("offset", 0);
+    $query_args = [
+      "offset" => $offset,
+      "q" => $term
+    ];
+
+    $current_filter = [];
+    if($specialSearch->getRequest()->getVal("f")) {
+      $query_args["f"] = urldecode($specialSearch->getRequest()->getVal("f"));
+      $current_filter = json_decode(urldecode($specialSearch->getRequest()->getVal("f")), true);
+    }
 
     if($wgTorqueDataConnectMultiWikiConfig) {
       $wiki_keys = "";
@@ -138,38 +146,19 @@ class TorqueDataConnectHooks {
         $wiki_keys .= "$wiki_key,";
         $collection_names .= "$collection_name,";
       }
-      $results = file_get_contents(
-        $wgTorqueDataConnectServerLocation .
-        "/api/search.mwiki" .
-        "?group=" . $wgTorqueDataConnectGroup .
-        "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
-        "&collection_name=" . $wgTorqueDataConnectCollectionName .
-        "&wiki_keys=" . $wiki_keys .
-        "&collection_names=" . $collection_names .
-        "&offset=" . $offset .
-        "&q=" .  urlencode($term) .
-        "&f=" . $specialSearch->getRequest()->getVal("f")
-        );
+      $query_args["collection_name"] = $wgTorqueDataConnectCollectionName;
+      $query_args["wiki_keys"] = $wiki_keys;
+      $query_args["collection_names"] = $collection_names;
+      $results = TorqueDataConnect::get_raw("/api/search.mwiki", $query_args);
     } else {
-      $results = file_get_contents(
-        $wgTorqueDataConnectServerLocation .
-        "/api/collections/" .  $wgTorqueDataConnectCollectionName . "/search.mwiki" .
-        "?group=" .  $wgTorqueDataConnectGroup .
-        "&wiki_key=" .  $wgTorqueDataConnectWikiKey .
-        "&offset=" . $offset .
-        "&q=" . urlencode($term) .
-        "&f=" . $specialSearch->getRequest()->getVal("f")
-        );
+      $results = TorqueDataConnect::get_raw(
+        "/api/collections/" .  $wgTorqueDataConnectCollectionName . "/search.mwiki",
+        $query_args);
     }
     $decoded_results = json_decode($results, true);
     $num_results = $decoded_results["num_results"];
     $filter_results = $decoded_results["filter_results"];
     $mwiki_results = $decoded_results["mwiki_text"];
-
-    $current_filter = json_decode(urldecode($specialSearch->getRequest()->getVal("f")), true);
-    if(!$current_filter) {
-      $current_filter = [];
-    }
 
     $header = "<h2>$num_results results for '$term'";
     if($num_results > 20) {
@@ -177,17 +166,27 @@ class TorqueDataConnectHooks {
       $header .= ($offset + 1) . " - " . min($num_results, ($offset + 20));
       if($offset > 0) {
         $header .= " | ";
-        $prev_20_url = $output->getTitle()->getFullUrl(["offset" => $offset - 20, "search" => $term, "f" => urlencode(json_encode($current_filter))]);
+        $prev_20_url = $output->getTitle()->getFullUrl(["offset" => $offset - 20, "search" => $term, "f" => urlencode(json_encode($current_filter, JSON_FORCE_OBJECT))]);
         $header .= "<a href='$prev_20_url'>Prev 20</a>";
       }
       if(($offset + 20) < $num_results) {
         $header .= " | ";
-        $next_20_url = $output->getTitle()->getFullUrl(["offset" => $offset + 20, "search" => $term, "f" => urlencode(json_encode($current_filter))]);
+        $next_20_url = $output->getTitle()->getFullUrl(["offset" => $offset + 20, "search" => $term, "f" => urlencode(json_encode($current_filter, JSON_FORCE_OBJECT))]);
         $header .= "<a href='$next_20_url'>Next 20</a>";
       }
       $header .= ")";
     }
     $header .= "</h2>";
+
+    $csv_download = "<div class='torquedataconnect-searchcsv'><h1>";
+    $csv_download .= wfMessage("torquedataconnect-searchcsv-title");
+    $csv_download .= "</h1>";
+    $csv_download .= "<a href='";
+    $csvPage = Title::newFromText("Special:TorqueCSV");
+    $csv_download .= $csvPage->getFullUrl(["s" => $term, "f" => $specialSearch->getRequest()->getVal("f")]);
+    $csv_download .= "'>";
+    $csv_download .= wfMessage("torquedataconnect-searchcsv-download");
+    $csv_download .= "</a></div>";
 
     $filter_html = "<div class='torquedataconnect-searchfilters'><h1>";
     $filter_html .= wfMessage("torquedataconnect-filters");
@@ -240,7 +239,12 @@ class TorqueDataConnectHooks {
     $filter_html .= "</div>\n";
 
     $output->addHTML($header);
+
+    $output->addHtml("<div class='torquedataconnect-searchrightmenu'>");
+    $output->addHTML($csv_download);
+    $output->addHtml("<div class='torquedataconnect-searchspacer'></div>");
     $output->addHTML($filter_html);
+    $output->addHtml("</div>");
     $output->addWikiTextAsInterface($mwiki_results);
 
     return false;
@@ -250,10 +254,17 @@ class TorqueDataConnectHooks {
     global $wgTorqueDataConnectConfigPage;
 
     $configPage = Title::newFromText($wgTorqueDataConnectConfigPage);
+    $csvPage = Title::newFromText("Special:TorqueCSV");
     if($wgTorqueDataConnectConfigPage && $configPage->exists()) {
       $bar["TOOLBOX"][] = [
         "msg" => "torquedataconnect-sidebar-configpage",
+        "id" => "t-torquedataconnect-config",
         "href" => $configPage->getLocalUrl()
+      ];
+      $bar["TOOLBOX"][] = [
+        "msg" => "torquedataconnect-sidebar-csv",
+        "id" => "t-torquedataconnect-csv",
+        "href" => $csvPage->getLocalUrl()
       ];
     }
 

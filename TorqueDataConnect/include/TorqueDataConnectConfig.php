@@ -51,100 +51,66 @@ class TorqueDataConnectConfig {
   }
 
   public static function commitGroupConfig($groupName, $fieldsPages, $proposalPages) {
-    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL,
-      $wgTorqueDataConnectServerLocation .
-      "/config/" .
-      $wgTorqueDataConnectCollectionName .
-      "/" .
-      $wgTorqueDataConnectWikiKey .
-      "/group");
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey;
+    TorqueDataConnect::post_json(
+      "/config/" .  $wgTorqueDataConnectCollectionName .  "/" .  $wgTorqueDataConnectWikiKey .  "/group",
       [
         "group" => $groupName,
-        "wiki_key" => $wgTorqueDataConnectWikiKey,
         "fields" => TorqueDataConnectConfig::convertPagesToFieldConfig($fieldsPages),
         "valid_ids" => TorqueDataConnectConfig::convertPagesToIdConfig($proposalPages)
-      ]));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-    curl_exec ($ch);
-    curl_close ($ch);
+      ]
+    );
   }
 
-  public static function commitTemplateConfig($templateName, $templatePage, $templateType) {
-    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL,
-      $wgTorqueDataConnectServerLocation .
-      "/config/" .
-      $wgTorqueDataConnectCollectionName .
-      "/" .
-      $wgTorqueDataConnectWikiKey .
-      "/template");
+  public static function commitTemplateConfig($templateName, $templatePage, $templateType, $default) {
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey;
 
     // Raw View is a special type that's a view that's treated differently on the mediawiki side
     if($templateType == "Raw View") {
       $templateType = "View";
+
+      // Raw views can't be the default view, because then there would be two default
+      // views (if there's already another View).  If Raw View is the only kind that
+      // exists, then this will break, and we will need to add more logic.
+      $default = False;
     }
 
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(
+    TorqueDataConnect::post_json(
+      "/config/" .  $wgTorqueDataConnectCollectionName .  "/" .  $wgTorqueDataConnectWikiKey .  "/template",
       [
         "name" => $templateName,
-        "wiki_key" => $wgTorqueDataConnectWikiKey,
         "template" => TorqueDataConnectConfig::getMwikiTemplate($templatePage),
-        "type" => $templateType
-      ]));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-    curl_exec ($ch);
-    curl_close ($ch);
+        "type" => $templateType,
+        "default" => $default
+      ]);
   }
 
   public static function resetConfig() {
-    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
-    file_get_contents(
-      $wgTorqueDataConnectServerLocation .
-      "/config/" .
-      $wgTorqueDataConnectCollectionName .
-      "/" .
-      $wgTorqueDataConnectWikiKey .
-      "/reset");
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey;
+    TorqueDataConnect::get_raw(
+      "/config/" .  $wgTorqueDataConnectCollectionName .  "/" .  $wgTorqueDataConnectWikiKey .  "/reset"
+    );
   }
 
   public static function commitWikiConfig() {
-    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation,
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey,
       $wgTorqueDataConnectWikiUsername, $wgTorqueDataConnectWikiPassword, $wgServer, $wgScriptPath;
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL,
-      $wgTorqueDataConnectServerLocation .
-      "/config/" .
-      $wgTorqueDataConnectCollectionName .
-      "/" .
-      $wgTorqueDataConnectWikiKey .
-      "/wiki");
-
-    $data = [
-      "username" => $wgTorqueDataConnectWikiUsername,
-      "password" => $wgTorqueDataConnectWikiPassword,
-      "script_path" => $wgScriptPath,
-      "server" => $wgServer
-    ];
-
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    curl_exec ($ch);
-    curl_close ($ch);
+    TorqueDataConnect::post_raw(
+      "/config/" .  $wgTorqueDataConnectCollectionName .  "/" .  $wgTorqueDataConnectWikiKey .  "/wiki",
+      [
+        "username" => $wgTorqueDataConnectWikiUsername,
+        "password" => $wgTorqueDataConnectWikiPassword,
+        "script_path" => $wgScriptPath,
+        "server" => $wgServer
+      ]);
   }
 
   public static function completeConfig() {
-    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey, $wgTorqueDataConnectServerLocation;
-    file_get_contents(
-      $wgTorqueDataConnectServerLocation .
-      "/config/" .
-      $wgTorqueDataConnectCollectionName .
-      "/" .
-      $wgTorqueDataConnectWikiKey .
-      "/complete");
+    global $wgTorqueDataConnectCollectionName, $wgTorqueDataConnectWikiKey;
+    TorqueDataConnect::get_raw(
+      "/config/" .  $wgTorqueDataConnectCollectionName .  "/" .  $wgTorqueDataConnectWikiKey .  "/complete"
+    );
   }
 
   private static function parseConfig() {
@@ -165,6 +131,7 @@ class TorqueDataConnectConfig {
 
     $permissionsParser = new PermissionsSectionParser();
     $templateParser = new TemplatesSectionParser();
+    $csvGroupsParser = new CsvGroupsSectionParser();
     $parser = false;
 
     foreach(explode("\n", $configText) as $line) {
@@ -173,12 +140,14 @@ class TorqueDataConnectConfig {
         $parser = $permissionsParser;
       } else if(preg_match("/= *templates *=/i", $line)) {
         $parser = $templateParser;
+      } else if(preg_match("/= *csv groups *=/i", $line)) {
+        $parser = $csvGroupsParser;
       } else if($parser) {
         $parser->parseLine($line);
       }
     }
 
-    return [$permissionsParser->getConfig(), $templateParser->getConfig()];
+    return [$permissionsParser->getConfig(), $templateParser->getConfig(), $csvGroupsParser->getConfig()];
   }
 
   public static function commitConfigToTorqueData() {
@@ -197,11 +166,18 @@ class TorqueDataConnectConfig {
         $group["idsPages"]
       );
     }
+    $typesSeen = [];
     foreach($templateConfig as $template) {
+      $default = False;
+      if(array_search($template["templateType"], $typesSeen) === False) {
+        $default = True;
+        array_push($typesSeen, $template["templateType"]);
+      }
       TorqueDataConnectConfig::commitTemplateConfig(
         $template["templateName"],
         $template["templatePage"],
-        $template["templateType"]
+        $template["templateType"],
+        $default
       );
     }
     TorqueDataConnectConfig::completeConfig();
@@ -231,10 +207,18 @@ class TorqueDataConnectConfig {
 
   public static function checkForErrors() {
     self::$errors = [];
-    [$groupConfig, $templateConfig] = TorqueDataConnectConfig::parseConfig();
+    [$groupConfig, $templateConfig, $csvGroupsConfig] = TorqueDataConnectConfig::parseConfig();
     foreach($groupConfig as $group) {
       TorqueDataConnectConfig::convertPagesToFieldConfig($group["fieldsPages"]);
       TorqueDataConnectConfig::convertPagesToIdConfig($group["idsPages"]);
+    }
+    foreach($csvGroupsConfig as $csvGroup) {
+      if($csvGroup["groupType"] == "Field") {
+        TorqueDataConnectConfig::convertPagesToFieldConfig($csvGroup["groupPages"]);
+      }
+      if($csvGroup["groupType"] == "Document") {
+        TorqueDataConnectConfig::convertPagesToIdConfig($csvGroup["groupPages"]);
+      }
     }
     return self::$errors;
   }
@@ -276,6 +260,26 @@ class TorqueDataConnectConfig {
       array_push($groupNames, $group["groupName"]);
     }
     return $groupNames;
+  }
+
+  public static function getCsvFieldGroups() {
+    $groups = [];
+    foreach(TorqueDataConnectConfig::parseConfig()[2] as $csvGroup) {
+      if($csvGroup["groupType"] == "Field") {
+        $groups[$csvGroup["groupName"]] = TorqueDataConnectConfig::convertPagesToFieldConfig($csvGroup["groupPages"]);
+      }
+    }
+    return $groups;
+  }
+
+  public static function getCsvDocumentGroups() {
+    $groups = [];
+    foreach(TorqueDataConnectConfig::parseConfig()[2] as $csvGroup) {
+      if($csvGroup["groupType"] == "Document") {
+        $groups[$csvGroup["groupName"]] = TorqueDataConnectConfig::convertPagesToIdConfig($csvGroup["groupPages"]);
+      }
+    }
+    return $groups;
   }
 }
 
@@ -341,7 +345,7 @@ class TemplatesSectionParser {
   private $templatePage = false;
   private $templateType = false;
   private $templateConfig = [];
-  private static $validTemplateTypes = ["View", "TOC", "Search", "Raw View"];
+  private static $validTemplateTypes = ["View", "TOC", "CSV", "Search", "Raw View"];
 
   public function parseLine($line) {
     if(preg_match("/^\|\\-/", $line)) {
@@ -375,6 +379,67 @@ class TemplatesSectionParser {
 
   public function getConfig() {
     return $this->templateConfig;
+  }
+}
+
+class CsvGroupsSectionParser {
+  private $groupType = false;
+  private $groupName = false;
+  private $groupPages = [];
+  private $cell = "";
+  private $csvGroupsConfig = [];
+  private static $validGroupTypes = ["Field", "Document"];
+
+  public function parseLine($line) {
+    if (preg_match("/^\|/", $line)) {
+      if($this->cell) {
+        if(!$this->groupName) {
+          $this->groupName = $this->cell;
+        } else if(!$this->groupType) {
+          $this->groupType = $this->cell;
+          if(!in_array($this->groupType, self::$validGroupTypes)) {
+            # We continue on here, because it doesn't hurt anything to do so,
+            # as it's just used by the csv special page, and will end up being discarded
+            # from a functional point of view.
+            # 
+            # We still need to error about it!
+            array_push(TorqueDataConnectConfig::$errors, wfMessage("torquedataconnect-config-gt", $this->groupType)->parse());
+          }
+        } else if(!$this->groupPages) {
+          foreach(explode("\n", $this->cell) as $potential) {
+            $matches = [];
+            if(preg_match("/\\[\\[(.*)\\]\\]/", $potential, $matches)) {
+              array_push($this->groupPages, $matches[1]);
+            }
+          }
+        } else {
+          // Do nothing here, since a fourth field is ok for user notes if they like
+        }
+
+        if($this->groupType && $this->groupPages && $this->groupName) {
+          array_push($this->csvGroupsConfig, [
+            "groupName" => $this->groupName,
+            "groupType" => $this->groupType,
+            "groupPages" => $this->groupPages
+          ]);
+        }
+      }
+
+      $this->cell = trim(substr($line, 1));
+
+      if(preg_match("/^\|\\-/", $line)) {
+        $this->groupName = false;
+        $this->groupPages = [];
+        $this->groupType = false;
+        $this->cell = "";
+      }
+    } else {
+      $this->cell .= "\n" . $line;
+    }
+  }
+
+  public function getConfig() {
+    return $this->csvGroupsConfig;
   }
 }
 ?>
