@@ -11,11 +11,7 @@ with open("README.md", "r", encoding="utf-8") as readme:
 
 setup(
     name="torqueclient",
-    # 0.1.1 was a necessary release due to an accident, and this method
-    # should NOT be used in the future.  Instead, the __version__ from
-    # the server and client should be synced up, and then a release should
-    # happen.  Delete this comment when that happens.
-    version="0.1.1",
+    version="0.2",
     #version=main_ns['__version__'],
     description="Python client for mediawiki/torque",
     long_description=long_description,
