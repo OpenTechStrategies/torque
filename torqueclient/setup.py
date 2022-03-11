@@ -11,7 +11,7 @@ with open("README.md", "r", encoding="utf-8") as readme:
 
 setup(
     name="torqueclient",
-    version="0.2",
+    version="0.2.1",
     #version=main_ns['__version__'],
     description="Python client for mediawiki/torque",
     long_description=long_description,

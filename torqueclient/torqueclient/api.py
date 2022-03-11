@@ -386,7 +386,7 @@ class Document:
             "torquedataconnect",
             format="json",
             path="%s/fields/%s" % (self.uri(), field),
-            new_value=json.dumps(new_value))
+            new_value=json.dumps(new_value)
         )
         self.data[field] = new_value
 
