@@ -5,7 +5,7 @@ class TorqueDataConnectHooks {
 		$parser->setFunctionHook('tdcrender', [ self::class, 'loadLocation' ]);
 	}
 
-	public static function loadLocation($parser, $location, $view = false, $wiki_key = false) {
+	public static function loadLocation($parser, $location, $view = false, $wiki_key = false, $view_wiki_key = false) {
     $parser->getOutput()->updateCacheExpiry(0);
     $po = $parser->getOutput();
     $po->addModules('ext.torquedataconnect.js');
@@ -17,6 +17,10 @@ class TorqueDataConnectHooks {
     // Let the tdcrender view be top priority
     if(!$view || $view == "false") {
       $view = $wgTorqueDataConnectView;
+    } else if($view_wiki_key && $view_wiki_key != "false") {
+      $view = json_encode(array("wiki_key" => $view_wiki_key, "view" => $view));
+    } else if($wiki_key && $wiki_key != "false") {
+      $view = json_encode(array("wiki_key" => $wiki_key, "view" => $view));
     }
 
     // We only allow wiki_key to be passed in if it's in the multi wiki config

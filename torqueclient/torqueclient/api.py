@@ -386,12 +386,11 @@ class Document:
             "torquedataconnect",
             format="json",
             path="%s/fields/%s" % (self.uri(), field),
-            new_value=new_value,
+            new_value=json.dumps(new_value))
         )
         self.data[field] = new_value
 
-        if self.torque.cache is not None:
-            self.torque.cache.persist_document(self, self.collection.last_updated)
+        self.collection._refresh_from_server()
 
     def uri(self):
         """Returns the uri of the doucment on the server."""

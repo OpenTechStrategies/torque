@@ -31,7 +31,7 @@ class TorqueDataConnectQuery extends APIBase {
       TorqueDataConnect::post_json(
         '/api' .  urlencode($this->getParameter("path")) .  ".json",
         [
-          "new_value" => $this->getParameter("new_value"),
+          "new_value" => json_decode($this->getParameter("new_value")),
           "wiki_key" => $wgTorqueDataConnectWikiKey,
           "wiki_keys" => $wiki_keys,
           "collection_names" => $collection_names,
