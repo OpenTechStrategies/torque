@@ -2,7 +2,7 @@ These instructions outline how to install the example data on a running
 mediawiki and torque system.  Please first
 [install mediawiki](https://www.mediawiki.org/wiki/Manual:Installation_guide),
 and also follow the instructions for
-[installing and running torque](../torquedata/README.md#installation-and-startup).
+[installing and running torque](../torque/README.md#installation-and-startup).
 
 # Installing the plugin and mediawiki settings via ansible
 

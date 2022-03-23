@@ -3,17 +3,16 @@
 from distutils.core import setup
 
 main_ns = {}
-with open('torqueclient/version.py') as ver_file:
+with open('torque/version.py') as ver_file:
     exec(ver_file.read(), main_ns)
 
 with open("README.md", "r", encoding="utf-8") as readme:
     long_description = readme.read()
 
 setup(
-    name="torqueclient",
-    version="0.2.2",
-    #version=main_ns['__version__'],
-    description="Python client for mediawiki/torque",
+    name="django-torque",
+    version=main_ns['__version__'],
+    description="django app for torque",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Open Tech Strategies, LLC",
@@ -23,8 +22,8 @@ setup(
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Operating System :: OS Independent",
     ],
-    packages=["torqueclient"],
-    install_requires=["mwclient", "python-dateutil"],
+    packages=["torque"],
+    install_requires=["mwclient", "python-magic", "jinja2", "werkzeug"],
     package_dir={"":  "."},
     python_requres=">=3.6",
 )

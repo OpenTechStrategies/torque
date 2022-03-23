@@ -19,14 +19,14 @@ MediaWiki installed is to unpack the tar file that you downloaded into your
 web directory.  Then, visit that page in your browser, and follow the prompts,
 after which you place the LocalSettings.php into that same web directory.
 
-TorqueDataConnect also requires PHP 7.3+
+Torque also requires PHP 7.3+
 
-After that, copy the files from TorqueDataConnect into the extensions directory
+After that, copy the files from Torque into the extensions directory
 of that instance.  The example file will create a simlink for you.
 
 ## Setting up Torque
 
-Follow the [installation instructions](./torquedata/README.md#installation-and-startup)
+Follow the [installation instructions](./django-torque/README.md#installation-and-startup)
 
 # Installing the example system
 
@@ -41,7 +41,7 @@ import mwclient
 import json
 site = mwclient.Site('yourdomain.tld', path='wiki/', scheme='https')
 site.login("<API_USER>", "<API_PASSWORD>")
-proposalData = site.api('torquedataconnect', format='json', path='/proposals')
+proposalData = site.api('torque', format='json', path='/proposals')
 
 # 5
 print(len(proposalData["proposals"]))

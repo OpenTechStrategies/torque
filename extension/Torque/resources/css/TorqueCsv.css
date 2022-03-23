@@ -1,0 +1,30 @@
+div.torquecsv iframe {
+  visibility:hidden;
+  position:absolute;
+}
+
+div.torquecsv div.csvheader {
+  font-size:120%;
+}
+
+div.torquecsv div.csvheader input {
+  font-size:100%;
+}
+
+div.torquecsv div.csvheader input.filename {
+  width:400px;
+}
+
+div.torquecsv div.csvheader input.download {
+  margin-top:4px;
+}
+
+div.torquecsv div.fieldgroup {
+  float:left;
+  width:40%;
+}
+
+div.torquecsv div.documentgroup {
+  float:left;
+  width:60%;
+}

@@ -3,7 +3,7 @@
 - hosts: localhost
 
   tasks:
-    # Enable and configure TorqueDataConnect in LocalSettings:
+    # Enable and configure Torque in LocalSettings:
     - name: Enable Torque
       blockinfile:
         path: "{{ mediawiki_install_directory }}/LocalSettings.php"
@@ -18,24 +18,24 @@
           $wgNamespaceProtection[TORQUE_CONFIG] = array("edittorqueconfig");
 
           # Set up the basic torque variables
-          $wgTorqueDataConnectCollectionName = "proposals";
-          $wgTorqueDataConnectWikiKey = "MyTestWiki";
-          $wgTorqueDataConnectConfigPage = "TorqueConfig:MainConfig";  # In the new protected namespace
+          $wgTorqueCollectionName = "proposals";
+          $wgTorqueWikiKey = "MyTestWiki";
+          $wgTorqueConfigPage = "TorqueConfig:MainConfig";  # In the new protected namespace
 
           # Give sysops full permissions
           $wgGroupPermissions['sysop']['edittorqueconfig'] = true;
-          $wgGroupPermissions['sysop']['torquedataconnect-admin'] = true;
+          $wgGroupPermissions['sysop']['torque-admin'] = true;
 
           # Add a public group
           $wgGroupPermissions['public']['read'] = true;
 
           # Load the extension
-          wfLoadExtension('TorqueDataConnect');
+          wfLoadExtension('Torque');
 
-    # Link the current directory's TorqueDataConnect extension into the extensions
+    # Link the current directory's Torque extension into the extensions
     # directory.  This is useful for developing on torque, but a copy may be warranted.
-    - name: Link TorqueDataConnect
+    - name: Link Torque
       file:
-        src: "{{ playbook_dir }}/../TorqueDataConnect/"
-        dest: "{{ mediawiki_install_directory }}/extensions/TorqueDataConnect"
+        src: "{{ playbook_dir }}/../Torque/"
+        dest: "{{ mediawiki_install_directory }}/extensions/Torque"
         state: link

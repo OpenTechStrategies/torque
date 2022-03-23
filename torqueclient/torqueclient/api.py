@@ -83,7 +83,7 @@ class Torque:
         )
         response = []
         for uri in self.site.api(
-            "torquedataconnect", format="json", path=path, q=search_term
+            "torque", format="json", path=path, q=search_term
         )["result"]:
             parts = uri.split("/", 4)
             response.append(self.collections[parts[2]].documents[parts[4]])
@@ -92,7 +92,7 @@ class Torque:
 
     def _get_data(self, path):
         """Internal utility method to get data from the server located at PATH"""
-        return self.site.api("torquedataconnect", format="json", path=path)["result"]
+        return self.site.api("torque", format="json", path=path)["result"]
 
     def bulk_fetch(self, documents, num_threads=10):
         """Fetch DOCUMENTS in bulk, split over NUM_THREADS threads.
@@ -383,7 +383,7 @@ class Document:
         to the server."""
         self._get_data()
         self.torque.site.api(
-            "torquedataconnect",
+            "torque",
             format="json",
             path="%s/fields/%s" % (self.uri(), field),
             new_value=json.dumps(new_value)

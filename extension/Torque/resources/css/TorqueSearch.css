@@ -1,0 +1,24 @@
+div.torque-searchrightmenu {
+  float:right;
+}
+
+div.torque-searchfilters {
+  border:1px solid black;
+  padding:10px;
+  width:250px;
+}
+
+div.torque-searchcsv {
+  border:1px solid black;
+  padding:10px;
+  width:250px;
+}
+
+div.torque-searchspacer {
+  width:20px;
+  height:20px;
+}
+
+span.torque-csv-collection-name {
+  font-weight: bold;
+}

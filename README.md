@@ -21,24 +21,24 @@ can be seen in the
 
 [Example Setup](./EXAMPLE.md)
 
-# torquedata
+# django-torque
 
-torquedata is a Flask server that's responsible for storing collection data (in json)
+django-torque is a django server that's responsible for storing collection data (in json)
 and then serving it out as needed.  As a rule, it's very accepting and should
 not be exposed to the greater internet.  All of the authentication and authorization
 is done via the MediaWiki plugin.
 
 Data, indices, and configuration are stored in the filesystem.
 
-See [torquedata README](torquedata/README.md) for more in depth information.
+See [torque README](django-torque/README.md) for more in depth information.
 
-# TorqueDataConnect
+# extension
 
-TorqueDataConnect is the MediaWiki plugin that accesses the torquedata server.
-It uses hooks to ask torquedata to render pages formatted for MediaWiki, and
+Torque is the MediaWiki plugin that accesses the torque server.
+It uses hooks to ask torque to render pages formatted for MediaWiki, and
 provides JSON versions of the data through MediaWiki's api.
 
-See the [TorqueDataConnect README](TorqueDataConnect/README.md) for more in depth information.
+See the [extension README](extension/README.md) for more in depth information.
 
 # Releasing
 

@@ -367,7 +367,7 @@ def upload_collection():
         site.raw_call(
             "api",
             {
-                "action": "torquedataconnectuploadcollection",
+                "action": "torqueuploadcollection",
                 "format": "json",
                 "object_name": "proposal",
                 "collection_name": "proposals",
@@ -390,7 +390,7 @@ def upload_attachments():
         site.raw_call(
             "api",
             {
-                "action": "torquedataconnectuploadattachment",
+                "action": "torqueuploadattachment",
                 "format": "json",
                 "collection_name": "proposals",
                 "object_id": document["Application #"],
@@ -425,7 +425,7 @@ def upload_tocs():
             site.raw_call(
                 "api",
                 {
-                    "action": "torquedataconnectuploadtoc",
+                    "action": "torqueuploadtoc",
                     "format": "json",
                     "collection_name": "proposals",
                     "toc_name": toc_name,
