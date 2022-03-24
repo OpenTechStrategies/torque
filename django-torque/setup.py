@@ -22,7 +22,7 @@ setup(
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Operating System :: OS Independent",
     ],
-    packages=["torque"],
+    packages=["torque", "torque.cache_rebuilder"],
     install_requires=["mwclient", "python-magic", "jinja2", "werkzeug"],
     package_dir={"":  "."},
     python_requres=">=3.6",

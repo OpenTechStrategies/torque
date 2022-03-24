@@ -65,7 +65,7 @@ def search(q, filters, offset, template_config, wiki_configs, fmt, multi):
         .select_related("collection")
     )
     filter_results = []
-    for filter in setting.TORQUE_FILTERS:
+    for filter in settings.TORQUE_FILTERS:
         additional_filters = []
         for name, values in filters.items():
             if name != filter.name():
@@ -748,9 +748,9 @@ def get_csv(request, name, fmt):
 
         columns = []
         for field_name in valid_field_names:
-            if field_name in getattr(settings, "CSV_PROCESSORS", {}):
+            if field_name in getattr(settings, "TORQUE_CSV_PROCESSORS", {}):
                 columns.extend(
-                    settings.CSV_PROCESSORS[field_name].field_names(field_name)
+                    settings.TORQUE_CSV_PROCESSORS[field_name].field_names(field_name)
                 )
             else:
                 columns.append(field_name)
@@ -767,10 +767,10 @@ def get_csv(request, name, fmt):
             for field_name in valid_field_names:
                 if (
                     field_name in values_by_field
-                    and field_name in getattr(settings, "CSV_PROCESSORS", {})
+                    and field_name in getattr(settings, "TORQUE_CSV_PROCESSORS", {})
                 ):
                     row.extend(
-                        config.CSV_PROCESSORS[field_name].process_value(
+                        settings.TORQUE_CSV_PROCESSORS[field_name].process_value(
                             values_by_field[field_name].to_python()
                         )
                     )

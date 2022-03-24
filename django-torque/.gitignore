@@ -1,1 +1,3 @@
 config.py
+dist
+django_torque.egg-info/

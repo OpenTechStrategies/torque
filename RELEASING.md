@@ -4,7 +4,7 @@ When releasing a new version, a few things need to happen:
 
 * Update the variable in both the server and client, in
   * `__version__` in [torqueclient/torqueclient/version.py]
-  * `__version` in [django-torque/torque/version.py]
+  * `__version__` in [django-torque/torque/version.py]
   * `version` attribute in [extenions/extension.json]
 * commit the version update
 * tag the release in git
